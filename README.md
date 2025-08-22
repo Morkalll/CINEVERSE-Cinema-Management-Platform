@@ -6,19 +6,19 @@ ________________________________________________________________________________
 USUARIOS (MÍNIMO 3)
 ________________________________________________________________________________________________
 
-Cliente:
+Cliente (User):
 - Registrarse
 - Ver películas en cartelera
 - Elegir butacas
 - Comprar entradas.
 
 
-Dueño del cine (admin)
+Dueño del cine (Admin):
 - Cargar películas nuevas
 - Cargar horarios de funciones
 - Controlar la disponibilidad de asientos
 
-Administrador (admin)
+Administrador (SysAdmin):
 - Gestionar usuarios
 - Controlar ventas
 - Ver reportes
