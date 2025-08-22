@@ -1,6 +1,9 @@
 
 import './App.css'
 import { Login } from './components/login/Login'
+import { NotFound } from './components/error handler/NotFound'
+import { Routes, Route } from 'react-router'
+
 
 function App() 
 {
@@ -8,8 +11,13 @@ function App()
 
     <div>
       
-      <Login/>
-      
+      <Routes>
+
+        <Route path='login' element={<Login/>} />
+        <Route path='*' element={<NotFound/>} />
+
+      </Routes>
+    
     </div>
 
   )
