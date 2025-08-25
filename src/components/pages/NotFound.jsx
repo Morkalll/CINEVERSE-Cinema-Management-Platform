@@ -12,6 +12,7 @@ export const NotFound = () =>
 
     const navigate = useNavigate()
 
+
     const goBackToLoginHandler = () =>
     {
         navigate("/login")
@@ -19,7 +20,7 @@ export const NotFound = () =>
 
     const goBackToHomeHandler = () =>
     {
-        navigate("/home")
+        navigate("*")
     }
 
 // _______________________________________________________________________________________________________________________________________
@@ -28,6 +29,7 @@ export const NotFound = () =>
 
 
     return(
+
         <div className="text-center mt-3">
 
             <h2>
