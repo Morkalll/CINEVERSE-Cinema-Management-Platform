@@ -17,6 +17,10 @@ export const NotFound = () =>
         navigate("/login")
     }
 
+    const goBackToHomeHandler = () =>
+    {
+        navigate("/home")
+    }
 
 // _______________________________________________________________________________________________________________________________________
 // RETURN EN NAVEGADOR
@@ -29,6 +33,10 @@ export const NotFound = () =>
             <h2>
                 Flaco qué hiciste?
             </h2>
+
+            <Button className="text-center" onClick={goBackToHomeHandler}>
+                Volver a la cartelera
+            </Button>
 
             <Button className="text-center" onClick={goBackToLoginHandler}>
                 Volver a iniciar sesión
