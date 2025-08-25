@@ -1,7 +1,8 @@
 
 import './App.css'
-import { Login } from './components/login/Login'
-import { NotFound } from './components/error handler/NotFound'
+import { Home } from './components/pages/Home'
+import { Login } from './components/pages/Login'
+import { NotFound } from './components/pages/NotFound'
 import { Routes, Route } from 'react-router'
 
 
@@ -14,6 +15,7 @@ function App()
       <Routes>
 
         <Route path='login' element={<Login/>} />
+        <Route path='home' element={<Home/>} />
         <Route path='*' element={<NotFound/>} />
 
       </Routes>
