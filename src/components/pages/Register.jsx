@@ -1,41 +1,56 @@
 
 import { useState } from "react"
-import { useNavigate } from "react-router"
 import { Button, Card, Col, Form, FormGroup, Row } from "react-bootstrap"
 
 
-export const Login = () =>
+export const Register = () =>
 {
-
-    const navigate = useNavigate()
-
-    
-    const goToRegisterHandler = () =>
-    {
-        navigate("/register")
-    }
-
 
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
+    const [confirmedPassword, setConfirmedPassword] = useState("")
+    const [error, setError] = useState("")
 
 
     const handleEmailChange = (event) =>
     {
-        setEmail(event.target.value)
+        const emailValue = event.target.value
+
+        setEmail(emailValue)
     }
 
 
     const handlePasswordChange = (event) =>
     {
-        setPassword(event.target.value)
+        const passwordValue = event.target.value
+
+        setPassword(passwordValue)
+    }
+
+
+    const handleConfirmedPasswordChange = (event) =>
+    {
+        const confirmedPasswordValue = event.target.value
+
+        setConfirmedPassword(confirmedPasswordValue)
+        
+        /*if (confirmedPasswordValue !== password) 
+        {
+            setError("Las contraseñas deben coincidir")
+        }
+
+        else
+        {
+            error.password = ""
+        }*/
+
     }
 
 
     const handleSubmit = (event) =>
     {
         event.preventDefault()
-        alert(`Sesión iniciada. El email ingresado es: ${email} y la contraseña es ${password}`)
+        alert(`Registro completado. El email ingresado es: ${email} y la contraseña es ${password}`)
     }
 
     
@@ -49,7 +64,7 @@ export const Login = () =>
 
                 <Row className="mb-2">
                     <h5>
-                        ¡Bienvenido a CINEVERSE!
+                        Por favor, ingrese sus datos para el registro:
                     </h5>
                 </Row>
 
@@ -85,6 +100,19 @@ export const Login = () =>
                         </FormGroup>
 
 
+                        <FormGroup className="mb-4">
+
+                            <Form.Control 
+                                type="password" 
+                                required 
+                                placeholder="Confirmar contraseña"
+                                onChange={handleConfirmedPasswordChange}
+                                value={confirmedPassword}
+                            />
+                            
+                        </FormGroup>
+
+
                         <Row>
 
                             <Col/>
@@ -92,10 +120,6 @@ export const Login = () =>
                             <Col md={6} className="d-flex-justify-content-end">
 
                                 <Button variant="secondary" type="submit">
-                                    Iniciar sesión
-                                </Button>
-
-                                <Button variant="secondary" onClick={goToRegisterHandler}>
                                     Registrarse
                                 </Button>
 
