@@ -5,7 +5,8 @@ import { Login } from './components/pages/Login'
 import { Register } from './components/pages/Register'
 import { NotFound } from './components/pages/NotFound'
 import { TestRoom } from './components/pages/TestRoom'
-import { Routes, Route } from 'react-router'
+import { Routes, Route } from 'react-router-dom'
+import MovieDetail from './components/pages/MovieDetail'
 
 
 function App() 
@@ -20,8 +21,9 @@ function App()
         <Route path='login' element={<Login/>} />
         <Route path='register' element={<Register/>} />
         <Route path='home' element={<Home/>} />
+        <Route path = "/movie/:id" element = {<MovieDetail/>} />
         <Route path='*' element={<NotFound/>} />
-
+        
       </Routes>
     
     </div>

@@ -1,4 +1,4 @@
-class Movie {
+export class Movie {
     constructor(id, title, genre, duration, rating, synopsis, poster){
         this.id = id;
         this.title = title;
@@ -12,4 +12,3 @@ class Movie {
 
 }
 
-export default Movie;

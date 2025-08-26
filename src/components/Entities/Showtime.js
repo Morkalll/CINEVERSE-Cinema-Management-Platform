@@ -1,7 +1,7 @@
-import Movie from "./Movie.js";
-import Room from "./Room.js";
+import { Movie } from "./movie.js";
+import { Room } from "./room.js";
 
-class Showtime {
+export class ShowTime {
     constructor(id, movie, room, startsAt, price) {
         this.id = id;
         this.movie = movie;
@@ -48,4 +48,3 @@ class Showtime {
     }
 }
 
-export default Showtime;
