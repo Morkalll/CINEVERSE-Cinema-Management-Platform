@@ -9,14 +9,31 @@ export const Register = () =>
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [confirmedPassword, setConfirmedPassword] = useState("")
-    const [error, setError] = useState("")
+    const [error, setError] = useState
+    ({
+        emailError: "",
+        passwordError: "",
+        confirmedPasswordError: ""
+    })
 
 
     const handleEmailChange = (event) =>
     {
         const emailValue = event.target.value
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
 
         setEmail(emailValue)
+
+        if (!emailRegex.test(emailValue))
+        {
+            setError({...error, emailError: "Ingrese un email válido"})
+        }
+
+        else
+        {
+            setError({...error, emailError: ""})
+        }
+
     }
 
 
@@ -25,6 +42,17 @@ export const Register = () =>
         const passwordValue = event.target.value
 
         setPassword(passwordValue)
+
+        if (passwordValue.trim().length < 8) 
+        {
+            setError({...error, passwordError: "Mínimo 8 caracteres"})
+        }
+
+        else 
+        {
+            setError({...error, passwordError: ""})
+        }
+
     }
 
 
@@ -34,15 +62,15 @@ export const Register = () =>
 
         setConfirmedPassword(confirmedPasswordValue)
         
-        /*if (confirmedPasswordValue !== password) 
+        if (confirmedPasswordValue !== password) 
         {
-            setError("Las contraseñas deben coincidir")
+            setError({...error, confirmedPasswordError: "Las contraseñas deben coincidir"})
         }
 
         else
         {
-            error.password = ""
-        }*/
+            setError({...error, confirmedPasswordError: ""})
+        }
 
     }
 
@@ -50,7 +78,16 @@ export const Register = () =>
     const handleSubmit = (event) =>
     {
         event.preventDefault()
-        alert(`Registro completado. El email ingresado es: ${email} y la contraseña es ${password}`)
+
+        if (email.trim() !== ""
+        && password.trim() !== ""
+        && confirmedPassword.trim() !== ""
+        && error.emailError === "" 
+        && error.passwordError === "" 
+        && error.confirmedPasswordError === "")
+        {
+            alert(`Registro completado. El email ingresado es: ${email} y la contraseña es ${password}`)
+        }
     }
 
     
@@ -71,19 +108,24 @@ export const Register = () =>
 
                 <Row>
                     
-                    <Form onSubmit={handleSubmit}>
+                    <Form onSubmit={handleSubmit} noValidate>
 
 
                         <FormGroup className="mb-4">
                             
                             <Form.Control 
-                                type="email" 
-                                required 
                                 placeholder="Ingresar email"
                                 onChange={handleEmailChange}
                                 value={email}
                             />
 
+                            {error.emailError && 
+                            (
+                                <div className="text-danger">
+                                    {error.emailError}
+                                </div>
+                            )}
+
                         </FormGroup>
 
 
@@ -91,12 +133,18 @@ export const Register = () =>
 
                             <Form.Control 
                                 type="password" 
-                                required 
                                 placeholder="Ingresar contraseña"
                                 onChange={handlePasswordChange}
                                 value={password}
                             />
                             
+                            {error.passwordError && 
+                            (
+                                <div className="text-danger">
+                                    {error.passwordError}
+                                </div>
+                            )}
+
                         </FormGroup>
 
 
@@ -104,12 +152,20 @@ export const Register = () =>
 
                             <Form.Control 
                                 type="password" 
-                                required 
                                 placeholder="Confirmar contraseña"
                                 onChange={handleConfirmedPasswordChange}
                                 value={confirmedPassword}
                             />
                             
+                            {error.confirmedPasswordError && 
+                            (
+                                <div className="text-danger"> 
+
+                                    {error.confirmedPasswordError} 
+
+                                </div>
+                            )}
+
                         </FormGroup>
 
 

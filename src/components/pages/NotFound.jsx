@@ -16,7 +16,7 @@ export const NotFound = () =>
 
     const goBackToHomeHandler = () =>
     {
-        navigate("*")
+        navigate("/home")
     }
 
 

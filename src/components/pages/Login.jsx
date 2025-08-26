@@ -7,6 +7,69 @@ import { Button, Card, Col, Form, FormGroup, Row } from "react-bootstrap"
 export const Login = () =>
 {
 
+    const [email, setEmail] = useState("")
+    const [password, setPassword] = useState("")
+    const [error, setError] = useState
+    ({
+        emailError: "",
+        passwordError: "",
+    })
+
+
+    const handleEmailChange = (event) =>
+    {
+        const emailValue = event.target.value
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+
+        setEmail(emailValue)
+
+        if (!emailRegex.test(emailValue))
+        {
+            setError({...error, emailError: "Ingrese un email válido"})
+        }
+
+        else
+        {
+            setError({...error, emailError: ""})
+        }
+
+    }
+
+
+    const handlePasswordChange = (event) =>
+    {
+        const passwordValue = event.target.value
+
+        setPassword(passwordValue)
+
+        if (passwordValue.trim().length < 8) 
+        {
+            setError({...error, passwordError: "Mínimo 8 caracteres"})
+        }
+
+        else 
+        {
+            setError({...error, passwordError: ""})
+        }
+
+    }
+
+
+    const handleSubmit = (event) =>
+    {
+        event.preventDefault()
+
+        if (email.trim() !== ""
+        && password.trim() !== ""
+        && error.emailError === "" 
+        && error.passwordError === "" )
+        {
+            alert(`Sesión iniciada. El email ingresado es: ${email} y la contraseña es ${password}`)
+        }
+    }
+
+    
+
     const navigate = useNavigate()
 
     
@@ -16,29 +79,6 @@ export const Login = () =>
     }
 
 
-    const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
-
-
-    const handleEmailChange = (event) =>
-    {
-        setEmail(event.target.value)
-    }
-
-
-    const handlePasswordChange = (event) =>
-    {
-        setPassword(event.target.value)
-    }
-
-
-    const handleSubmit = (event) =>
-    {
-        event.preventDefault()
-        alert(`Sesión iniciada. El email ingresado es: ${email} y la contraseña es ${password}`)
-    }
-
-    
 
     return(
 
@@ -56,18 +96,23 @@ export const Login = () =>
 
                 <Row>
                     
-                    <Form onSubmit={handleSubmit}>
+                    <Form onSubmit={handleSubmit} noValidate>
 
 
                         <FormGroup className="mb-4">
                             
                             <Form.Control 
-                                type="email" 
-                                required 
                                 placeholder="Ingresar email"
                                 onChange={handleEmailChange}
                                 value={email}
                             />
+
+                            {error.emailError && 
+                            (
+                                <div className="text-danger">
+                                    {error.emailError}
+                                </div>
+                            )}
 
                         </FormGroup>
 
@@ -76,12 +121,18 @@ export const Login = () =>
 
                             <Form.Control 
                                 type="password" 
-                                required 
                                 placeholder="Ingresar contraseña"
                                 onChange={handlePasswordChange}
                                 value={password}
                             />
                             
+                            {error.passwordError && 
+                            (
+                                <div className="text-danger">
+                                    {error.passwordError}
+                                </div>
+                            )}
+
                         </FormGroup>
 
 
