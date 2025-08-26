@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
-import './navBar.css';
+import './NavBar.css';
+import logo2 from '../../assets/images/cineverse-logo-2.png';
+import userIcon from '../../assets/images/user-icon-2.png';
 
 const NavBar = () => {
   return (
@@ -10,7 +12,7 @@ const NavBar = () => {
       
       <div className="navbar-left">
         <Link to="/">
-          <img src="/logo-cine.png" alt="Logo Cineverso" className="logo" />
+          <img src={logo2} alt="Logo Cineverso" className="logo" />
         </Link>
       </div>
 
@@ -25,7 +27,7 @@ const NavBar = () => {
      
      <div className="navbar-right">
         <Link to="/perfil">
-          <img src="/user-icon.svg" alt="Perfil" className="user-icon" />
+          <img src={userIcon} alt="Perfil" className="user-icon" />
         </Link>
       </div>
     </nav>
