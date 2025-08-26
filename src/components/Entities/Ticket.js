@@ -1,6 +1,6 @@
-import Showtime from "./Showtime";
+import { ShowTime } from "./Showtime"; 
 
-class Ticket {
+export class Ticket  {
     constructor(id, showtime, seatIndex, user) {
         this.id = id;
         this.showtime = showtime;
@@ -25,4 +25,4 @@ class Ticket {
     }
 }
 
-export default Ticket;
+
