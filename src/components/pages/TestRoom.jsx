@@ -10,20 +10,26 @@ export const TestRoom = () =>
     const navigate = useNavigate()
 
 
-    const goBackToLoginHandler = () =>
+    const goToLoginHandler = () =>
     {
         navigate("/login")
     }
 
-    const goBackToHomeHandler = () =>
+    const goToRegisterHandler = () =>
+    {
+        navigate("/register")
+    }
+
+    const goToHomeHandler = () =>
     {
         navigate("/home")
     }
 
-    const goBackToNotFoundHandler = () =>
+    const goToNotFoundHandler = () =>
     {
         navigate("/notfound")
     }
+
 
     //AGREGAR MÁS PÁGINAS A MEDIDA QUE SE CREEN
 
@@ -36,15 +42,19 @@ export const TestRoom = () =>
                 ELIGE LA PÁGINA A LA QUE QUIERAS ACCEDER:
             </h2>
 
-            <Button className="text-center" onClick={goBackToHomeHandler}>
+            <Button className="text-center" onClick={goToHomeHandler}>
                 Home
             </Button>
 
-            <Button className="text-center" onClick={goBackToLoginHandler}>
+            <Button className="text-center" onClick={goToLoginHandler}>
                 Login
             </Button>
 
-            <Button className="text-center" onClick={goBackToNotFoundHandler}>
+            <Button className="text-center" onClick={goToRegisterHandler}>
+                Register
+            </Button>
+
+            <Button className="text-center" onClick={goToNotFoundHandler}>
                 NotFound
             </Button>
 
