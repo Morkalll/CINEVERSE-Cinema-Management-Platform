@@ -1,8 +1,8 @@
-import React from 'react';
+
 import { Link } from 'react-router-dom';
 import './MovieCard.css';
 
-const MovieCard = ({ id, title, posterUrl }) => {
+export const MovieCard = ({ id, title, posterUrl }) => {
   return (
     // El Link to es para que cuando aprietes el poster en cartelera te lleve a la pagina de esa pelicula
     <Link to={`/movie/${id}`} className="movie-card-link"> 
@@ -16,4 +16,3 @@ const MovieCard = ({ id, title, posterUrl }) => {
   );
 };
 
-export default MovieCard;

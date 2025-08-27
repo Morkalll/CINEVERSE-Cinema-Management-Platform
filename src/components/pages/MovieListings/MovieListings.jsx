@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import MovieCard from '../MovieCard/MovieCard';
 
-const MovieListings = () => {
+import { useEffect, useState } from 'react';
+import { MovieCard } from '../../MovieCard/MovieCard';
+
+export const MovieListings = () => 
+{
   const [movies, setMovies] = useState([]);
 
-  useEffect(() => {
+  useEffect(() => 
+  {
     // El useEffect es para obtener los datos de las peliculas desde el backend (base de datos)
   }, []);
 
@@ -21,5 +24,3 @@ const MovieListings = () => {
     </div>
   );
 };
-
-export default MovieListings

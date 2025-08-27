@@ -1,11 +1,15 @@
 
 import './App.css'
-import { Home } from './components/pages/Home'
-import { Login } from './components/pages/Login'
-import { Register } from './components/pages/Register'
-import { NotFound } from './components/pages/NotFound'
 import { TestRoom } from './components/pages/TestRoom'
-import { Routes, Route } from 'react-router'
+import { Home } from './components/pages/Home/Home'
+import { Login } from './components/pages/Login/Login'
+import { Register } from './components/pages/Register/Register'
+import { MovieListings } from './components/pages/MovieListings/MovieListings'
+import { Profile } from './components/pages/Profile/Profile'
+import { Candy } from './components/pages/Candy/Candy'
+import { NotFound } from './components/pages/NotFound/NotFound'
+import { Routes, Route } from 'react-router-dom'
+
 
 
 function App() 
@@ -20,6 +24,9 @@ function App()
         <Route path='login' element={<Login/>} />
         <Route path='register' element={<Register/>} />
         <Route path='home' element={<Home/>} />
+        <Route path='movielistings' element={<MovieListings/>} />
+        <Route path='profile' element={<Profile/>} />
+        <Route path='candy' element={<Candy/>} />
         <Route path='*' element={<NotFound/>} />
 
       </Routes>

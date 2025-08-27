@@ -25,6 +25,21 @@ export const TestRoom = () =>
         navigate("/home")
     }
 
+    const goToMovieListingsHandler = () =>
+    {
+        navigate("/movielistings")
+    }
+
+    const goToProfileHandler = () =>
+    {
+        navigate("/profile")
+    }
+
+    const goToCandyHandler = () =>
+    {
+        navigate("/candy")
+    }
+
     const goToNotFoundHandler = () =>
     {
         navigate("/notfound")
@@ -32,6 +47,7 @@ export const TestRoom = () =>
 
 
     //AGREGAR MÁS PÁGINAS A MEDIDA QUE SE CREEN
+
 
 
     return(
@@ -42,10 +58,6 @@ export const TestRoom = () =>
                 ELIGE LA PÁGINA A LA QUE QUIERAS ACCEDER:
             </h2>
 
-            <Button className="text-center" onClick={goToHomeHandler}>
-                Home
-            </Button>
-
             <Button className="text-center" onClick={goToLoginHandler}>
                 Login
             </Button>
@@ -54,9 +66,26 @@ export const TestRoom = () =>
                 Register
             </Button>
 
-            <Button className="text-center" onClick={goToNotFoundHandler}>
-                NotFound
+            <Button className="text-center" onClick={goToHomeHandler}>
+                Home
             </Button>
+
+            <Button className="text-center" onClick={goToMovieListingsHandler}>
+                Movie Listings
+            </Button>
+
+            <Button className="text-center" onClick={goToProfileHandler}>
+                Profile
+            </Button>
+
+            <Button className="text-center" onClick={goToCandyHandler}>
+                Candy
+            </Button>
+
+            <Button className="text-center" onClick={goToNotFoundHandler}>
+                Not Found
+            </Button>
+
 
         </div>
     )
