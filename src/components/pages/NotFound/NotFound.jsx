@@ -30,7 +30,7 @@ export const NotFound = () =>
             </h2>
 
             <Button className="text-center" onClick={goBackToHomeHandler}>
-                Volver a la cartelera
+                Volver al inicio
             </Button>
 
             <Button className="text-center" onClick={goBackToLoginHandler}>

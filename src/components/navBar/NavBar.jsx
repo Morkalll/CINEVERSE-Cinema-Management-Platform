@@ -1,9 +1,10 @@
+
 import { Link } from 'react-router-dom';
 import './NavBar.css';
 import logo2 from '../../assets/images/cineverse-logo-2.png';
 import userIcon from '../../assets/images/user-icon-2.png';
 
-const NavBar = () => {
+export const NavBar = () => {
   return (
     // Los links to son para que al apretar te lleve a esa pagina
     <nav className="navbar">
@@ -19,14 +20,14 @@ const NavBar = () => {
       {/* Links de navegacion*/}
       
       <div className="navbar-center">
-        <Link to="/cartelera" className="nav-link">PELÍCULAS</Link>
+        <Link to="/movielistings" className="nav-link">PELÍCULAS</Link>
         <Link to="/candy" className="nav-link">CANDY</Link>
       </div>
       
       {/* Icono del Usuario*/}
      
      <div className="navbar-right">
-        <Link to="/perfil">
+        <Link to="/profile">
           <img src={userIcon} alt="Perfil" className="user-icon" />
         </Link>
       </div>
@@ -34,4 +35,3 @@ const NavBar = () => {
   );
 };
 
-export default NavBar;
