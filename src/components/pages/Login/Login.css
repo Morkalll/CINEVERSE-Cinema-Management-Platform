@@ -42,7 +42,7 @@ body {
   border-radius: 10px;
   color: #fff;
   padding: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 4px;
   transition: border-color 0.2s;
 }
 
@@ -54,7 +54,7 @@ body {
 
 .text-danger {
   font-size: 14px;
-  margin-top: 5px;
+  margin-bottom: 8px;
   color: #ff4c4c;
 }
 
