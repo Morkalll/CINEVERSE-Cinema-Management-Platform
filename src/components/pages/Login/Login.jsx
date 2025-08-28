@@ -3,7 +3,7 @@ import { useState } from "react"
 import { useNavigate } from "react-router"
 import { Button, Card, Col, Form, FormGroup, Row } from "react-bootstrap"
 import './Login.css'
-import cineverseLogo from '../../../assets/images/cineverse-logo.png'
+import cineverseLogo from '../../../assets/images/cineverse-logo-without-name.png'
 
 export const Login = () =>
 {
