@@ -1,14 +1,15 @@
+import './MovieListings.css';
 
 import { useEffect, useState } from 'react';
-import { MovieCard } from '../../MovieCard/MovieCard';
+import { MovieCard } from '../MovieCard/MovieCard';
+import {MoviesMock} from '../../data/MoviesMock'; 
 
-export const MovieListings = () => 
-{
+export const MovieListings = () => {
   const [movies, setMovies] = useState([]);
 
-  useEffect(() => 
-  {
-    // El useEffect es para obtener los datos de las peliculas desde el backend (base de datos)
+  useEffect(() => {
+    // Simula la carga desde backend
+    setMovies(MoviesMock);
   }, []);
 
   return (
@@ -18,7 +19,7 @@ export const MovieListings = () =>
           key={movie.id}
           id={movie.id}
           title={movie.title}
-          posterUrl={movie.posterUrl}
+          posterUrl={movie.poster}
         />
       ))}
     </div>

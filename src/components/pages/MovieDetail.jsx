@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import movies from "../Entities/movie";
+
 
 export default function MovieDetail(){
     const { id } = useParams();
