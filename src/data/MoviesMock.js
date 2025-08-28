@@ -1,0 +1,98 @@
+   export const MoviesMock = [
+  {
+    id: 1,
+    title: "Rambo First Blood Part II",
+    genre: "Acción",
+    poster: "https://image.tmdb.org/t/p/w1280/TuW7rwhdVPrm3qBsBGnn747Uar.jpg",
+    duration: "1 h 36m",
+    rating: "7.2",
+    year: "1985",
+    synopsis:
+      "Rambo es excarcelado y enviado de vuelta al Vietnam con una nueva misión: averiguar el paradero de unos soldados norteamericanos desaparecidos. Tras saltar en paracaídas en la jungla, portando únicamente un cuchillo y un arco con flechas, se le dice que no ataque al enemigo y que sólo haga fotografías de reconocimiento. Pero el plan no saldrá como estaba previsto.",
+    director: "George P. Cosmatos",
+  },
+  {
+    id: 2,
+    title: "The Fantastic 4 : First Steps",
+    genre: "Ciencia Ficción, Aventuras",
+    poster: "https://image.tmdb.org/t/p/w1280/ckfiXWGEMWrUP53cc6QyHijLlhl.jpg",
+    duration: "1 h 54m",
+    rating: "7.3",
+    year: "2025",
+    synopsis:
+      "En un mundo retrofuturista, los Cuatro Fantásticos deben defender la Tierra de Galactus, un dios espacial devorador de planetas, mientras enfrentan dilemas familiares y el nacimiento de un hijo con poderes cósmicos.",
+    director: "Matt Shakman",
+  },
+  {
+    id: 3,
+    title: "Spiderman: Across the Spider-Verse",
+    genre: "Animación, Superhéroes, Aventura",
+    poster: "https://image.tmdb.org/t/p/w1280/iacLPcp2o2pClRToPjNAZjGhxAK.jpg",
+    duration: "2 h 20m",
+    rating: "8.5",
+    year: "2023",
+    synopsis:
+      "Miles Morales se embarca en una travesía por el multiverso junto a Gwen Stacy, enfrentando a una sociedad de Spider-People y redefiniendo lo que significa ser un héroe.",
+    director: "Joaquim Dos Santos, Kemp Powers, Justin K. Thompson",
+  },
+  {
+    id: 4,
+    title: "Barbie",
+    genre: "Comedia, Fantasía",
+    poster: "https://image.tmdb.org/t/p/w1280/fNtqD4BTFj0Bgo9lyoAtmNFzxHN.jpg",
+    duration: "1 h 54m",
+    rating: "6.8",
+    year: "2023",
+    synopsis:
+      "Barbie vive en Barbieland, un mundo perfecto, hasta que una crisis existencial la lleva al mundo real en busca de respuestas sobre su identidad y propósito.",
+    director: "Greta Gerwig",
+  },
+  {
+    id: 5,
+    title: "Avatar: The Way of Water",
+    genre: "Ciencia Ficción, Aventura",
+    poster: "https://image.tmdb.org/t/p/w1280/i9S3fjjCLYbtX7prpEje6BUZvC0.jpg",
+    duration: "3 h 12m",
+    rating: "7.5",
+    year: "2022",
+    synopsis:
+      "Jake Sully y Neytiri deben proteger a su familia de una nueva amenaza que los obliga a explorar los océanos de Pandora y enfrentar batallas épicas por su supervivencia.",
+    director: "James Cameron",
+  },
+  {
+    id: 6,
+    title: "Dragon Ball Super : Super Hero",
+    genre: "Anime, Acción, Fantasía",
+    poster: "https://image.tmdb.org/t/p/w1280/pi0iZOEHeA3ih4p1IwAG4x2DZNH.jpg",
+    duration: "1 h 39m",
+    rating: "7.0",
+    year: "2022",
+    synopsis:
+      "La Patrulla Roja resurge con nuevos androides Gamma 1 y 2. Piccolo y Gohan deben enfrentarse a Cell Max en una batalla que pondrá a prueba sus límites.",
+    director: "Tetsuro Kodama",
+  },
+  {
+    id: 7,
+    title: "Super Mario Bros",
+    genre: "Animación, Aventura, Comedia",
+    poster: "https://image.tmdb.org/t/p/w1280/zNKs1T0VZuJiVuhuL5GSCNkGdxf.jpg",
+    duration: "1 h 32m",
+    rating: "7.0",
+    year: "2023",
+    synopsis:
+      "Mario y Luigi son transportados al Reino Champiñón, donde deben enfrentarse a Bowser para salvar a Luigi y detener sus planes de conquista.",
+    director: "Aaron Horvath, Michael Jelenic",
+  },
+  {
+    id: 8,
+    title: "John Wick 4",
+    genre: "Acción, Suspenso",
+    poster: "https://image.tmdb.org/t/p/w1280/mj2Z9HnRSIEk3n7yVPoOY4Uzzfh.jpg",
+    duration: "2 h 49m",
+    rating: "7.6",
+    year: "2023",
+    synopsis:
+      "John Wick busca su libertad enfrentando a la Alta Mesa en un duelo mortal, mientras recorre el mundo enfrentando enemigos implacables y redefiniendo su legado.",
+    director: "Chad Stahelski",
+  },
+];

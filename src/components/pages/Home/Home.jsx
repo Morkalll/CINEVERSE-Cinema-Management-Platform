@@ -1,6 +1,6 @@
 
 import { NavBar } from '../../NavBar/NavBar';
-import { MovieListings } from '../MovieListings/MovieListings';
+import { MovieListings } from '../../MovieListings/MovieListings';
 
 export const Home = () => 
 {
