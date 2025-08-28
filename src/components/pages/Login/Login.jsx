@@ -45,7 +45,7 @@ export const Login = () =>
 
         if (passwordValue.trim().length < 8) 
         {
-            setError({...error, passwordError: "Mínimo 8 caracteres"})
+            setError({...error, passwordError: "La contraseña debe tener mínimo 8 caracteres"})
         }
 
         else 
