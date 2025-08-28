@@ -20,8 +20,8 @@ export const NavBar = () => {
       {/* Links de navegacion*/}
       
       <div className="navbar-center">
-        <Link to="/movielistings" className="nav-link">PELÍCULAS</Link>
-        <Link to="/candy" className="nav-link">CANDY</Link>
+        <Link to="/movielistings" className="nav-link"> • PELÍCULAS • </Link>
+        <Link to="/candy" className="nav-link"> • CANDY </Link>
       </div>
       
       {/* Icono del Usuario*/}
