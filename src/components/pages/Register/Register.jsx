@@ -99,6 +99,7 @@ export const Register = () =>
             <Card.Body>
 
 
+                
                 <Row className="mb-2">
                     <h5>
                         Por favor, ingrese sus datos para el registro:

@@ -2,7 +2,8 @@
 import { useState } from "react"
 import { useNavigate } from "react-router"
 import { Button, Card, Col, Form, FormGroup, Row } from "react-bootstrap"
-
+import './Login.css'
+import cineverseLogo from '../../../assets/images/cineverse-logo.png'
 
 export const Login = () =>
 {
@@ -86,7 +87,11 @@ export const Login = () =>
 
             <Card.Body>
 
-
+                <Row className="mb-3 justify-content-center">
+                    <img src={cineverseLogo} alt="Cineverse Logo" className="login-logo" />
+                </Row>
+                
+                
                 <Row className="mb-2">
                     <h5>
                         ¡Bienvenido a CINEVERSE!
