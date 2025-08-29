@@ -1,19 +1,20 @@
 import ReactSwipe from 'react-swipe';
 import './MovieCarousel.css';
 
-export const MovieCarousel = ({ movies, title = "RECOMENDADAS" }) => {
+export const MovieCarousel = ({ movies}) => {
   let swipeRef;
 
   return (
+    
     <section className="carousel-section">
-      <h2 className="carousel-title">{title}</h2>
+      <h1 className="showcase-title"> ─────────────── Recomendadas ─────────────── </h1>
 
       <ReactSwipe
         className="carousel-swipe"
         swipeOptions={{
           continuous: true,
           auto: 3000,
-          speed: 400
+          speed: 400,
         }}
         ref={(el) => (swipeRef = el)}
       >
@@ -25,9 +26,11 @@ export const MovieCarousel = ({ movies, title = "RECOMENDADAS" }) => {
               className="carousel-poster"
             />
           </div>
+      
         ))}
       </ReactSwipe>
     </section>
+    
   );
 };
 

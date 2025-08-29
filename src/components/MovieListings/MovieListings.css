@@ -4,3 +4,12 @@
   gap: 2rem;
   padding: 2rem;
 }
+
+.showcase-title {
+  text-align: left;
+  margin: 20px 0;
+  background: linear-gradient(90deg, #ff00ff, #9900ff, #5100ff);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block; 
+}

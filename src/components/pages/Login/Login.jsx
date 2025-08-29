@@ -3,7 +3,7 @@ import { useState } from "react"
 import { useNavigate } from "react-router"
 import { Button, Card, Col, Form, FormGroup, Row } from "react-bootstrap"
 import './Login.css'
-import cineverseLogo from '../../../assets/images/cineverse-logo.png'
+import cineverseLogo from '../../../assets/images/cineverse-logo-without-name.png'
 
 export const Login = () =>
 {
@@ -45,7 +45,7 @@ export const Login = () =>
 
         if (passwordValue.trim().length < 8) 
         {
-            setError({...error, passwordError: "Mínimo 8 caracteres"})
+            setError({...error, passwordError: "La contraseña debe tener mínimo 8 caracteres"})
         }
 
         else 
