@@ -1,9 +1,9 @@
 import { useParams } from "react-router-dom";
 
 
-export default function MovieDetail(){
+export function MovieDetail(){
     const { id } = useParams();
-    const movie = movies.find((m) => m.id.toString() === id);
+    const movie = movie.find((m) => m.id.toString() === id);
 
     if (!movie) return <h2>Pelicula no encontrada :/</h2>;
 
