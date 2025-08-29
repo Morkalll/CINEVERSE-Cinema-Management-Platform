@@ -1,17 +1,19 @@
+import { CandyListings } from '../../CandyListings/CandyListings';
+import { NavBar } from '../../NavBar/NavBar';
+import './Candy.css';
 
-export const Candy = () =>
-{
-    return(
+export const Candy = () => {
 
-    <div>
+    return (
 
-        <h2>
+        <div className="NavBar">
+            <NavBar />
+           
+            <section className='Candy-Listings'>
+                <CandyListings />
+            </section>
             
-            Aquí estará la sección de "Candy"
-            
-        </h2>
-
-    </div>
+        </div>
 
     )
 
