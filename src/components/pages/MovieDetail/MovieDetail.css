@@ -1,60 +1,57 @@
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
 
-/* Estilos Generales */
-body {
-  background-color: #000;
-  color: #fff;
+.movie-detail-container {
+  width: 800px;
+  display: flex;
+  align-items: flex-start;
+  gap: 60px;
+  padding: 60px 40px;
+  background-color: #000000;
+  color: #e0e0e0;
   font-family: 'Bebas Neue', sans-serif;
-  margin: 0;
-  padding: 0;
 }
 
-/* Contenedor Principal de la Película */
-.movie-detail-container {
+.movie-detail-container img {
+  width: 300px;
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+/* Contenedor del poster y la info debajo */
+.poster-section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-width: 900px;
-  margin: 40px auto;
-  padding: 20px;
-  border: 2px solid #9900ff;
-  border-radius: 10px;
-  background-color: #000;
-  box-shadow: 0 0 20px rgba(153, 0, 255, 0.4);
+  gap: 20px;
 }
 
-/* Título de la Película */
-.movie-detail-container h2 {
-  font-size: 3.5rem;
-  text-align: center;
-  margin-bottom: 20px;
-  padding-bottom: 5px;
-  border-bottom: 3px solid #9900ff;
-  width: 100%;
+/* Info debajo del póster */
+.extra-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 300px;
+  text-align: left;
 }
 
-/* Imagen del Póster */
-.movie-detail-container img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 8px;
-  border: 2px solid #9900ff;
-  box-shadow: 0 0 15px rgba(153, 0, 255, 0.4);
-  margin-bottom: 20px;
+.extra-info p {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  margin: 0;
 }
 
-/* Información de la Película */
-.movie-info {
-  text-align: center;
-  width: 100%;
+.extra-info strong {
+  background: linear-gradient(90deg, #ff00cc, #9900ff);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.movie-info p {
-  font-size: 1.5rem;
-  margin: 10px 0;
-  color: #fff;
+/* Título a la derecha */
+.movie-title {
+  font-size: 3rem;
+  color: #ffffff;
+  text-transform: uppercase;
+  margin: 0;
 }
 
-.movie-info p strong {
-  color: #9900ff;
-}
