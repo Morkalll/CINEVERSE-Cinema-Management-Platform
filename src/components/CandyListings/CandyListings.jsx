@@ -19,6 +19,9 @@ export const CandyListings = () => {
                     id={candy.id}
                     name={candy.name}
                     image={candy.image}
+                    description={candy.description}
+                    available={candy.available}
+                    price={candy.price}
                 />
             ))}
         </div>

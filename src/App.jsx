@@ -10,7 +10,7 @@ import { MovieDetail } from './components/pages/MovieDetail/MovieDetail';
 import { Profile } from './components/pages/Profile/Profile';
 import { Candy } from './components/pages/Candy/Candy';
 import { NotFound } from './components/pages/NotFound/NotFound';
-import { CandyDetail } from './components/pages/CandyDetail/CandyDetail';
+
 
 
 function App() 
@@ -29,7 +29,6 @@ function App()
         <Route path = "/movie/:id" element = {<MovieDetail/>} />
         <Route path='profile' element={<Profile/>} />
         <Route path='candy' element={<Candy/>} />
-        <Route path = '/candy/:id' element = {<CandyDetail/>}/>
         <Route path='*' element={<NotFound/>} />
         
       </Routes>
