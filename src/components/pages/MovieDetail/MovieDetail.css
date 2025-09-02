@@ -1,0 +1,60 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+
+/* Estilos Generales */
+body {
+  background-color: #000;
+  color: #fff;
+  font-family: 'Bebas Neue', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Contenedor Principal de la Película */
+.movie-detail-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+  border: 2px solid #9900ff;
+  border-radius: 10px;
+  background-color: #000;
+  box-shadow: 0 0 20px rgba(153, 0, 255, 0.4);
+}
+
+/* Título de la Película */
+.movie-detail-container h2 {
+  font-size: 3.5rem;
+  text-align: center;
+  margin-bottom: 20px;
+  padding-bottom: 5px;
+  border-bottom: 3px solid #9900ff;
+  width: 100%;
+}
+
+/* Imagen del Póster */
+.movie-detail-container img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  border: 2px solid #9900ff;
+  box-shadow: 0 0 15px rgba(153, 0, 255, 0.4);
+  margin-bottom: 20px;
+}
+
+/* Información de la Película */
+.movie-info {
+  text-align: center;
+  width: 100%;
+}
+
+.movie-info p {
+  font-size: 1.5rem;
+  margin: 10px 0;
+  color: #fff;
+}
+
+.movie-info p strong {
+  color: #9900ff;
+}
