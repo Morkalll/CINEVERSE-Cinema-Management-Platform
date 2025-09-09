@@ -18,22 +18,27 @@
   margin-bottom: 15px;
 }
 
-
-.carousel-swipe {
+.carousel-wrapper {
+  position: relative;
   width: 90%;
   max-width: 1100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carousel-swipe {
+  width: 100%;
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 0 15px rgba(255, 0, 255, 0.6),
               0 0 25px rgba(0, 255, 255, 0.6);
 }
 
-
 .carousel-swipe > div {
   display: flex !important;
   width: 100%;
 }
-
 
 .carousel-slide {
   display: flex !important;
@@ -41,7 +46,6 @@
   align-items: center; 
   margin: 0 auto;    
 }
-
 
 .carousel-poster {
   width: 100%;
@@ -53,8 +57,31 @@
 }
 
 @keyframes neonBorder {
-
   100% { border-color: #ff00ff; }
+}
+
+/* Flechas del carrusel */
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 2.5rem;
+  color: #fff;
+  cursor: pointer;
+  z-index: 2;
+  padding: 0 10px;
+  transition: color 0.2s;
+  user-select: none;
+}
+
+.carousel-arrow.left {
+  left: -80px;
+}
+
+.carousel-arrow.right {
+  right: -80px;
 }
 
 @media (max-width: 768px) {
@@ -62,3 +89,4 @@
     height: 220px;
   }
 }
+
