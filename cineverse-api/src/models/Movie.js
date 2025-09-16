@@ -3,8 +3,9 @@ import { DataTypes } from "sequelize"
 import { sequelize } from "../db.js" 
 // SE IMPORTA LA FUNCIÓN CREADA EN ESA RUTA, NO "SEQUELIZE" LITERAL
 
-export const Movie = sequelize.define("movie", {
 
+export const Movie = sequelize.define("movie", 
+{
     id: 
     {
         type: DataTypes.INTEGER,
