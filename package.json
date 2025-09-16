@@ -12,6 +12,7 @@
   "dependencies": {
     "bcrypt": "^6.0.0",
     "bootstrap": "^5.3.7",
+    "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.543.0",
     "react": "^19.1.1",
@@ -20,6 +21,8 @@
     "react-router": "^7.8.1",
     "react-router-dom": "^7.8.2",
     "react-swipe": "^6.0.4",
+    "sequelize": "^6.37.7",
+    "sqlite3": "^5.1.7",
     "swiper": "^11.2.10"
   },
   "devDependencies": {

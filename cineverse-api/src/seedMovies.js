@@ -1,4 +1,7 @@
-   export const MoviesMock = [
+import { sequelize } from './db.js';
+import { Movie } from './models/Movie.js';
+
+export const seedMovies = [
   {
     id: 1,
     title: "Rambo First Blood Part II",
@@ -7,7 +10,7 @@
     posterCarousel : "https://images8.alphacoders.com/796/thumb-1920-796344.jpg",
     duration: "1 h 36m",
     rating: "7.2",
-    year: "22 de mayo de 1985",
+    releaseDate: "22 de mayo de 1985",
     synopsis:
       "Rambo es excarcelado y enviado de vuelta al Vietnam con una nueva misión: averiguar el paradero de unos soldados norteamericanos desaparecidos. Tras saltar en paracaídas en la jungla, portando únicamente un cuchillo y un arco con flechas, se le dice que no ataque al enemigo y que sólo haga fotografías de reconocimiento. Pero el plan no saldrá como estaba previsto.",
     director: "George P. Cosmatos",
@@ -21,7 +24,7 @@
     posterCarousel : "https://images.hdqwalls.com/wallpapers/the-fantastic-four-first-steps-official-pt.jpg",
     duration: "1 h 54m",
     rating: "7.3",
-    year: "24 de julio de 2025",
+    releaseDate: "24 de julio de 2025",
     synopsis:
       "En un mundo retrofuturista, los Cuatro Fantásticos deben defender la Tierra de Galactus, un dios espacial devorador de planetas, mientras enfrentan dilemas familiares y el nacimiento de un hijo con poderes cósmicos.",
     director: "Matt Shakman",
@@ -34,7 +37,7 @@
     posterCarousel : "https://comicbook.com/wp-content/uploads/sites/4/2022/12/762b1087-dece-43b4-94e0-94ae13069e71.jpg",
     duration: "2 h 20m",
     rating: "8.5",
-    year: "2 de junio de 2023",
+    releaseDate: "2 de junio de 2023",
     synopsis:
       "Miles Morales se embarca en una travesía por el multiverso junto a Gwen Stacy, enfrentando a una sociedad de Spider-People y redefiniendo lo que significa ser un héroe.",
     director: "Joaquim Dos Santos, Kemp Powers, Justin K. Thompson",
@@ -47,7 +50,7 @@
     posterCarousel: "https://wallpapercave.com/wp/wp2044098.jpg",
     duration: "1 h 32m",
     rating: "6.8",
-    year: "26 de febrero de 1988",
+    releaseDate: "26 de febrero de 1988",
     synopsis:
     "Frank Dux, un soldado estadounidense, viaja a Hong Kong para participar en el Kumité, un torneo secreto de artes marciales donde deberá enfrentarse a los luchadores más letales del mundo.",
     director: "Newt Arnold",
@@ -60,7 +63,7 @@
     posterCarousel : "https://dx35vtwkllhj9.cloudfront.net/20thcenturystudios/avatar-the-way-of-water/images/regions/us/share.jpg",
     duration: "3 h 12m",
     rating: "7.5",
-    year: "16 de diciembre de 2022",
+    releaseDate: "16 de diciembre de 2022",
     synopsis:
       "Jake Sully y Neytiri deben proteger a su familia de una nueva amenaza que los obliga a explorar los océanos de Pandora y enfrentar batallas épicas por su supervivencia.",
     director: "James Cameron",
@@ -73,7 +76,7 @@
     posterCarousel : "https://cdn.wallpapersafari.com/55/76/3iTQXW.jpg",
     duration: "1 h 39m",
     rating: "7.0",
-    year: "11 de junio de 2022",
+    releaseDate: "11 de junio de 2022",
     synopsis:
       "La Patrulla Roja resurge con nuevos androides Gamma 1 y 2. Piccolo y Gohan deben enfrentarse a Cell Max en una batalla que pondrá a prueba sus límites.",
     director: "Tetsuro Kodama",
@@ -86,7 +89,7 @@
     posterCarousel : "https://cdn.hobbyconsolas.com/sites/navi.axelspringer.es/public/media/image/2023/02/super-mario-bros-pelicula-2953600.jpg?tf=1920x",
     duration: "1 h 32m",
     rating: "7.0",
-    year: "5 de abril de 2023",
+    releaseDate: "5 de abril de 2023",
     synopsis:
       "Mario y Luigi son transportados al Reino Champiñón, donde deben enfrentarse a Bowser para salvar a Luigi y detener sus planes de conquista.",
     director: "Aaron Horvath, Michael Jelenic",
@@ -99,9 +102,24 @@
     posterCarousel : "https://img.englishcinemabarcelona.com/jE95Cy5ezJ0lBWxuJjTp_sYbUIVxugjqc8Usq3EtxMM/resize:fill:800:450:1:0/gravity:sm/aHR0cHM6Ly9leHBhdGNpbmVtYXByb2QuYmxvYi5jb3JlLndpbmRvd3MubmV0L2ltYWdlcy9hOTgzMzFlOS0zMzU4LTQ1YWEtODZkYi0zMTRiNGEyZTU0N2QuanBn.jpg",
     duration: "2 h 49m",
     rating: "7.6",
-    year: "24 de marzo de 2023",
+    releaseDate: "24 de marzo de 2023",
     synopsis:
       "John Wick busca su libertad enfrentando a la Alta Mesa en un duelo mortal, mientras recorre el mundo enfrentando enemigos implacables y redefiniendo su legado.",
     director: "Chad Stahelski",
   },
 ];
+
+
+async function seed() {
+  try {
+    await sequelize.sync({ alter: true }); 
+    await Movie.bulkCreate(seedMovies);
+    console.log('Películas insertadas correctamente');
+    process.exit();
+  } catch (error) {
+    console.error('Error insertando películas:', error);
+    process.exit(1);
+  }
+}
+
+seed();
