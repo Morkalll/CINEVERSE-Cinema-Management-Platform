@@ -13,12 +13,18 @@ export const Movie = sequelize.define("movie",
         autoIncrement: true
     },
 
-    name:
+    title:
     {
         type: DataTypes.STRING,
         allowNull: false
     },
-
+    
+    genre:
+    {
+        type : DataTypes.STRING,
+        allowNull : false
+    },
+    
     director:
     {
         type: DataTypes.STRING,
@@ -35,12 +41,17 @@ export const Movie = sequelize.define("movie",
         type: DataTypes.INTEGER
     },
 
-    summary:
+    synopsis:
     {
         type: DataTypes.TEXT
     },
 
-    imageURL:
+    poster:
+    {
+        type: DataTypes.STRING
+    },
+
+    posterCarousel:
     {
         type: DataTypes.STRING
     },
@@ -49,7 +60,13 @@ export const Movie = sequelize.define("movie",
     {
         type: DataTypes.BOOLEAN,
         defaultValue: false
+    },
+
+    releaseDate:
+    {
+        type : DataTypes.DATE
     }
+        
 
 })
 
