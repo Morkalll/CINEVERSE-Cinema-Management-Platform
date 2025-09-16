@@ -8,7 +8,6 @@ export const Candy = () => {
 
         <div className="NavBar">
             <NavBar />
-           
             <section className='Candy-Listings'>
                 <CandyListings />
             </section>
