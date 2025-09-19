@@ -6,15 +6,24 @@ import movieRoutes from "./routes/movies.routes.js"
 
 const app = express()
 
-async function main() {
-  try {
+async function main() 
+{
+  try 
+  {
     await sequelize.sync({ alter: true }) // Mejor sintaxis si esto esta antes del app.use
-    app.use(movieRoutes)
+    
+    app.use(express.json())
     app.listen(PORT)
+    app.use(movieRoutes)
+
     console.log(`Server listening on port ${PORT}`)
-  } catch (error) {
+  } 
+
+  catch (error) 
+  {
     console.log('There was an error on initialization', error)
   }
+
 }
 
 main();
