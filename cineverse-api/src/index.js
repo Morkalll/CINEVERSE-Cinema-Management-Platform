@@ -7,6 +7,7 @@ import { loadSQL } from "./loadSql.js";
 
 const app = express();
 
+
 async function main() {
   try {
     // 1. Se asegura que 
@@ -24,6 +25,7 @@ async function main() {
   } catch (error) {
     console.log(" There was an error on initialization", error);
   }
+
 }
 
 main();
