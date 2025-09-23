@@ -67,7 +67,7 @@ export const Login = () =>
         {
             fetch("http://localhost:3000/login", 
             {
-                headers: { "Content-type": "application/json" },
+                headers: { "Content-Type": "application/json" },
                 method: "POST",
                 body: JSON.stringify({ email, password })
             })

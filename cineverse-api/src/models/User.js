@@ -21,7 +21,7 @@ export const User = sequelize.define("user",
 
     email:
     {
-        toye: DataTypes.STRING,
+        type: DataTypes.STRING,
         allowNull: false
     },
 
@@ -36,4 +36,4 @@ export const User = sequelize.define("user",
     timestamps: false
 }
 
-
+)
