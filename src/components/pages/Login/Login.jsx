@@ -10,8 +10,8 @@ export const Login = () =>
 
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
-    const [error, setError] = useState
-    ({
+    const [error, setError] = useState(
+    {
         emailError: "",
         passwordError: "",
     })
@@ -65,7 +65,31 @@ export const Login = () =>
         && error.emailError === "" 
         && error.passwordError === "" )
         {
-            alert(`Sesión iniciada. El email ingresado es: ${email} y la contraseña es ${password}`)
+            fetch("http://localhost:3000/login", 
+            {
+                headers: { "Content-type": "application/json" },
+                method: "POST",
+                body: JSON.stringify({ email, password })
+            })
+
+            .then (async res => 
+            {
+                if (!res.ok)
+                {
+                    const errData = await res.json()
+                    throw new Error(errData.message || "Algo ha salido mal")
+                }
+
+                return res.json()
+            })
+
+            .then(token => 
+            {
+                localStorage.setItem("cineverse-token", token)
+                navigate("/movielistings")
+            })
+
+            .catch(err => console.log(err))
         }
     }
 
