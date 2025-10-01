@@ -1,6 +1,7 @@
 
 import { useState } from "react"
 import { Button, Card, Col, Form, FormGroup, Row } from "react-bootstrap"
+import "./Register.css"
 
 
 export const Register = () =>
