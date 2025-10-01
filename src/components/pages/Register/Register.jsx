@@ -1,6 +1,7 @@
 
 import { useState } from "react"
 import { Button, Card, Col, Form, FormGroup, Row } from "react-bootstrap"
+import { successToast } from "../../../utils/toast";
 
 
 export const Register = () =>
@@ -9,8 +10,8 @@ export const Register = () =>
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [confirmedPassword, setConfirmedPassword] = useState("")
-    const [error, setError] = useState
-    ({
+    const [error, setError] = useState(
+    {
         emailError: "",
         passwordError: "",
         confirmedPasswordError: ""
@@ -86,12 +87,35 @@ export const Register = () =>
         && error.passwordError === "" 
         && error.confirmedPasswordError === "")
         {
-            alert(`Registro completado. El email ingresado es: ${email} y la contraseña es ${password}`)
+            fetch("http://localhost:3000/register", 
+            {
+                headers: { "Content-Type": "application/json" },
+                method: "POST",
+                body: JSON.stringify({ email, password })
+            })
+
+            .then (async res => 
+            {
+                if (!res.ok)
+                {
+                    const errData = await res.json()
+                    throw new Error(errData.message || "Algo ha salido mal")
+                }
+
+                return res.json()
+            })
+            
+            .then(() =>
+            {
+                successToast("¡Usuario creado exitosamente!")
+                navigate("/login")
+            })
+
+            .catch(err => console.log(err))
         }
     }
 
     
-
     return(
 
         <Card className="mt-5 mx-3 p-3 px-5 shadow">
