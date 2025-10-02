@@ -1,31 +1,26 @@
 
-import { Router } from "express"
-import { verifyToken } from "../services/token.services.js"
-import { findAllMovies, findOneMovie, createMovie, updateMovie, deleteMovie } from "../services/movie.services.js"
+// routes/movie.routes.js
+import { Router } from "express";
+import { verifyToken } from "../services/token.services.js";
+import { authorize } from "../services/auth.services.js";
+import { findAllMovies, findOneMovie, createMovie, updateMovie, deleteMovie } from "../services/movie.services.js";
 
+const router = Router();
 
-const router = Router()
- 
-
-/* GET */
-router.get("/movielistings", verifyToken, findAllMovies)
-
+/* GET (listado) */
+router.get("/movielistings", findAllMovies);
 
 /* GET (ID) */
-router.get("/movielistings/:id", verifyToken, findOneMovie)
-
+router.get("/movielistings/:id", findOneMovie);
 
 /* POST */
-router.post("/movielistings", verifyToken, createMovie)
-
+router.post("/movielistings", verifyToken, authorize(["admin", "sysAdmin"]), createMovie);
 
 /* PUT */
-router.put("/movielistings/:id", verifyToken, updateMovie)
-
+router.put("/movielistings/:id", verifyToken, authorize(["admin", "sysAdmin"]), updateMovie);
 
 /* DELETE */
-router.delete("/movielistings/:id", verifyToken, deleteMovie)
+router.delete("/movielistings/:id", verifyToken, authorize(["admin", "sysAdmin"]), deleteMovie);
 
-export default router
-
+export default router;
 
