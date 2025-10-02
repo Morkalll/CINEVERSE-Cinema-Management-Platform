@@ -1,32 +1,39 @@
-import './MovieListings.css';
-import { NavBar } from '../NavBar/NavBar';
-import { useEffect, useState } from 'react';
-import { MovieCard } from '../MovieCard/MovieCard';
-import {MoviesMock} from '../../data/MoviesMock'; 
+import express from 'express'
+import cors from 'cors' // Esto permite el paso de solicitudes desde otros orígenes
+import { PORT } from './config.js'
+import { sequelize } from './db.js'
+import "./models/Movie.js"
+import movieRoutes from "./routes/movie.routes.js" 
+import authRoutes from "./routes/auth.routes.js" 
+import { loadSQL } from './loadSql.js'; // Importación para cargar los datos
 
-export const MovieListings = () => {
-  const [movies, setMovies] = useState([]);
+const app = express();
 
-  useEffect(() => {
-    // Simula la carga desde backend
-    setMovies(MoviesMock);
-  }, []);
+async function main() {
+  try {
+    // 1. Sincronización de la base de datos (con alter: true para actualizar si hay cambios en modelos)
+    await sequelize.sync({ alter: true }); 
 
-  return (
+    // 2. Cargar SQL (Carga inicial o reseteo de datos, si es necesario)
     
-    <>
-    <NavBar />
-    <h1 className="showcase-title"> ──────────────── Cartelera ────────────────</h1>
-    <div className="showcase">
-      {movies.map(movie => (
-        <MovieCard
-          key={movie.id}
-          id={movie.id}
-          title={movie.title}
-          posterUrl={movie.poster}
-        />
-      ))}
-    </div>
-    </>
-  );
-};
+    await loadSQL();
+
+    // 3. Middlewares
+    app.use(express.json()); // Para que lea los cuerpos JSON
+    app.use(cors()); // Middleware CORS
+
+    // 4. Rutas
+    // Ahora usamos las nuevas rutas:
+    app.use('/api', movieRoutes); 
+    app.use('/api', authRoutes); // Agregamos la ruta de autenticación
+
+    // 5. Levantar servidor
+    app.listen(PORT);
+    console.log(`🚀 Server listening on port ${PORT}`);
+
+  } catch (error) {
+    console.log(" There was an error on initialization", error);
+  }
+}
+
+main();
