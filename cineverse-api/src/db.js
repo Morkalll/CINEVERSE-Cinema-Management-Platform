@@ -1,11 +1,11 @@
 
-import { Sequelize } from "sequelize"
-
+import { Sequelize } from "sequelize";
+import { DB_PATH } from "./config.js";
 
 export const sequelize = new Sequelize(
-    {
-        dialect: 'sqlite',
-        storage: 'cineverse-api/movies.db',
-    }
-)
+{
+  dialect: "sqlite",
+  storage: DB_PATH,
+});
+
 

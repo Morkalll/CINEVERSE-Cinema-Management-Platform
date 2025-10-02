@@ -1,99 +1,117 @@
 
-import { Movie } from "../models/Movie.js"
+import { Movie } from "../models/Movie.js";
 
 
-export const findAllMovies = async (req, res) =>
+export const findAllMovies = async (req, res) => 
 {
-    const movies = await Movie.findAll()
-
-    res.json(movies)
-
-}
-
-
-export const findOneMovie = async (req, res) =>
-{
-    const { id } = req.params
-
-    const oneMovie = await Movie.findOne({ where: {  id: id } })
-
-    if (!oneMovie)
+    try 
     {
-        res.status(404).send({ message: "Movie not found" })
+        const movies = await Movie.findAll();
+        return res.json(movies);
+
+    } catch (error) 
+    {
+        console.error(error);
+        return res.status(500).json({ message: "Error interno" });
     }
-
-    res.json(oneMovie)
-
-}
+};
 
 
-export const createMovie = async (req, res) =>
+export const findOneMovie = async (req, res) => 
 {
-    const { title, genre, director, rating, duration, synopsis, poster, posterCarousel, releaseDate, isAvailable } = req.body
-
-    // PONEMOS TÍTULO Y GÉNERO COMO OBLIGATORIOS
-    if (!title || !genre)
+    try 
     {
-        res.status(400).send({ message: "Title and genre fields are required" })
+        const { id } = req.params;
+        const oneMovie = await Movie.findOne({ where: { id } });
+
+        if (!oneMovie) 
+        {
+            return res.status(404).send({ message: "Movie not found" });
+        }
+
+        return res.json(oneMovie);
+
+    } catch (error) 
+    {
+        console.error(error);
+        return res.status(500).json({ message: "Error interno" });
     }
-
-    const newMovie = await Movie.create(
-    {
-        title,
-        genre,
-        director,
-        rating,
-        duration,
-        synopsis,
-        poster,
-        posterCarousel,
-        releaseDate,
-        isAvailable
-    })
-
-    res.json(newMovie)
-
-}
+};
 
 
-export const updateMovie = async (req, res) =>
+export const createMovie = async (req, res) => 
 {
-    const { id } = req.params
-
-    const { title, genre, director, rating, duration, synopsis, poster, posterCarousel, releaseDate, isAvailable } = req.body
-
-    const movieToUpdate = await Movie.findByPk(id)
-
-    await movieToUpdate.update(
+    try 
     {
-        title,
-        genre,
-        director,
-        rating,
-        duration,
-        synopsis,
-        poster,
-        posterCarousel,
-        releaseDate,
-        isAvailable
-    })
+        const { title, genre, director, rating, duration, synopsis, poster, posterCarousel, releaseDate } = req.body;
 
-    await movieToUpdate.save()
+        if (!title || !genre) 
+        {
+            return res.status(400).send({ message: "Title and genre fields are required" });
+        }
 
-    res.json(movieToUpdate)
+        const newMovie = await Movie.create(
+        {
+            title,
+            genre,
+            director,
+            rating,
+            duration,
+            synopsis,
+            poster,
+            posterCarousel,
+            releaseDate
+        });
 
-}
+        return res.status(201).json(newMovie);
+
+    } catch (error) 
+    {
+        console.error(error);
+        return res.status(500).json({ message: "Error interno" });
+    }
+};
 
 
-export const deleteMovie = async (req, res) =>
+export const updateMovie = async (req, res) => 
 {
-    const { id } = req.params
+    try 
+    {
+        const { id } = req.params;
+        const { title, genre, director, rating, duration, synopsis, poster, posterCarousel, releaseDate } = req.body;
 
-    const movieToDelete = await Movie.findByPk(id)
+        const movieToUpdate = await Movie.findByPk(id);
+        if (!movieToUpdate) return res.status(404).json({ message: "Movie not found" });
 
-    await movieToDelete.destroy()
+        await movieToUpdate.update({ title, genre, director, rating, duration, synopsis, poster, posterCarousel, releaseDate });
+        await movieToUpdate.save();
 
-    res.send(`Book with id: ${id} deleted`)
+        return res.json(movieToUpdate);
 
-}
+    } catch (error) 
+    {
+        console.error(error);
+        return res.status(500).json({ message: "Error interno" });
+    }
+};
+
+
+export const deleteMovie = async (req, res) => 
+{
+    try 
+    {
+        const { id } = req.params;
+        const movieToDelete = await Movie.findByPk(id);
+    
+        if (!movieToDelete) return res.status(404).json({ message: "Movie not found" });
+
+        await movieToDelete.destroy();
+        return res.send(`Movie with id: ${id} deleted`);
+
+    } catch (error) 
+    {
+        console.error(error);
+        return res.status(500).json({ message: "Error interno" });
+    }
+};
 

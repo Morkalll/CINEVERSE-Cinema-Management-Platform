@@ -4,7 +4,7 @@ import { sequelize } from "../db.js"
 // SE IMPORTA LA FUNCIÓN CREADA EN ESA RUTA, NO "SEQUELIZE" LITERAL
 
 
-export const Movie = sequelize.define("movie", 
+export const Movie = sequelize.define("Movie", 
 {
     id: 
     {
@@ -56,17 +56,16 @@ export const Movie = sequelize.define("movie",
         type: DataTypes.STRING
     },
 
-    isAvailable:
-    {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false
-    },
-
     releaseDate:
     {
         type : DataTypes.DATE
     }
         
+},
 
-})
+{
+    tableName: "Movies",
+    timestamps: false
+});
+
 
