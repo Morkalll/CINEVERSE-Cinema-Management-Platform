@@ -17,7 +17,7 @@ async function main() {
     
     // 2. Cargar SQL (Carga inicial o reseteo de datos, si es necesario)
     
-    await loadSQL();
+    //await loadSQL();
 
     // 3. Middlewares
 

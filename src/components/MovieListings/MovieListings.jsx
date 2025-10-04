@@ -1,39 +1,41 @@
-import express from 'express'
-import cors from 'cors' // Esto permite el paso de solicitudes desde otros orígenes
-import { PORT } from './config.js'
-import { sequelize } from './db.js'
-import "./models/Movie.js"
-import movieRoutes from "./routes/movie.routes.js" 
-import authRoutes from "./routes/auth.routes.js" 
-import { loadSQL } from './loadSql.js'; // Importación para cargar los datos
+import './MovieListings.css';
 
-const app = express();
+import { useEffect, useState } from 'react';
+import { MovieCard } from '../MovieCard/MovieCard';
 
-async function main() {
-  try {
-    // 1. Sincronización de la base de datos (con alter: true para actualizar si hay cambios en modelos)
-    await sequelize.sync({ alter: true }); 
 
-    // 2. Cargar SQL (Carga inicial o reseteo de datos, si es necesario)
+export const MovieListings = () => {
+  const [movies, setMovies] = useState([]);
+
+  useEffect(() => {
+     const fetchMovies = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/api/movielistings'); // Mover local host 3000 a archivo de config
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        setMovies(await response.json());
+      } catch (error) {
+        
+      }}
+      fetchMovies();
     
-    await loadSQL();
+  }, []);
+      
 
-    // 3. Middlewares
-    app.use(express.json()); // Para que lea los cuerpos JSON
-    app.use(cors()); // Middleware CORS
-
-    // 4. Rutas
-    // Ahora usamos las nuevas rutas:
-    app.use('/api', movieRoutes); 
-    app.use('/api', authRoutes); // Agregamos la ruta de autenticación
-
-    // 5. Levantar servidor
-    app.listen(PORT);
-    console.log(`🚀 Server listening on port ${PORT}`);
-
-  } catch (error) {
-    console.log(" There was an error on initialization", error);
-  }
-}
-
-main();
+  return (
+    <>
+     <h1 className="showcase-title"> ──────────────── Cartelera ────────────────</h1>
+    <div className="showcase">
+      {movies.map(movie => (
+        <MovieCard
+          key={movie.id}
+          id={movie.id}
+          title={movie.title}
+          posterUrl={movie.poster}
+        />
+      ))}
+    </div>
+    </>
+  );
+};
