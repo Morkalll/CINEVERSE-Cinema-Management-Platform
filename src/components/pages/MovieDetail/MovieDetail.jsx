@@ -1,19 +1,38 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { NavBar } from '../../NavBar/NavBar';
-import { MoviesMock } from "../../../data/MoviesMock";
 import './MovieDetail.css';
 
 export const MovieDetail = () => {
   const [movie, setMovie] = useState(null);
+  const [loading, setLoading] = useState(true);
   const { id } = useParams();
 
   useEffect(() => {
-    const foundMovie = MoviesMock.find(item => item.id === parseInt(id));
-    setMovie(foundMovie);
-  }, [id]);
+     const fetchMovie = async (id) => {
+      try {
+        const response = await fetch('http://localhost:3000/api/movielistings/' + id); // Mover local host 3000 a archivo de config
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        setMovie(await response.json());
+      } catch (error) {
+        
+      }
+      finally {setLoading(false);}}
+      fetchMovie(id);
+      
+      
+    
+  }, []);
+        if (loading) {
+          return <div>Cargando...</div>
+        }
 
-  if (!movie) return <h2>Película no encontrada :/</h2>;
+  console.log(movie);
+  const releaseFullYear = new Date(movie.releaseDate).getFullYear();
+  const releaseMonth = new Date(movie.releaseDate).getMonth() + 1;
+  const releaseDay = new Date(movie.releaseDate).getDate();
 
   return (
      <div>
@@ -27,13 +46,13 @@ export const MovieDetail = () => {
             <p><strong>────────────────</strong></p>
             <p><strong>Género:</strong> {movie.genre}</p>
             <p><strong>────────────────</strong></p>
-            <p><strong>Duración:</strong> {movie.duration}</p>
+            <p><strong>Duración:</strong> {movie.duration} minutos</p>
             <p><strong>────────────────</strong></p>
             <p><strong>Calificación:</strong> {movie.rating}</p>
             <p><strong>────────────────</strong></p>
             <p><strong>Director:</strong> {movie.director}</p>
             <p><strong>────────────────</strong></p>
-            <p><strong>Fecha de estreno:</strong> {movie.year}</p>
+            <p><strong>Fecha de estreno:</strong> {releaseDay} / {releaseMonth} / {releaseFullYear}</p>
           </div>
         </div>
         <div className="movie-details-right-side">
