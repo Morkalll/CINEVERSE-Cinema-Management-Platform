@@ -4,6 +4,9 @@ import { useNavigate } from "react-router"
 import { Button, Card, Col, Form, FormGroup, Row } from "react-bootstrap"
 import './Login.css'
 import cineverseLogo from '../../../assets/images/cineverse-logo-without-name.png'
+import { apiRequest } from "../../../services/api"
+import { successToast, errorToast } from "../../../utils/toast"
+
 
 export const Login = () =>
 {
@@ -56,7 +59,7 @@ export const Login = () =>
     }
 
 
-    const handleSubmit = (event) =>
+    const handleSubmit = async (event) =>
     {
         event.preventDefault()
 
@@ -65,31 +68,18 @@ export const Login = () =>
         && error.emailError === "" 
         && error.passwordError === "" )
         {
-            fetch("http://localhost:3000/login", 
+            try 
             {
-                headers: { "Content-Type": "application/json" },
-                method: "POST",
-                body: JSON.stringify({ email, password })
-            })
-
-            .then (async res => 
+                const res = await apiRequest("/auth/login", "POST");
+                localStorage.setItem("token", res.token);
+                successToast("¡Inicio de sesión exitoso!");
+                navigate("/home");
+            } 
+            
+            catch (err) 
             {
-                if (!res.ok)
-                {
-                    const errData = await res.json()
-                    throw new Error(errData.message || "Algo ha salido mal")
-                }
-
-                return res.json()
-            })
-
-            .then(token => 
-            {
-                localStorage.setItem("cineverse-token", token)
-                navigate("/movielistings")
-            })
-
-            .catch(err => console.log(err))
+                errorToast(err.message);
+            }
         }
     }
 
