@@ -1,7 +1,8 @@
 
 import { useState } from "react"
 import { Button, Card, Col, Form, FormGroup, Row } from "react-bootstrap"
-import { successToast } from "../../../utils/toast";
+import { successToast, errorToast } from "../../../utils/toast";
+import { apiRequest } from "../../../services/api";
 
 
 export const Register = () =>
@@ -76,7 +77,7 @@ export const Register = () =>
     }
 
 
-    const handleSubmit = (event) =>
+    const handleSubmit = async (event) =>
     {
         event.preventDefault()
 
@@ -87,32 +88,21 @@ export const Register = () =>
         && error.passwordError === "" 
         && error.confirmedPasswordError === "")
         {
-            fetch("http://localhost:3000/register", 
+            try
             {
-                headers: { "Content-Type": "application/json" },
-                method: "POST",
-                body: JSON.stringify({ email, password })
-            })
+                await apiRequest("/auth/register", "POST")
 
-            .then (async res => 
-            {
-                if (!res.ok)
-                {
-                    const errData = await res.json()
-                    throw new Error(errData.message || "Algo ha salido mal")
-                }
+                successToast("¡Usuario registrado correctamente!");
+                navigate("/login");
 
-                return res.json()
-            })
+            } 
             
-            .then(() =>
+            catch (err) 
             {
-                successToast("¡Usuario creado exitosamente!")
-                navigate("/login")
-            })
-
-            .catch(err => console.log(err))
+                errorToast(err.message);
+            }
         }
+
     }
 
     
