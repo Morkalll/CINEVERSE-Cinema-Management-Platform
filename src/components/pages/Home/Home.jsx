@@ -1,7 +1,7 @@
 import { NavBar } from '../../NavBar/NavBar';
 import { MovieListings } from '../../MovieListings/MovieListings';
 import { MovieCarousel } from '../../Carousel/MovieCarousel';
-import { MoviesMock } from "../../../data/MoviesMock";
+
 import './Home.css';
 
 
@@ -12,9 +12,8 @@ export const Home = () => {
       <NavBar />
 
       <section className="Carousel">
-        <MovieCarousel movies = {MoviesMock}/>
       </section>
-
+      {/*<MovieCarousel />*/}
       <section className="Listings-section">
         <MovieListings />
       </section>

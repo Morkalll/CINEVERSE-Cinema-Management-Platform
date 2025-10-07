@@ -25,6 +25,7 @@ export const MovieListings = () => {
 
   return (
     <>
+     
      <h1 className="showcase-title"> ──────────────── Cartelera ────────────────</h1>
     <div className="showcase">
       {movies.map(movie => (

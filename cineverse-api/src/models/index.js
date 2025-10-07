@@ -1,0 +1,38 @@
+/*Este index sirve para designar las relaciones entre tablas (foreigns key), es buena practica separar
+las relaciones en un archivo.*/
+
+import { Movie } from './Movie.js';
+import { MovieShowing } from './MovieShowing.js';
+import { Ticket } from './Ticket.js';
+import { User } from './User.js';
+
+Movie.hasMany(MovieShowing, {
+  foreignKey: 'movieId',
+  onDelete: 'CASCADE'
+});
+MovieShowing.belongsTo(Movie, {
+  foreignKey: 'movieId'
+});
+
+User.hasMany(Ticket, {
+  foreignKey: 'userId',
+  onDelete: 'CASCADE'
+});
+Ticket.belongsTo(User, {
+  foreignKey: 'userId'
+});
+
+MovieShowing.hasMany(Ticket, {
+  foreignKey: 'movieShowingId',
+  onDelete: 'CASCADE'
+});
+Ticket.belongsTo(MovieShowing, {
+  foreignKey: 'movieShowingId'
+});
+
+export {
+  Movie,
+  MovieShowing,
+  Ticket,
+  User
+};
