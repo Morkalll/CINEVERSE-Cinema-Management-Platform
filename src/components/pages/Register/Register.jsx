@@ -1,5 +1,6 @@
 
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { Button, Card, Col, Form, FormGroup, Row } from "react-bootstrap"
 import { successToast, errorToast } from "../../../utils/toast";
 import { apiRequest } from "../../../services/api";
@@ -7,16 +8,36 @@ import { apiRequest } from "../../../services/api";
 
 export const Register = () =>
 {
-
+    const [username, setUsername] = useState("")
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [confirmedPassword, setConfirmedPassword] = useState("")
     const [error, setError] = useState(
     {
+        usernameError: "",
         emailError: "",
         passwordError: "",
         confirmedPasswordError: ""
     })
+
+
+    const handleUsernameChange = (event) =>
+    {
+        const usernameValue = event.target.value
+
+        setUsername(usernameValue)
+
+        if (usernameValue.trim().length < 5) 
+        {
+            setError({...error, usernameError: "El nombre de usuario debe tener mínimo 5 caracteres"})
+        }
+
+        else 
+        {
+            setError({...error, usernameError: ""})
+        }
+
+    }
 
 
     const handleEmailChange = (event) =>
@@ -77,20 +98,25 @@ export const Register = () =>
     }
 
 
+    const navigate = useNavigate()
+
+
     const handleSubmit = async (event) =>
     {
         event.preventDefault()
 
-        if (email.trim() !== ""
+        if (username.trim() !== ""
+        && email.trim() !== ""
         && password.trim() !== ""
         && confirmedPassword.trim() !== ""
+        && error.usernameError === ""
         && error.emailError === "" 
         && error.passwordError === "" 
         && error.confirmedPasswordError === "")
         {
             try
             {
-                await apiRequest("/auth/register", "POST")
+                await apiRequest("/auth/register", "POST", { username, email, password })
 
                 successToast("¡Usuario registrado correctamente!");
                 navigate("/login");
@@ -124,6 +150,25 @@ export const Register = () =>
                 <Row>
                     
                     <Form onSubmit={handleSubmit} noValidate>
+
+
+                        <FormGroup className="mb-4">
+
+
+                            <Form.Control 
+                                placeholder="Ingresar nombre de usuario"
+                                onChange={handleUsernameChange}
+                                value={username}
+                            />
+                            
+                            {error.usernameError && 
+                            (
+                                <div className="text-danger">
+                                    {error.usernameError}
+                                </div>
+                            )}
+
+                        </FormGroup>
 
 
                         <FormGroup className="mb-4">

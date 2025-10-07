@@ -12,9 +12,9 @@ export const User = sequelize.define("user",
       autoIncrement: true,
     },
 
-    name: {
+    username: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
     },
 
     email: {

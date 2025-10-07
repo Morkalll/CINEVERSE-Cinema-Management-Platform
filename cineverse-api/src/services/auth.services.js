@@ -16,7 +16,9 @@ export const authorize = (allowedRoles = []) => (req, res, next) =>
 
         next();
 
-    } catch (err) 
+    } 
+    
+    catch (err) 
     {
         console.error("Authorize error:", err);
         return res.status(500).json({ message: "Error interno" });

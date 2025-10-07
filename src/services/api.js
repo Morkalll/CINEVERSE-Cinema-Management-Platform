@@ -14,10 +14,17 @@ export async function apiRequest(endpoint, method = "GET", data = null, token = 
     }
 
 
-    if (data) options.body = JSON.stringify(data)
-    if (token) options.headers.Authorization = `Bearer ${token}`
+    if (data) 
+    {
+        options.body = JSON.stringify(data)
+    }   
+           
+    if (token) 
+    {
+        options.headers.Authorization = `Bearer ${token}`
+    }
 
-
+    
     const response = await fetch(`${API_URL}${endpoint}`, options)
 
 

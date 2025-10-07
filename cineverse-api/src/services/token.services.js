@@ -19,7 +19,9 @@ export const verifyToken = (req, res, next) =>
         req.user = payload;
         next();
 
-    } catch (error) 
+    } 
+    
+    catch (error) 
     {
         return res.status(403).json({ message: "No posee permisos correctos" });
     } 

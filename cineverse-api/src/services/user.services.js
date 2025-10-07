@@ -11,7 +11,7 @@ export const registerUser = async (req, res) =>
     try 
     {
 
-        const { name, email, password, role } = req.body;
+        const { username, email, password, role } = req.body;
 
         if (!email || !password) 
         {
@@ -31,7 +31,7 @@ export const registerUser = async (req, res) =>
 
         const newUser = await User.create(
         {
-            name,
+            username,
             email,
             password: hashedPassword,
             role: role || "user",
@@ -52,7 +52,7 @@ export const loginUser = async (req, res) =>
 {
 
     try 
-    {
+    {   console.log("LOGIN req.body:", req.body)
         const { email, password } = req.body;
 
         if (!email || !password) 
@@ -82,7 +82,9 @@ export const loginUser = async (req, res) =>
 
         return res.json({ token });
 
-    } catch (error) 
+    } 
+    
+    catch (error) 
     {
         console.error("Error loginUser:", error);
         return res.status(500).json({ message: "Error interno" });

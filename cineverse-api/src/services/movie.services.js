@@ -65,7 +65,9 @@ export const createMovie = async (req, res) =>
 
         return res.status(201).json(newMovie);
 
-    } catch (error) 
+    } 
+    
+    catch (error) 
     {
         console.error(error);
         return res.status(500).json({ message: "Error interno" });
@@ -88,7 +90,9 @@ export const updateMovie = async (req, res) =>
 
         return res.json(movieToUpdate);
 
-    } catch (error) 
+    } 
+    
+    catch (error) 
     {
         console.error(error);
         return res.status(500).json({ message: "Error interno" });
@@ -108,7 +112,9 @@ export const deleteMovie = async (req, res) =>
         await movieToDelete.destroy();
         return res.send(`Movie with id: ${id} deleted`);
 
-    } catch (error) 
+    } 
+    
+    catch (error) 
     {
         console.error(error);
         return res.status(500).json({ message: "Error interno" });

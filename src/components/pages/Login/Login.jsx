@@ -1,6 +1,6 @@
 
 import { useState } from "react"
-import { useNavigate } from "react-router"
+import { useNavigate } from "react-router-dom"
 import { Button, Card, Col, Form, FormGroup, Row } from "react-bootstrap"
 import './Login.css'
 import cineverseLogo from '../../../assets/images/cineverse-logo-without-name.png'
@@ -70,7 +70,7 @@ export const Login = () =>
         {
             try 
             {
-                const res = await apiRequest("/auth/login", "POST");
+                const res = await apiRequest("/auth/login", "POST", { email, password });
                 localStorage.setItem("token", res.token);
                 successToast("¡Inicio de sesión exitoso!");
                 navigate("/home");
