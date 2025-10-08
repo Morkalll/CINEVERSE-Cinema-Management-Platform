@@ -2,13 +2,22 @@ import './CandyListings.css';
 
 import { useEffect, useState } from 'react';
 import { CandyCard } from '../CandyCard/CandyCard';
-import { CandyMock } from '../../data/CandyMock.js';
+
 
 export const CandyListings = () => {
     const [candy, setCandy] = useState([]);
     useEffect(() => {
-        // Simula la carga desde backend
-        setCandy(CandyMock);
+      const fetchCandy = async () => {
+        try {
+            const response = await fetch('http://localhost:3000/api/candylistings'); // Mover local host 3000 a archivo de config
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            setCandy(await response.json());
+        } catch (error) {
+        
+        }}
+        fetchCandy();
     }, []);
 
     return (
@@ -20,7 +29,7 @@ export const CandyListings = () => {
                     name={candy.name}
                     image={candy.image}
                     description={candy.description}
-                    available={candy.available}
+                    stock={candy.stock}
                     price={candy.price}
                 />
             ))}

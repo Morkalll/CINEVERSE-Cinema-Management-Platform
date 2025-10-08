@@ -54,6 +54,7 @@
 
 .nav-link:hover {
   text-shadow: 0 0 10px #ff00cc, 0 0 20px #9900ff;
+  transform: scale(1.05);
 }
 
 

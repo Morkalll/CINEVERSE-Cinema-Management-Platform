@@ -1,4 +1,6 @@
 import { Movie } from './models/Movie.js';
+import { MovieShowing } from './models/MovieShowing.js';
+import { Candy } from './models/Candy.js';
 import { User } from './models/User.js';
 import { sequelize } from './db.js';
 
@@ -97,4 +99,139 @@ await Movie.bulkCreate([
     }
 ]);
 
-console.log('¡Películas insertadas correctamente!');
+await MovieShowing.bulkCreate([
+    {
+    movieId: 1, // Rambo
+    showtime: new Date('2025-10-07T18:00:00'),
+    screenName: 'Sala 1',
+    capacity: 100,
+    ticketPrice: 1200.00,
+    format: '2D'
+  },
+  {
+    movieId: 2, // Fantastic 4
+    showtime: new Date('2025-10-07T20:30:00'),
+    screenName: 'Sala 2',
+    capacity: 120,
+    ticketPrice: 1500.00,
+    format: 'IMAX'
+  },
+  {
+    movieId: 3, // Spiderman
+    showtime: new Date('2025-10-08T17:00:00'),
+    screenName: 'Sala 3',
+    capacity: 90,
+    ticketPrice: 1300.00,
+    format: '3D'
+  },
+  {
+    movieId: 4, // Bloodsport
+    showtime: new Date('2025-10-08T19:45:00'),
+    screenName: 'Sala 1',
+    capacity: 100,
+    ticketPrice: 1100.00,
+    format: '2D'
+  },
+  {
+    movieId: 5, // Avatar
+    showtime: new Date('2025-10-09T21:00:00'),
+    screenName: 'Sala 4',
+    capacity: 150,
+    ticketPrice: 1600.00,
+    format: 'IMAX'
+  },
+  {
+    movieId: 6, // Dragon Ball
+    showtime: new Date('2025-10-09T16:30:00'),
+    screenName: 'Sala 2',
+    capacity: 120,
+    ticketPrice: 1250.00,
+    format: '4D'
+  },
+  {
+    movieId: 7, // Super Mario
+    showtime: new Date('2025-10-10T15:00:00'),
+    screenName: 'Sala 3',
+    capacity: 80,
+    ticketPrice: 1000.00,
+    format: '2D'
+  },
+  {
+    movieId: 8, // John Wick 4
+    showtime: new Date('2025-10-10T22:00:00'),
+    screenName: 'Sala 4',
+    capacity: 120,
+    ticketPrice: 1400.00,
+    format: '3D'
+  },
+]),
+
+  await Candy.bulkCreate([
+   {
+    id: 1,
+    name: "Pochoclos Grandes",
+    price: 2500,
+    stock: 30,
+    image: "https://http2.mlstatic.com/D_NQ_NP_818319-MLA86689449233_062025-O.webp",
+    description:
+      "Baldes de pochoclos mantecosos y recién hechos, ideales para disfrutar la película."
+  },
+  {
+    id: 2,
+    name: "Nachos con Queso",
+    price: 3000,
+    stock: 50,
+    image: "https://www.divinacocina.es/wp-content/uploads/nachos-con-salsa-queso.jpg",
+    description:
+      "Totopos de maíz crocantes acompañados con salsa de queso cheddar caliente."
+  },
+  {
+    id: 3,
+    name: "Pancho Clásico",
+    price: 2000,
+    stock: 40,
+    image: "https://www.dygcombos.com.ar/fotos/1580493378panchos.jpg",
+    description:
+      "Pancho con salchicha tipo viena en pan suave, con kétchup y mostaza a elección."
+  },
+  {
+    id: 4,
+    name: "Pizza Individual Muzza",
+    price: 3500,
+    stock: 35,
+    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTGwczl4P-5X1lnIfLQ8Rwpfeiv-kBBCodMJQ&s",
+    description:
+      "Porción individual de pizza de mozzarella con salsa de tomate y orégano."
+  },
+  {
+    id: 5,
+    name: "Gaseosa Grande",
+    price: 1800,
+    stock: 70,
+    image: "https://http2.mlstatic.com/D_NQ_NP_778437-MLU73713842898_012024-O.webp",
+    description:
+      "Vaso grande de gaseosa a elección: Coca-Cola, Sprite o Fanta."
+  },
+  {
+    id: 6,
+    name: "Chocolate Block",
+    price: 1500,
+    stock: 80,
+    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT1I-IFnElK96U7kwMxwKWf7wLLPolviKpEYQ&s",
+    description:
+      "Barra de chocolate con leche, ideal para los amantes de lo dulce."
+  },
+  {
+    id: 7,
+    name: "Helado en Vaso",
+    price: 2200,
+    stock: 45,
+    image: "https://www.shutterstock.com/image-photo/three-glasses-ice-cream-strawberry-260nw-2463468307.jpg",
+    description:
+      "Vaso con helado cremoso de vainilla o chocolate, con salsa de topping."
+  }
+
+  ]),
+
+
+console.log('¡Películas insertadas correctamente y funciones creadas!');

@@ -36,6 +36,11 @@ export const User = sequelize.define("user",
       allowNull: false,
       defaultValue: "user", // Valores posibles: "user", "admin" o "sysAdmin"
     },
+
+    movieTickets: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    }
 },
 
 {

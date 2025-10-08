@@ -4,9 +4,12 @@ import cors from 'cors' // Esto permite el paso de solicitudes desde otros oríg
 import { PORT } from './config.js'
 import { sequelize } from './db.js'
 import "./models/Movie.js"
+import "./models/MovieShowing.js"
+import "./models/Ticket.js"
+import "./models/Candy.js"
 import movieRoutes from "./routes/movie.routes.js" 
 import authRoutes from "./routes/auth.routes.js";
-import { loadSQL } from './loadSql.js'; // Importación para cargar los datos
+
 
 const app = express();
 
