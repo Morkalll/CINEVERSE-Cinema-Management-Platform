@@ -39,7 +39,6 @@ export const User = sequelize.define("user",
 
     movieTickets: {
       type: DataTypes.INTEGER,
-      allowNull: false,
     }
 },
 

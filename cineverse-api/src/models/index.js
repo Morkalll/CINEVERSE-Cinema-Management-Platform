@@ -36,6 +36,11 @@ Screen.hasMany(MovieShowing, {
   onDelete: 'SET NULL'
 });
 
+MovieShowing.belongsTo (Screen,{
+  foreignKey: 'screenID',
+
+});
+
 
 export {
   Movie,

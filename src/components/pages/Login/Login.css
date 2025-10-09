@@ -18,6 +18,13 @@
   height: 300;
 }
 
+.login-alien {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* antes: center -> ahora empuja la imagen hacia la derecha */
+  padding-right: 30rem;       /* ajusta el espacio desde el borde derecho según necesites */
+}
 
 .card h5 {
   font-size: 24px;

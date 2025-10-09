@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom"
 import { Button, Card, Col, Form, FormGroup, Row } from "react-bootstrap"
 import './Login.css'
 import cineverseLogo from '../../../assets/images/cineverse-logo-without-name.png'
+import TatinAlien1 from '../../../assets/images/Alien 3.png'
 import { apiRequest } from "../../../services/api"
 import { successToast, errorToast } from "../../../utils/toast"
 
@@ -103,6 +104,7 @@ export const Login = () =>
 
                 <Row className="mb-3 justify-content-center">
                     <img src={cineverseLogo} alt="Cineverse Logo" className="login-logo" />
+                    <img src={TatinAlien1} alt="Tatin el alien" className="login-alien" />
                 </Row>
                 
                 
