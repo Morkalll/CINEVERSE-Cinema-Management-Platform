@@ -1,0 +1,94 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+
+.movie-detail-container {
+  width: 900px;
+  display: flex;
+  align-items: flex-start;
+  gap: 60px;
+  padding: 60px 40px;
+  background: linear-gradient(120deg, #1a0036 0%, #000000 100%);
+  color: #e0e0e0;
+  font-family: 'Bebas Neue', sans-serif;
+  border-radius: 24px;
+  box-shadow: 0 0 40px 0 rgba(153,0,255,0.25), 0 0 0 2px #5100ff33;
+  margin: 40px auto;
+}
+
+.movie-detail-container img {
+  width: 320px;
+  border-radius: 16px;
+  box-shadow: 0 0 32px 0 #ff00cc88, 0 0 0 4px #9900ff55;
+  flex-shrink: 0;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.movie-detail-container img:hover {
+  box-shadow: 0 0 48px 0 #ff00ccbb, 0 0 0 6px #9900ff99;
+}
+
+/* Contenedor del poster y la info debajo */
+.poster-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+/* Info debajo del póster */
+.extra-info {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 320px;
+  text-align: left;
+  background: rgba(30,0,50,0.6);
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: 0 0 12px 0 #5100ff44;
+}
+
+.extra-info p {
+  font-size: 1.18rem;
+  line-height: 1.7;
+  margin: 0;
+  color: #e0e0e0;
+  letter-spacing: 0.5px;
+}
+
+.extra-info strong {
+  background: linear-gradient(90deg, #ff00cc, #9900ff, #5100ff);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 6px #ff00cc55;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+/* Título a la derecha */
+.movie-detail-container .movie-title{
+  font-size: 2.6rem;
+  color: #fff;
+  text-transform: uppercase;
+  margin: 0 0 18px 0;
+  letter-spacing: 2px;
+  background: linear-gradient(90deg, #ff00cc, #9900ff, #5100ff);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 10px #9900ff55;
+  font-family: 'Bebas Neue', sans-serif;
+}
+
+@media (max-width: 1100px) {
+  .movie-detail-container {
+    width: 98vw;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    padding: 30px 10px;
+  }
+  .movie-detail-container img {
+    width: 90vw;
+    max-width: 320px;
+  }
+}
