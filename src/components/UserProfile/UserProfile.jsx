@@ -1,7 +1,10 @@
-import './Profile.css';
 
-export const Profile = () => {
+import { useState, useEffect } from 'react';
+import './UserProfile.css';
+
+export const UserProfile = () => {
     const [profile, setProfile] = useState(null);
+
     useEffect(() => {
         const userID = localStorage.getItem("userID");
 
@@ -11,16 +14,18 @@ export const Profile = () => {
             .catch((err) => console.error(err));
     },
 
-    []);
+        []);
 
-    if(!profile){
+    if (!profile) {
         return <div className="front">Cargando perfil...</div>
     }
+
+    return (
+        <div className='front'>
+            <h2>{profile.name}</h2>
+            <p>Email: {profile.email}</p>
+        </div>
+    );
 }
 
-return (
-    <div className='front'>
-        <h2>{profile.name}</h2>
-        <p>Email: {profile.email}</p>
-    </div>
-);
+
