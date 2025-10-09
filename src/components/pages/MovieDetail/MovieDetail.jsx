@@ -64,6 +64,7 @@ export const MovieDetail = () => {
 
           <div className="section-format">
             <h3>FORMATOS</h3>
+            Select
           </div>
 
           <button className="buy-button">
