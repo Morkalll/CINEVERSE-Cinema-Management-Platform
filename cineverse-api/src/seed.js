@@ -1,6 +1,7 @@
 import { Movie } from './models/Movie.js';
 import { MovieShowing } from './models/MovieShowing.js';
-import { Candy } from './models/Candy.js';
+import { Products } from './models/Products.js';
+import { Screen } from './models/Screen.js';
 import { User } from './models/User.js';
 import { sequelize } from './db.js';
 
@@ -166,7 +167,7 @@ await MovieShowing.bulkCreate([
   },
 ]),
 
-  await Candy.bulkCreate([
+  await Products.bulkCreate([
    {
     id: 1,
     name: "Pochoclos Grandes",
@@ -232,6 +233,35 @@ await MovieShowing.bulkCreate([
   }
 
   ]),
+
+
+  await Screen.bulkCreate([
+   
+  {
+    id: 1,
+    name: "Sala 1",
+    capacity : 150
+    
+  },
+  {
+    id: 2,
+    name: "Sala 2",
+    capacity : 150
+    
+  },
+  {
+    id: 3,
+    name: "Sala 3",
+    capacity : 150
+    
+  },
+  {
+    id: 4,
+    name: "Sala 4",
+    capacity : 150
+    
+  },
+]),
 
 
 console.log('¡Películas insertadas correctamente y funciones creadas!');

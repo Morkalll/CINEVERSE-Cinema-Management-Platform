@@ -4,7 +4,7 @@ import { sequelize } from "../db.js"
 
 
 
-export const Candy = sequelize.define("Candy", 
+export const Products = sequelize.define("Products", 
 {
     id: 
     {
@@ -47,6 +47,6 @@ export const Candy = sequelize.define("Candy",
 },
     
 {
-    tableName: "Candy",
+    tableName: "Products",
     timestamps: false
 });
