@@ -9,13 +9,13 @@ export const CandyListings = () => {
     useEffect(() => {
       const fetchCandy = async () => {
         try {
-            const response = await fetch('http://localhost:3000/api/candylistings'); // Mover local host 3000 a archivo de config
+            const response = await fetch('http://localhost:3000/api/candy'); // Mover local host 3000 a archivo de config
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             setCandy(await response.json());
         } catch (error) {
-        
+        console.error("Error al obtener los products:", error);
         }}
         fetchCandy();
     }, []);

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom"
 import { Button, Card, Col, Form, FormGroup, Row } from "react-bootstrap"
 import { successToast, errorToast } from "../../../utils/toast";
 import { apiRequest } from "../../../services/api";
+import TatinAlien2 from '../../../assets/images/Alien 2.png'
 
 export const Register = () => {
     const [username, setUsername] = useState("")
@@ -94,6 +95,7 @@ export const Register = () => {
             <Card.Body>
                 <Row className="mb-2">
                     <h5>Por favor, ingrese sus datos para el registro:</h5>
+                    <img src={TatinAlien2} alt="Alien" className="Alien-image" />
                 </Row>
 
                 <Row>

@@ -53,6 +53,7 @@ export const Login = () => {
 
                     <Row className="mb-3 justify-content-center">
                         <img src={cineverseLogo} alt="Cineverse Logo" className="login-logo" />
+                        <img src={TatinAlien1} alt="Alien" className="Alien-image" />
                     </Row>
 
 
