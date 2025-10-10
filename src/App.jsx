@@ -7,35 +7,38 @@ import { TestRoom } from './components/pages/TestRoom';
 import { Login } from './components/pages/Login/Login';
 import { Register } from './components/pages/Register/Register';
 import { Home } from './components/pages/Home/Home';
-import { MovieListings } from './components/MovieListings/MovieListings';
+import { MovieListingsPage } from './components/pages/MovieListingsPage/MovieListingsPage';
 import { MovieDetail } from './components/pages/MovieDetail/MovieDetail';
 import { Profile } from './components/pages/Profile/Profile';
 import { Candy } from './components/pages/Candy/Candy';
 import { NotFound } from './components/pages/NotFound/NotFound';
+import { CheckoutPage } from "./components/pages/Cart/CheckoutPage";
 
 
 
-function App() 
-{
+
+
+function App() {
   return (
 
     <div>
 
       <Routes>
 
-        <Route path='/' element={<TestRoom/>} />
-        <Route path='login' element={<Login/>} />
-        <Route path='register' element={<Register/>} />
-        <Route path='home' element={<Home/>} />
-        <Route path='movielistings' element={<MovieListings/>} />
-        <Route path = "/movie/:id" element = {<MovieDetail/>} />
-        <Route path='profile' element={<Profile/>} />
-        <Route path='candy' element={<Candy/>} />
-        <Route path='*' element={<NotFound/>} />
+        <Route path='/' element={<TestRoom />} />
+        <Route path='login' element={<Login />} />
+        <Route path='register' element={<Register />} />
+        <Route path='home' element={<Home />} />
+        <Route path='movielistings' element={<MovieListingsPage />} />
+        <Route path="/movie/:id" element={<MovieDetail />} />
+        <Route path='profile' element={<Profile />} />
+        <Route path='candy' element={<Candy />} />
+        <Route path='*' element={<NotFound />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
 
       </Routes>
 
-      <ToastContainer/>
+      <ToastContainer />
 
     </div>
 

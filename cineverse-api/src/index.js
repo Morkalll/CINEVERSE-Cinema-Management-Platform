@@ -8,8 +8,11 @@ import "./models/MovieShowing.js"
 import "./models/Ticket.js"
 import "./models/Products.js"
 import "./models/Screen.js"
-import movieRoutes from "./routes/movie.routes.js" 
+import movieRoutes from "./routes/movie.routes.js"
 import authRoutes from "./routes/auth.routes.js";
+import orderRoutes from "./routes/order.routes.js";
+
+
 
 
 const app = express();
@@ -17,10 +20,10 @@ const app = express();
 async function main() {
   try {
     // 1. Sincronización de la base de datos (con alter: true para actualizar si hay cambios en modelos)
-    await sequelize.sync({ alter: true }); 
-    
+    await sequelize.sync({ alter: true });
+
     // 2. Cargar SQL (Carga inicial o reseteo de datos, si es necesario)
-    
+
     //await loadSQL();
 
     // 3. Middlewares
@@ -31,13 +34,14 @@ async function main() {
     // 4. Rutas con prefijos
     app.use("/api/auth", authRoutes);
     app.use('/api', movieRoutes);
+    app.use("/api/orders", orderRoutes);
+
 
     // 5. Levantar servidor
     app.listen(PORT);
     console.log(`🚀 Server listening on port ${PORT}`);
 
-  } catch (error) 
-  {
+  } catch (error) {
     console.log(" There was an error on initialization", error);
   }
 }

@@ -3,46 +3,42 @@ import { Button } from "react-bootstrap"
 import { useNavigate } from "react-router"
 
 
-export const TestRoom = () =>
-{
+export const TestRoom = () => {
 
 
     const navigate = useNavigate()
 
 
-    const goToLoginHandler = () =>
-    {
+    const goToLoginHandler = () => {
         navigate("/login")
     }
 
-    const goToRegisterHandler = () =>
-    {
+    const goToRegisterHandler = () => {
         navigate("/register")
     }
 
-    const goToHomeHandler = () =>
-    {
+    const goToHomeHandler = () => {
         navigate("/home")
     }
 
-    const goToMovieListingsHandler = () =>
-    {
+    const goToMovieListingsHandler = () => {
         navigate("/movielistings")
     }
 
-    const goToProfileHandler = () =>
-    {
+    const goToProfileHandler = () => {
         navigate("/profile")
     }
 
-    const goToCandyHandler = () =>
-    {
+    const goToCandyHandler = () => {
         navigate("/candy")
     }
 
-    const goToNotFoundHandler = () =>
-    {
+    const goToNotFoundHandler = () => {
         navigate("/notfound")
+    }
+
+    const goToCheckoutHandler = () => {
+        navigate("/checkout")
     }
 
 
@@ -50,7 +46,7 @@ export const TestRoom = () =>
 
 
 
-    return(
+    return (
 
         <div className="text-center mt-3">
 
@@ -84,6 +80,10 @@ export const TestRoom = () =>
 
             <Button className="text-center" onClick={goToNotFoundHandler}>
                 Not Found
+            </Button>
+
+            <Button className="text-center" onClick={goToCheckoutHandler}>
+                Checkout
             </Button>
 
 

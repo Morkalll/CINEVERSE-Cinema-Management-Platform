@@ -96,13 +96,21 @@ export const Login = () => {
 
                             <Row>
 
-                                <Col />
 
                                 <Col md={6} className="d-flex-justify-content-end">
 
                                     <Button variant="secondary" type="submit">
                                         Iniciar sesión
                                     </Button>
+
+                                </Col>
+
+
+                                <Col>
+
+                                    <section>
+                                        ¿No tienes cuenta?
+                                    </section>
 
                                     <Button variant="secondary" onClick={goToRegisterHandler}>
                                         Registrarse
