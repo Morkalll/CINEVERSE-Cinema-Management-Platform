@@ -5,6 +5,7 @@ import { Movie } from './Movie.js';
 import { MovieShowing } from './MovieShowing.js';
 import { Ticket } from './Ticket.js';
 import { User } from './User.js';
+import { Screen } from './Screen.js';
 
 Movie.hasMany(MovieShowing, {
   foreignKey: 'movieId',
@@ -30,9 +31,16 @@ Ticket.belongsTo(MovieShowing, {
   foreignKey: 'movieShowingId'
 });
 
+Screen.hasMany(MovieShowing, {
+  foreignKey: 'screenId',
+  onDelete: 'SET NULL'
+});
+
+
 export {
   Movie,
   MovieShowing,
   Ticket,
-  User
+  User,
+  Screen
 };

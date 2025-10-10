@@ -30,13 +30,6 @@ export const MovieShowing = sequelize.define("MovieShowing",
         allowNull: false,
     },
 
-    
-    capacity:
-    {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    },
-    
     ticketPrice:
     {
         type: DataTypes.FLOAT, 

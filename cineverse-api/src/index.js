@@ -6,7 +6,8 @@ import { sequelize } from './db.js'
 import "./models/Movie.js"
 import "./models/MovieShowing.js"
 import "./models/Ticket.js"
-import "./models/Candy.js"
+import "./models/Products.js"
+import "./models/Screen.js"
 import movieRoutes from "./routes/movie.routes.js" 
 import authRoutes from "./routes/auth.routes.js";
 

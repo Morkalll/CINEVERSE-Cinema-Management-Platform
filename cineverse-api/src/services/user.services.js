@@ -65,12 +65,22 @@ export const loginUser = async (req, res) => {
         }
 
         // GENERACIÓN DE TOKEN con id y role
-        const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET,
+        const token = jwt.sign({ id: user.id, email: user.email, username: user.username, role: user.role }, JWT_SECRET,
             {
                 expiresIn: "1h",
             });
 
-        return res.json({ token });
+
+        return res.json({
+            token,
+            user: {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                role: user.role,
+            },
+        });
+
 
     }
 
@@ -81,3 +91,16 @@ export const loginUser = async (req, res) => {
 };
 
 
+export const getUser = async (req, res) => {
+    const user = await User.findByPk(req.params.id);
+
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    res.json({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role
+    });
+
+};

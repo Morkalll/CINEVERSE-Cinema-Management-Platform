@@ -4,185 +4,124 @@ import { useNavigate } from "react-router-dom"
 import { Button, Card, Col, Form, FormGroup, Row } from "react-bootstrap"
 import './Login.css'
 import cineverseLogo from '../../../assets/images/cineverse-logo-without-name.png'
-import { apiRequest } from "../../../services/api"
 import { successToast, errorToast } from "../../../utils/toast"
+import { useAuth } from "../../../context/AuthContext";
+import { NavBar } from "../../NavBar/NavBar"
 
 
-export const Login = () =>
-{
+export const Login = () => {
 
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
-    const [error, setError] = useState(
-    {
-        emailError: "",
-        passwordError: "",
-    })
+
+    const { login } = useAuth();
 
 
-    const handleEmailChange = (event) =>
-    {
-        const emailValue = event.target.value
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
-
-        setEmail(emailValue)
-
-        if (!emailRegex.test(emailValue))
-        {
-            setError({...error, emailError: "Ingrese un email válido"})
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const email = e.target.email.value;
+        const password = e.target.password.value;
+        const result = await login(email, password);
+        if (result.success) {
+            successToast("¡Inicio de sesión exitoso!");
+            navigate("/profile");
+        } else {
+            errorToast(result.error || "Error al iniciar sesión");
         }
-
-        else
-        {
-            setError({...error, emailError: ""})
-        }
-
-    }
+    };
 
 
-    const handlePasswordChange = (event) =>
-    {
-        const passwordValue = event.target.value
-
-        setPassword(passwordValue)
-
-        if (passwordValue.trim().length < 8) 
-        {
-            setError({...error, passwordError: "La contraseña debe tener mínimo 8 caracteres"})
-        }
-
-        else 
-        {
-            setError({...error, passwordError: ""})
-        }
-
-    }
-
-
-    const handleSubmit = async (event) =>
-    {
-        event.preventDefault()
-
-        if (email.trim() !== ""
-        && password.trim() !== ""
-        && error.emailError === "" 
-        && error.passwordError === "" )
-        {
-            try 
-            {
-                const res = await apiRequest("/auth/login", "POST", { email, password });
-                localStorage.setItem("token", res.token);
-                successToast("¡Inicio de sesión exitoso!");
-                navigate("/home");
-            } 
-            
-            catch (err) 
-            {
-                errorToast(err.message);
-            }
-        }
-    }
-
-    
 
     const navigate = useNavigate()
 
-    
-    const goToRegisterHandler = () =>
-    {
+
+    const goToRegisterHandler = () => {
         navigate("/register")
     }
 
 
 
-    return(
+    return (
+        <div className="NavBar">
 
-        <Card className="mt-5 mx-3 p-3 px-5 shadow">
+            <NavBar />
 
-            <Card.Body>
+            <Card className="mt-5 mx-3 p-3 px-5 shadow">
 
-                <Row className="mb-3 justify-content-center">
-                    <img src={cineverseLogo} alt="Cineverse Logo" className="login-logo" />
-                </Row>
-                
-                
-                <Row className="mb-2">
-                    <h5>
-                        ¡Bienvenido a CINEVERSE!
-                    </h5>
-                </Row>
+                <Card.Body>
+
+                    <Row className="mb-3 justify-content-center">
+                        <img src={cineverseLogo} alt="Cineverse Logo" className="login-logo" />
+                    </Row>
 
 
-                <Row>
-                    
-                    <Form onSubmit={handleSubmit} noValidate>
+                    <Row className="mb-2">
+                        <h5>
+                            ¡Bienvenido a CINEVERSE!
+                        </h5>
+                    </Row>
 
 
-                        <FormGroup className="mb-4">
-                            
-                            <Form.Control 
-                                placeholder="Ingresar email"
-                                onChange={handleEmailChange}
-                                value={email}
-                            />
+                    <Row>
 
-                            {error.emailError && 
-                            (
-                                <div className="text-danger">
-                                    {error.emailError}
-                                </div>
-                            )}
-
-                        </FormGroup>
+                        <Form onSubmit={handleSubmit} noValidate>
 
 
-                        <FormGroup className="mb-4">
+                            <FormGroup className="mb-4">
 
-                            <Form.Control 
-                                type="password" 
-                                placeholder="Ingresar contraseña"
-                                onChange={handlePasswordChange}
-                                value={password}
-                            />
-                            
-                            {error.passwordError && 
-                            (
-                                <div className="text-danger">
-                                    {error.passwordError}
-                                </div>
-                            )}
+                                <Form.Control
+                                    name="email"
+                                    placeholder="Ingresar email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                />
 
-                        </FormGroup>
+                            </FormGroup>
 
 
-                        <Row>
+                            <FormGroup className="mb-4">
 
-                            <Col/>
+                                <Form.Control
+                                    name="password"
+                                    type="password"
+                                    placeholder="Ingresar contraseña"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
 
-                            <Col md={6} className="d-flex-justify-content-end">
+                                />
 
-                                <Button variant="secondary" type="submit">
-                                    Iniciar sesión
-                                </Button>
-
-                                <Button variant="secondary" onClick={goToRegisterHandler}>
-                                    Registrarse
-                                </Button>
-
-                            </Col>
-
-                        </Row>
+                            </FormGroup>
 
 
-                    </Form>
+                            <Row>
 
-                </Row>
+                                <Col />
+
+                                <Col md={6} className="d-flex-justify-content-end">
+
+                                    <Button variant="secondary" type="submit">
+                                        Iniciar sesión
+                                    </Button>
+
+                                    <Button variant="secondary" onClick={goToRegisterHandler}>
+                                        Registrarse
+                                    </Button>
+
+                                </Col>
+
+                            </Row>
 
 
-            </Card.Body>
+                        </Form>
 
-        </Card>
+                    </Row>
 
+
+                </Card.Body>
+
+            </Card>
+
+        </div>
     )
 
 }
