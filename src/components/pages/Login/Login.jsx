@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom"
 import { Button, Card, Col, Form, FormGroup, Row } from "react-bootstrap"
 import './Login.css'
 import cineverseLogo from '../../../assets/images/cineverse-logo-without-name.png'
+import TatinAlien1 from '../../../assets/images/Alien 3.png'
 import { successToast, errorToast } from "../../../utils/toast"
 import { useAuth } from "../../../context/AuthContext";
 import { NavBar } from "../../NavBar/NavBar"
