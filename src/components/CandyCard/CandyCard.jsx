@@ -1,7 +1,7 @@
 import { React } from 'react';
 import './CandyCard.css';
 
-export const CandyCard = ({id, name, image, description, available, price}) =>{
+export const CandyCard = ({id, name, image, description, stock, price}) =>{
     return(
         
             
@@ -14,7 +14,7 @@ export const CandyCard = ({id, name, image, description, available, price}) =>{
                 <div className='Candy-Details'>
                     <p className='candy-description'>{description}</p>
                     <p className='candy-price'>Precio: ${price}</p>
-                    <p className='candy-available'>{available ? 'En stock' : 'Sin stock'}</p>
+                    <p className='candy-available'>Disponible : {stock}</p>
 
                     <div className='candy-bottom'>
                         <button className='add-button-new'>+</button>
