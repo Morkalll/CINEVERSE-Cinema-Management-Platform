@@ -5,7 +5,7 @@ import { sequelize } from "../db.js"
 
 
 export const User = sequelize.define("user",
-{
+  {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
@@ -40,11 +40,11 @@ export const User = sequelize.define("user",
     movieTickets: {
       type: DataTypes.INTEGER,
     }
-},
+  },
 
-{
+  {
     timestamps: false,
-}
+  }
 
 );
 

@@ -1,27 +1,23 @@
-//import { Profile } from '../Profile/Profile'
+
+import { UserProfile } from '../../UserProfile/UserProfile'
 import { NavBar } from '../../NavBar/NavBar';
-export const Profile = () =>
-{
-    return(
 
-    <div className="NavBar">
+export const Profile = () => {
+    return (
 
-        <NavBar />
+        <div className="NavBar">
 
-        
-        <h2>YA CASI ESTA LISTO</h2>
+            <NavBar />
 
-    </div>
+            <section className="Profile">
+
+                <UserProfile />
+
+            </section>
+
+        </div>
 
     )
 
 }
 
-//Esto va dentro del return, pero da error ahora porque no tiene la DB
-/*
-    <section className= "Profile">
-
-            <Profile />
-
-        </section>
-*/ 
