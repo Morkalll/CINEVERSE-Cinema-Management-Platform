@@ -25,7 +25,7 @@ export const Login = () => {
         const result = await login(email, password);
         if (result.success) {
             successToast("¡Inicio de sesión exitoso!");
-            navigate("/profile");
+            navigate("/home");
         } else {
             errorToast(result.error || "Error al iniciar sesión");
         }
@@ -53,6 +53,7 @@ export const Login = () => {
 
                     <Row className="mb-3 justify-content-center">
                         <img src={cineverseLogo} alt="Cineverse Logo" className="login-logo" />
+                        <img src={TatinAlien1} alt="Alien" className="Alien-image" />
                     </Row>
 
 
@@ -103,6 +104,9 @@ export const Login = () => {
                                         Iniciar sesión
                                     </Button>
 
+                                    <section>
+                                        ‎ {/* ESTE ES UN CARACTER INVISIBLE */}
+                                    </section>
                                 </Col>
 
 

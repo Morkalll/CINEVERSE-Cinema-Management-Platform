@@ -9,11 +9,14 @@ import { Screen } from './Screen.js';
 
 Movie.hasMany(MovieShowing, {
   foreignKey: 'movieId',
-  onDelete: 'CASCADE'
+  onDelete: 'CASCADE',
+  as: "movieShowings"
 });
 MovieShowing.belongsTo(Movie, {
-  foreignKey: 'movieId'
+  foreignKey: 'movieId',
+  as: "movie"
 });
+
 
 User.hasMany(Ticket, {
   foreignKey: 'userId',
@@ -36,8 +39,8 @@ Screen.hasMany(MovieShowing, {
   onDelete: 'SET NULL'
 });
 
-MovieShowing.belongsTo (Screen,{
-  foreignKey: 'screenID',
+MovieShowing.belongsTo(Screen, {
+  foreignKey: 'screenId',
 
 });
 

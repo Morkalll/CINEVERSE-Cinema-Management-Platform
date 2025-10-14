@@ -16,7 +16,7 @@ export const MovieListings = () => {
         }
         setMovies(await response.json());
       } catch (error) {
-        
+        console.error("Error al obtener las películas:", error);
       }}
       fetchMovies();
     

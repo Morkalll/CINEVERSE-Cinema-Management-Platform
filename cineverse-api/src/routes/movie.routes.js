@@ -1,5 +1,4 @@
 
-// routes/movie.routes.js
 import { Router } from "express";
 import { verifyToken } from "../services/token.services.js";
 import { authorize } from "../services/auth.services.js";

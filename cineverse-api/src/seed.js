@@ -101,72 +101,117 @@ await Movie.bulkCreate([
   }
 ]);
 
-await MovieShowing.bulkCreate([
+
+await Screen.bulkCreate([
+
   {
-    movieId: 1, // Rambo
-    showtime: new Date('2025-10-07T18:00:00'),
-    screenName: 'Sala 1',
-    capacity: 100,
-    ticketPrice: 1200.00,
-    format: '2D'
+    id: 1,
+    name: "Sala 1",
+    capacity: 150
+
   },
   {
-    movieId: 2, // Fantastic 4
-    showtime: new Date('2025-10-07T20:30:00'),
-    screenName: 'Sala 2',
-    capacity: 120,
-    ticketPrice: 1500.00,
-    format: 'IMAX'
+    id: 2,
+    name: "Sala 2",
+    capacity: 150
+
   },
   {
-    movieId: 3, // Spiderman
-    showtime: new Date('2025-10-08T17:00:00'),
-    screenName: 'Sala 3',
-    capacity: 90,
-    ticketPrice: 1300.00,
-    format: '3D'
+    id: 3,
+    name: "Sala 3",
+    capacity: 150
+
   },
   {
-    movieId: 4, // Bloodsport
-    showtime: new Date('2025-10-08T19:45:00'),
-    screenName: 'Sala 1',
-    capacity: 100,
-    ticketPrice: 1100.00,
-    format: '2D'
-  },
-  {
-    movieId: 5, // Avatar
-    showtime: new Date('2025-10-09T21:00:00'),
-    screenName: 'Sala 4',
-    capacity: 150,
-    ticketPrice: 1600.00,
-    format: 'IMAX'
-  },
-  {
-    movieId: 6, // Dragon Ball
-    showtime: new Date('2025-10-09T16:30:00'),
-    screenName: 'Sala 2',
-    capacity: 120,
-    ticketPrice: 1250.00,
-    format: '4D'
-  },
-  {
-    movieId: 7, // Super Mario
-    showtime: new Date('2025-10-10T15:00:00'),
-    screenName: 'Sala 3',
-    capacity: 80,
-    ticketPrice: 1000.00,
-    format: '2D'
-  },
-  {
-    movieId: 8, // John Wick 4
-    showtime: new Date('2025-10-10T22:00:00'),
-    screenName: 'Sala 4',
-    capacity: 120,
-    ticketPrice: 1400.00,
-    format: '3D'
+    id: 4,
+    name: "Sala 4",
+    capacity: 150
+
   },
 ]),
+
+
+  await MovieShowing.bulkCreate([
+    {
+      movieId: 1, // Rambo
+      showtime: new Date('2025-10-07T18:00:00'),
+      screenName: 'Sala 1',
+      screenId: 1,
+      capacity: 100,
+      ticketPrice: 1200.00,
+      format: '2D'
+    },
+    {
+      movieId: 2, // Fantastic 4
+      showtime: new Date('2025-10-07T20:30:00'),
+      screenName: 'Sala 2',
+      screenId: 2,
+
+      capacity: 120,
+      ticketPrice: 1500.00,
+      format: 'IMAX'
+    },
+    {
+      movieId: 3, // Spiderman
+      showtime: new Date('2025-10-08T17:00:00'),
+      screenName: 'Sala 3',
+      screenId: 3,
+
+      capacity: 90,
+      ticketPrice: 1300.00,
+      format: '3D'
+    },
+    {
+      movieId: 4, // Bloodsport
+      showtime: new Date('2025-10-08T19:45:00'),
+      screenName: 'Sala 1',
+      screenId: 1,
+
+      capacity: 100,
+      ticketPrice: 1100.00,
+      format: '2D'
+    },
+    {
+      movieId: 5, // Avatar
+      showtime: new Date('2025-10-09T21:00:00'),
+      screenName: 'Sala 4',
+      screenId: 4,
+
+      capacity: 150,
+      ticketPrice: 1600.00,
+      format: 'IMAX'
+    },
+    {
+      movieId: 6, // Dragon Ball
+      showtime: new Date('2025-10-09T16:30:00'),
+      screenName: 'Sala 2',
+      screenId: 2,
+
+      capacity: 120,
+      ticketPrice: 1250.00,
+      format: '4D'
+    },
+    {
+      movieId: 7, // Super Mario
+      showtime: new Date('2025-10-10T15:00:00'),
+      screenName: 'Sala 3',
+      screenId: 3,
+
+      capacity: 80,
+      ticketPrice: 1000.00,
+      format: '2D'
+    },
+    {
+      movieId: 8, // John Wick 4
+      showtime: new Date('2025-10-10T22:00:00'),
+      screenName: 'Sala 4',
+      screenId: 4,
+
+      capacity: 120,
+      ticketPrice: 1400.00,
+      format: '3D'
+    },
+  ]),
 
   await Products.bulkCreate([
     {
@@ -233,36 +278,9 @@ await MovieShowing.bulkCreate([
         "Vaso con helado cremoso de vainilla o chocolate, con salsa de topping."
     }
 
-  ]),
+  ])
 
 
-  await Screen.bulkCreate([
-
-    {
-      id: 1,
-      name: "Sala 1",
-      capacity: 150
-
-    },
-    {
-      id: 2,
-      name: "Sala 2",
-      capacity: 150
-
-    },
-    {
-      id: 3,
-      name: "Sala 3",
-      capacity: 150
-
-    },
-    {
-      id: 4,
-      name: "Sala 4",
-      capacity: 150
-
-    },
-  ]),
 
 
-  console.log('¡Películas insertadas correctamente y funciones creadas!');
+console.log('¡Películas insertadas correctamente y funciones creadas!');

@@ -8,8 +8,10 @@ import "./models/MovieShowing.js"
 import "./models/Ticket.js"
 import "./models/Products.js"
 import "./models/Screen.js"
+import "./models/index.js"
 import movieRoutes from "./routes/movie.routes.js"
 import authRoutes from "./routes/auth.routes.js";
+import productsRoutes from './routes/products.routes.js';
 import orderRoutes from "./routes/order.routes.js";
 
 
@@ -34,6 +36,7 @@ async function main() {
     // 4. Rutas con prefijos
     app.use("/api/auth", authRoutes);
     app.use('/api', movieRoutes);
+    app.use('/api', productsRoutes);
     app.use("/api/orders", orderRoutes);
 
 

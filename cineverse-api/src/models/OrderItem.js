@@ -12,7 +12,6 @@ export const OrderItem = sequelize.define("orderItem", {
     quantity: { type: DataTypes.INTEGER, allowNull: false },
 });
 
-// Relaciones
 Order.hasMany(OrderItem, { foreignKey: "orderId" });
 OrderItem.belongsTo(Order, { foreignKey: "orderId" });
 

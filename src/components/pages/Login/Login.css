@@ -18,13 +18,17 @@
   height: 300;
 }
 
-.login-alien {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end; /* antes: center -> ahora empuja la imagen hacia la derecha */
-  padding-right: 30rem;       /* ajusta el espacio desde el borde derecho según necesites */
+.Alien-image {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 500px;     /* ajustá el tamaño según tu gusto */
+  height: auto;
+  pointer-events: none; /* evita bloquear clics en el formulario */
 }
+
+
 
 .card h5 {
   font-size: 24px;
