@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import './NavBar.css';
 import logo2 from '../../assets/images/cineverse-logo-2.png';
 import userIcon from '../../assets/images/user-icon-2.png';
+import cartIcon from '../../assets/images/cart-icon.png';
 
 export const NavBar = () => {
   return (
@@ -30,6 +31,14 @@ export const NavBar = () => {
       <div className="navbar-right">
         <Link to="/profile">
           <img src={userIcon} alt="Perfil" className="user-icon" />
+        </Link>
+      </div>
+
+      {/* Icono del carrito*/}
+
+      <div className="navbar-right">
+        <Link to="/checkout">
+          <img src={cartIcon} alt="Carrito" className="cart-icon" />
         </Link>
       </div>
     </nav>

@@ -25,7 +25,7 @@ export const Login = () => {
         const result = await login(email, password);
         if (result.success) {
             successToast("¡Inicio de sesión exitoso!");
-            navigate("/profile");
+            navigate("/home");
         } else {
             errorToast(result.error || "Error al iniciar sesión");
         }
@@ -97,13 +97,24 @@ export const Login = () => {
 
                             <Row>
 
-                                <Col />
 
                                 <Col md={6} className="d-flex-justify-content-end">
 
                                     <Button variant="secondary" type="submit">
                                         Iniciar sesión
                                     </Button>
+
+                                    <section>
+                                        ‎ {/* ESTE ES UN CARACTER INVISIBLE */}
+                                    </section>
+                                </Col>
+
+
+                                <Col>
+
+                                    <section>
+                                        ¿No tienes cuenta?
+                                    </section>
 
                                     <Button variant="secondary" onClick={goToRegisterHandler}>
                                         Registrarse

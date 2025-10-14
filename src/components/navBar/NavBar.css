@@ -18,7 +18,8 @@
 }
 
 
-.navbar-left, .navbar-right {
+.navbar-left,
+.navbar-right {
   flex: 1;
   display: flex;
   align-items: center;
@@ -30,6 +31,8 @@
   justify-content: center;
   gap: 10rem;
 }
+
+
 
 /* LOGO */
 .logo {
@@ -44,7 +47,8 @@
 /* LINKS */
 .nav-link {
   background: linear-gradient(90deg, #ff00cc, #9900ff);
-  background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
   text-decoration: none;
   font-weight: bold;
   font-size: 30px;
@@ -71,3 +75,17 @@
   filter: drop-shadow(0 0 5px #ff00cc);
 }
 
+
+
+/* ICONO DE CARRITO */
+
+.cart-icon {
+  height: 40px;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.cart-icon:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 0 5px #ff00cc);
+}
