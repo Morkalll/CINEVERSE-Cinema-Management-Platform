@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { NavBar } from '../../NavBar/NavBar';
 import './MovieDetail.css';
+import { SeatSelector } from "c:/FacultadUTN/Trabajos/TP p3/TPI/src/components/SeatSelector/SeatSelector"; 
 import { useCart } from "../../../context/CartContext";
 import { useAuth } from "../../../context/AuthContext";
 import { successToast, errorToast } from "../../../utils/toast";
@@ -186,8 +187,33 @@ export const MovieDetail = () => {
             }}
           >
             COMPRAR ENTRADA
-          </button>
+          </button> que corno es esto?
           */}
+
+          {/* SECCIÓN DE SELECCIÓN DE ASIENTOS */}
+  <div className="section-seats">
+    <h3 style={{ marginTop: "2rem" }}>SELECCIÓN DE ASIENTOS</h3>
+
+    <SeatSelector
+      onConfirm={(seats) => {
+        if (!user) {
+          errorToast("Debes iniciar sesión para continuar.");
+        return;
+        }
+        if (seats.length === 0) {
+        errorToast("Debes seleccionar al menos un asiento.");
+        return;
+      }
+
+      successToast(`Seleccionaste ${seats.length} asientos: ${seats.join(", ")}`);
+      // En el futuro, acá podrías:
+      // - Enviar los asientos al backend
+      // - Asociarlos con el showtime y usuario
+      // - Avanzar al paso de pago
+    }}
+  />
+  </div>
+
 
         </div>
       </div>
