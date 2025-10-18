@@ -1,4 +1,6 @@
 import { useState } from "react";
+import './CreateCandyForm.css'
+
 
 export const CreateCandyForm = () => {
   const [form, setForm] = useState({
@@ -44,26 +46,39 @@ export const CreateCandyForm = () => {
 
   return (
     <div>
-      <h2>Agregar Candy</h2>
-      <form onSubmit={handleSubmit}>
-        <label>Nombre:</label>
-        <input name="name" value={form.name} onChange={handleChange} required />
-
-        <label>Precio:</label>
-        <input name="price" type="number" value={form.price} onChange={handleChange} required />
-
-        <label>Stock:</label>
-        <input name="stock" type="number" value={form.stock} onChange={handleChange} required />
-
-        <label>Imagen (URL):</label>
-        <input name="image" value={form.image} onChange={handleChange} required />
-
-        <label>Descripción:</label>
-        <textarea name="description" value={form.description} onChange={handleChange} required />
-
-        <button type="submit">Agregar Candy</button>
-      </form>
-      {message && <p>{message}</p>}
+    <h2>Agregar Candy</h2>
+  <form onSubmit={handleSubmit} className="candy-form">
+    
+    <div className="form-group">
+      <label>Nombre:</label>
+      <input name="name" value={form.name} onChange={handleChange} required />
     </div>
+
+    <div className="form-group">
+      <label>Precio:</label>
+      <input name="price" type="number" value={form.price} onChange={handleChange} required />
+    </div>
+
+
+    <div className="form-group">
+      <label>Stock:</label>
+      <input name="stock" type="number" value={form.stock} onChange={handleChange} required />
+    </div>
+
+
+    <div className="form-group">
+      <label>Imagen (URL):</label>
+      <input name="image" value={form.image} onChange={handleChange} required />
+    </div>
+
+
+    <div className="form-group">
+      <label>Descripción:</label>
+      <textarea name="description" value={form.description} onChange={handleChange} required />
+    </div>
+
+    <button type="submit">Agregar Candy</button>
+  </form>
+</div>
   );
 };

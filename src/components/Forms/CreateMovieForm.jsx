@@ -52,39 +52,57 @@ export const CreateMoviesForm = () => {
   };
 
   return (
-    <div>
-      <h2>Agregar Película</h2>
-      <form onSubmit={handleSubmit} classname ="movie-form">
-        <label>Título:</label>
-        <input name="title" value={form.title} onChange={handleChange} required />
-
-        <label>Género:</label>
-        <input name="genre" value={form.genre} onChange={handleChange} required />
-
-        <label>Director:</label>
-        <input name="director" value={form.director} onChange={handleChange} required />
-
-        <label>Rating:</label>
-        <input name="rating" type="number" value={form.rating} onChange={handleChange} />
-
-        <label>Duración (min):</label>
-        <input name="duration" type="number" value={form.duration} onChange={handleChange} />
-
-        <label>Sinopsis:</label>
-        <textarea name="synopsis" value={form.synopsis} onChange={handleChange}></textarea>
-
-        <label>Poster (URL):</label>
-        <input name="poster" value={form.poster} onChange={handleChange} />
-
-        <label>Poster Carousel (URL):</label>
-        <input name="posterCarousel" value={form.posterCarousel} onChange={handleChange} />
-
-        <label>Fecha de estreno:</label>
-        <input name="releaseDate" type="date" value={form.releaseDate} onChange={handleChange} />
-
-        <button type="submit">Agregar Película</button>
-      </form>
-      {message && <p>{message}</p>}
+  <div>
+    <h2>Agregar Pelicula</h2>
+  <form onSubmit={handleSubmit} className="movie-form">
+    <div className="form-group">
+      <label>Título:</label>
+      <input name="title" value={form.title} onChange={handleChange} required />
     </div>
+
+    <div className="form-group">
+      <label>Género:</label>
+      <input name="genre" value={form.genre} onChange={handleChange} required />
+    </div>
+
+    <div className="form-group">
+      <label>Director:</label>
+      <input name="director" value={form.director} onChange={handleChange} required />
+    </div>
+
+    <div className="form-group">
+      <label>Rating:</label>
+      <input name="rating" type="number" value={form.rating} onChange={handleChange} />
+    </div>
+
+    <div className="form-group">
+      <label>Duración (min):</label>
+      <input name="duration" type="number" value={form.duration} onChange={handleChange} />
+    </div>
+
+    <div className="form-group">
+      <label>Sinopsis:</label>
+      <textarea name="synopsis" value={form.synopsis} onChange={handleChange}></textarea>
+    </div>
+
+    <div className="form-group">
+      <label>Poster (URL):</label>
+      <input name="poster" value={form.poster} onChange={handleChange} />
+    </div>
+
+    <div className="form-group">
+      <label>Poster Carousel (URL):</label>
+      <input name="posterCarousel" value={form.posterCarousel} onChange={handleChange} />
+    </div>
+
+    <div className="form-group">
+      <label>Fecha de estreno:</label>
+      <input name="releaseDate" type="date" value={form.releaseDate} onChange={handleChange} />
+    </div>
+
+  <button type="submit">Agregar Película</button>
+</form>
+</div>
+
   );
 };
