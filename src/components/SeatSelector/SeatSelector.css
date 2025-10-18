@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+
+.seat-selector-container {
+    background: linear-gradient(120deg, #1a0036 0%, #000000 100%);
+    color: #e0e0e0;
+    font-family: 'Bebas Neue', sans-serif;
+    text-align: center;
+    padding: 60px 20px;
+    min-height: 100vh;
+}
+
+.seat-selector-title {
+    font-size: 2.8rem;
+    background: linear-gradient(90deg, #ff00cc, #9900ff, #5100ff);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 10px #9900ff55;
+    margin-bottom: 2rem;
+}
+
+.seat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, 40px);
+    justify-content: center;
+    gap: 14px;
+    margin: 2rem auto;
+    width: fit-content;
+}
+
+.seat {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #5100ff, #9900ff);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.3s;
+}
+
+.seat:hover {
+    transform: scale(1.15);
+    box-shadow: 0 0 12px #ff00cc88, 0 0 0 3px #9900ff55;
+}
+
+.seat.selected {
+    background: linear-gradient(90deg, #ff00cc, #9900ff);
+    box-shadow: 0 0 16px #ff00ccbb, 0 0 0 3px #9900ff77;
+}
+
+.seat.occupied {
+    background-color: #2a2a2a;
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+.legend {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1.5rem;
+    font-size: 1.2rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.legend-box {
+    width: 25px;
+    height: 25px;
+    border-radius: 5px;
+}

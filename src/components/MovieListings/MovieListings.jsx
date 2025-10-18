@@ -8,7 +8,7 @@ export const MovieListings = () => {
   const [movies, setMovies] = useState([]);
 
   useEffect(() => {
-     const fetchMovies = async () => {
+    const fetchMovies = async () => {
       try {
         const response = await fetch('http://localhost:3000/api/movielistings'); // Mover local host 3000 a archivo de config
         if (!response.ok) {
@@ -25,8 +25,7 @@ export const MovieListings = () => {
 
   return (
     <>
-     
-     <h1 className="showcase-title"> ──────────────── Cartelera ────────────────</h1>
+  <h1 className="showcase-title"> ──────────────── Cartelera ────────────────</h1>
     <div className="showcase">
       {movies.map(movie => (
         <MovieCard
