@@ -13,7 +13,8 @@ import { Profile } from './components/pages/Profile/Profile';
 import { Candy } from './components/pages/Candy/Candy';
 import { NotFound } from './components/pages/NotFound/NotFound';
 import { CheckoutPage } from "./components/pages/Cart/CheckoutPage";
-
+import { CreateMoviesForm } from './components/Forms/CreateMovieForm';
+import { CreateCandyForm } from './components/Forms/CreateCandyForm';
 
 
 
@@ -35,7 +36,8 @@ function App() {
         <Route path='candy' element={<Candy />} />
         <Route path='*' element={<NotFound />} />
         <Route path="/checkout" element={<CheckoutPage />} />
-
+        <Route path="/addmovie" element={<CreateMoviesForm />} />
+        <Route path="/addcandy" element={<CreateCandyForm />} />
       </Routes>
 
       <ToastContainer />
