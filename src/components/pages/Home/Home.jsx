@@ -13,7 +13,7 @@ export const Home = () => {
 
       <section className="Carousel">
       </section>
-      {/*<MovieCarousel />*/}
+      <MovieCarousel />
       <section className="Listings-section">
         <MovieListings />
       </section>
