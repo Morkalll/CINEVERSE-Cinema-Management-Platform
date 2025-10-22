@@ -1,6 +1,7 @@
 
 import { DataTypes } from "sequelize";
 import { sequelize } from "../db.js";
+import { Seat } from "./Seats.js";
 
 
 export const MovieShowing = sequelize.define("MovieShowing",
@@ -55,3 +56,6 @@ export const MovieShowing = sequelize.define("MovieShowing",
         tableName: "MovieShowings",
         timestamps: false,
     });
+
+MovieShowing.hasMany(Seat, { foreignKey: "showingId" });
+Seat.belongsTo(MovieShowing, { foreignKey: "showingId" });

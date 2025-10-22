@@ -1,74 +1,74 @@
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
 
-.seat-selector-container {
-    background: linear-gradient(120deg, #1a0036 0%, #000000 100%);
-    color: #e0e0e0;
+.seat-selector {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
     font-family: 'Bebas Neue', sans-serif;
-    text-align: center;
-    padding: 60px 20px;
-    min-height: 100vh;
-}
-
-.seat-selector-title {
-    font-size: 2.8rem;
-    background: linear-gradient(90deg, #ff00cc, #9900ff, #5100ff);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 10px #9900ff55;
-    margin-bottom: 2rem;
+    color: #fff;
 }
 
 .seat-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, 40px);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: rgba(30, 0, 50, 0.4);
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 0 20px #5100ff55;
+}
+
+.seat-row {
+    display: flex;
+    gap: 8px;
     justify-content: center;
-    gap: 14px;
-    margin: 2rem auto;
-    width: fit-content;
 }
 
 .seat {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    background: linear-gradient(90deg, #5100ff, #9900ff);
+    width: 28px;
+    height: 28px;
+    background-color: #111;
+    border: 2px solid #9900ff;
+    color: #fff;
+    font-size: 0.9rem;
+    text-align: center;
+    line-height: 26px;
+    border-radius: 6px;
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.3s;
+    transition: all 0.2s ease;
 }
 
 .seat:hover {
-    transform: scale(1.15);
-    box-shadow: 0 0 12px #ff00cc88, 0 0 0 3px #9900ff55;
+    transform: scale(1.1);
+    box-shadow: 0 0 8px #ff00cc;
 }
 
 .seat.selected {
     background: linear-gradient(90deg, #ff00cc, #9900ff);
-    box-shadow: 0 0 16px #ff00ccbb, 0 0 0 3px #9900ff77;
+    box-shadow: 0 0 10px #ff00cc99;
 }
 
 .seat.occupied {
-    background-color: #2a2a2a;
+    background-color: #333;
+    border-color: #555;
+    color: #777;
     cursor: not-allowed;
-    opacity: 0.4;
 }
 
-.legend {
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-    margin-top: 1.5rem;
+.confirm-button {
+    background: linear-gradient(90deg, #ff00cc, #9900ff);
+    color: white;
     font-size: 1.2rem;
+    padding: 10px 28px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.3s ease;
 }
 
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.legend-box {
-    width: 25px;
-    height: 25px;
-    border-radius: 5px;
+.confirm-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px #ff00cc99;
 }
