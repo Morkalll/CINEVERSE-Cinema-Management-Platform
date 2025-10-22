@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { NavBar } from '../../NavBar/NavBar';
 import './MovieDetail.css';
-import { SeatSelector } from "../../SeatSelector/SeatSelector";
+import  SeatSelector  from "../../SeatSelector/SeatSelector";
 import { useCart } from "../../../context/CartContext";
 import { useAuth } from "../../../context/AuthContext";
 import { successToast, errorToast } from "../../../utils/toast";
