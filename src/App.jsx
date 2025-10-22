@@ -5,7 +5,9 @@ import "react-toastify/dist/ReactToastify.css";
 import { Routes, Route } from 'react-router-dom';
 import { TestRoom } from './components/pages/TestRoom';
 import { Login } from './components/pages/Login/Login';
+import { LoginAdmin } from './components/pages/LoginAdmin/LoginAdmin';
 import { Register } from './components/pages/Register/Register';
+import { RegisterAdmin } from './components/pages/RegisterAdmin/RegisterAdmin';
 import { Home } from './components/pages/Home/Home';
 import { MovieListingsPage } from './components/pages/MovieListingsPage/MovieListingsPage';
 import { MovieDetail } from './components/pages/MovieDetail/MovieDetail';
@@ -27,7 +29,9 @@ function App() {
 
         <Route path='/' element={<TestRoom />} />
         <Route path='login' element={<Login />} />
+        <Route path='login-admin' element={<LoginAdmin />} />
         <Route path='register' element={<Register />} />
+        <Route path='register-admin' element={<RegisterAdmin />} />
         <Route path='home' element={<Home />} />
         <Route path='movielistings' element={<MovieListingsPage />} />
         <Route path="/movie/:id" element={<MovieDetail />} />

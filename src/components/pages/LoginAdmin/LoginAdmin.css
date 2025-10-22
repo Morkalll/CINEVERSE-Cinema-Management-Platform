@@ -1,0 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+
+
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; 
+}
+
+
+
+.login-logo {
+  display: block;
+  margin: 0 auto 20px auto;
+  width: 300px;
+  height: 300;
+}
+
+.Alien-image {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 500px;     /* ajustá el tamaño según tu gusto */
+  height: auto;
+  pointer-events: none; /* evita bloquear clics en el formulario */
+}
+
+
+
+.card h5 {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 25px;
+  background: linear-gradient(to right, #ff0080, #8a2be2);
+  background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+
+.form-control {
+  background-color: #1c1c1c;
+  border: 1px solid #333;
+  border-radius: 10px;
+  color: #fff;
+  padding: 12px;
+  margin-bottom: 30px;
+  transition: border-color 0.2s;
+}
+
+.form-control:focus {
+  border-color: #ff0080;
+  box-shadow: 0 0 5px rgba(255, 0, 128, 0.5);
+}
+
+
+.text-danger {
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: #ff4c4c;
+}
+
+
+.btn {
+  margin: 5px;
+  border-radius: 10px;
+  font-weight: bold;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-secondary {
+  background: linear-gradient(to right, #ff0080, #8a2be2);
+  border: none;
+  color: #fff;
+}
+
+.btn-secondary:hover {
+  opacity: 0.9;
+  transform: scale(1.05);
+}
