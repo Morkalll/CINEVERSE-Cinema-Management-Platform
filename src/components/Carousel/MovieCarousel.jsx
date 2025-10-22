@@ -1,18 +1,36 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import ReactSwipe from 'react-swipe';
 import './MovieCarousel.css';
 
-export const MovieCarousel = ({ movies }) => {
+export const MovieCarousel = () => {
   const swipeRef = useRef(null);
+  const [movies, setMovies] = useState([]);
 
+  // 🔹 useEffect para obtener las películas desde la API
+  useEffect(() => {
+    const fetchMovies = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/api/movielistings');
+        if (!response.ok) throw new Error('Error al obtener las películas');
+        const data = await response.json();
+        setMovies(data);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+
+    fetchMovies();
+  }, []);
+
+  // 🔹 useEffect para auto-avance del carrusel
   useEffect(() => {
     const interval = setInterval(() => {
       if (swipeRef.current) {
-        swipeRef.current.next(); 
+        swipeRef.current.next();
       }
-    }, 3000); 
+    }, 3000);
 
-    return () => clearInterval(interval); 
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -53,13 +71,7 @@ export const MovieCarousel = ({ movies }) => {
             </div>
           ))}
         </ReactSwipe>
-
-        
       </div>
     </section>
   );
 };
-
-
-
-
