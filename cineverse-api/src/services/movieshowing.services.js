@@ -15,7 +15,7 @@ export const findAllMovieShowings = async (req, res) => {
 };
 
 
-export const findOneMovieShowing = async (req, res) => {
+export const findOneMovieShowings = async (req, res) => {
     try {
         const { id } = req.params;
         const oneShowing = await MovieShowing.findOne({
@@ -36,10 +36,12 @@ export const findOneMovieShowing = async (req, res) => {
 };
 
 
-export const createMovieShowing = async (req, res) => {
+export const createMovieShowings = async (req, res) => {
     try {
-        const { movieId, showtime, screen, availableSeats } = req.body;
-
+        const movieId = req.body.movieId
+        const showtime = req.body.showtime
+        const screenId = req.body.screenId
+        const ticketPrice = req.body.price
         if (!movieId || !showtime) {
             return res.status(400).json({ message: "movieId and showtime are required" });
         }
@@ -47,8 +49,8 @@ export const createMovieShowing = async (req, res) => {
         const newShowing = await MovieShowing.create({
             movieId,
             showtime,
-            screen,
-            availableSeats
+            screenId,
+            ticketPrice
         });
 
         return res.status(201).json(newShowing);
@@ -60,7 +62,7 @@ export const createMovieShowing = async (req, res) => {
 };
 
 
-export const updateMovieShowing = async (req, res) => {
+export const updateMovieShowings = async (req, res) => {
     try {
         const { id } = req.params;
         const { movieId, showtime, screen, availableSeats } = req.body;
@@ -80,7 +82,7 @@ export const updateMovieShowing = async (req, res) => {
 };
 
 
-export const deleteMovieShowing = async (req, res) => {
+export const deleteMovieShowings = async (req, res) => {
     try {
         const { id } = req.params;
         const showingToDelete = await MovieShowing.findByPk(id);

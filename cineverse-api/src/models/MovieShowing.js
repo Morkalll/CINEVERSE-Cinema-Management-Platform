@@ -26,15 +26,10 @@ export const MovieShowing = sequelize.define("MovieShowing",
             allowNull: false
         },
 
-        screenName:
-        {
-            type: DataTypes.ENUM('Sala 1', 'Sala 2', 'Sala 3', 'Sala 4'),
-            allowNull: false,
-        },
 
         screenId: {
             type: DataTypes.INTEGER,
-            allowNull: true,
+            allowNull: false,
         },
 
         ticketPrice:

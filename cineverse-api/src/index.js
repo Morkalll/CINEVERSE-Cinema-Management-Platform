@@ -13,7 +13,9 @@ import movieRoutes from "./routes/movie.routes.js"
 import authRoutes from "./routes/auth.routes.js";
 import productsRoutes from './routes/products.routes.js';
 import orderRoutes from "./routes/order.routes.js";
-
+import movieShowingsRoutes from "./routes/movieShowing.routes.js";
+import screenRoutes from "./routes/screen.routes.js"
+import * as fs from "node:fs"
 
 
 
@@ -21,8 +23,10 @@ const app = express();
 
 async function main() {
   try {
-    // 1. Sincronización de la base de datos (con alter: true para actualizar si hay cambios en modelos)
-    await sequelize.sync({ alter: true });
+    if (!fs.existsSync("movies.db")) {
+      await sequelize.sync({ alter: true });
+    }
+    
 
     // 2. Cargar SQL (Carga inicial o reseteo de datos, si es necesario)
 
@@ -38,6 +42,8 @@ async function main() {
     app.use('/api', movieRoutes);
     app.use('/api', productsRoutes);
     app.use("/api/orders", orderRoutes);
+    app.use("/api", movieShowingsRoutes); 
+    app.use("/api", screenRoutes); 
 
 
     // 5. Levantar servidor
