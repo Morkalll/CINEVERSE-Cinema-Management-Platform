@@ -40,7 +40,6 @@ Entradas:
 - función
 - asiento
 - usuario (cliente)
-- estado (reservado/pagado)
 
 ________________________________________________________________________________________________
 
