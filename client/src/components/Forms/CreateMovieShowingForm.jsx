@@ -248,8 +248,6 @@ export const CreateMovieShowingForm = () =>
 
         <div>
 
-            <h2>Agregar Función</h2>
-
             <form onSubmit={handleSubmit} className="movie-form" noValidate>
                 
                 <div className="form-group">
