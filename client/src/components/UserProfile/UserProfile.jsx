@@ -122,7 +122,7 @@ export const UserProfile = () =>
                             
                             style={{ padding: '4px 12px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px' }}
                         
-                        > Sí, cancelar </button>
+                        > Cancelar </button>
 
                         <button 
 
@@ -130,18 +130,13 @@ export const UserProfile = () =>
                             
                             style={{ padding: '4px 12px', background: '#6c757d', color: 'white', border: 'none', borderRadius: '4px' }}
                         
-                        > No, no cancelar </button>
+                        > No cancelar </button>
 
                     </div>
 
                 </div>
 
             ),
-
-            {
-                autoClose: false,
-                closeButton: false,
-            }
 
         );
 
