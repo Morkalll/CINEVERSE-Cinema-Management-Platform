@@ -1,6 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
 
-/* NAVBAR GENERAL */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
 
 
 .navbar {
@@ -34,7 +33,6 @@
 
 
 
-/* LOGO */
 .logo {
   height: 50px;
   transition: transform 0.3s ease;
@@ -44,7 +42,6 @@
   transform: scale(1.05);
 }
 
-/* LINKS */
 .nav-link {
   background: linear-gradient(90deg, #ff00cc, #9900ff);
   background-clip: text;
@@ -63,7 +60,6 @@
 
 
 
-/* ICONO DE USUARIO */
 .user-icon {
   height: 40px;
   cursor: pointer;
@@ -77,7 +73,6 @@
 
 
 
-/* ICONO DE CARRITO */
 
 .cart-icon {
   height: 40px;

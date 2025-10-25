@@ -19,7 +19,7 @@ export const CandyListings = () =>
 
                 if (!response.ok) 
                 {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error("Error al traer los candy")
                 }
 
                 setCandy(await response.json());
@@ -36,7 +36,7 @@ export const CandyListings = () =>
     }, []);
 
     return (
-        
+
         <div className='snackbar'>
 
             {candy.map(candy => (

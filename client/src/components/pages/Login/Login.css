@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
 
 
@@ -8,7 +9,6 @@
   align-items: center;
   height: 100vh; 
 }
-
 
 
 .login-logo {
@@ -23,11 +23,10 @@
   right: 0;
   top: 50%;
   transform: translateY(-50%);
-  width: 500px;     /* ajustá el tamaño según tu gusto */
+  width: 500px;    
   height: auto;
-  pointer-events: none; /* evita bloquear clics en el formulario */
+  pointer-events: none; 
 }
-
 
 
 .card h5 {

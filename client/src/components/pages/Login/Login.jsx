@@ -10,7 +10,8 @@ import { useAuth } from "../../../context/AuthContext";
 import { NavBar } from "../../NavBar/NavBar"
 
 
-export const Login = () => {
+export const Login = () => 
+{
 
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
@@ -18,31 +19,42 @@ export const Login = () => {
     const { login } = useAuth();
 
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e) => 
+    {
         e.preventDefault();
+
         const email = e.target.email.value;
+
         const password = e.target.password.value;
+
         const result = await login(email, password);
-        if (result.success) {
+
+
+        if (result.success) 
+        {
             successToast("¡Inicio de sesión exitoso!");
             navigate("/home");
-        } else {
+        } 
+        
+        else 
+        {
             errorToast(result.error || "Error al iniciar sesión");
         }
-    };
 
+    };
 
 
     const navigate = useNavigate()
 
 
-    const goToRegisterHandler = () => {
+    const goToRegisterHandler = () => 
+    {
         navigate("/register")
     }
 
 
-
     return (
+
         <div className="NavBar">
 
             <NavBar />
@@ -52,15 +64,21 @@ export const Login = () => {
                 <Card.Body>
 
                     <Row className="mb-3 justify-content-center">
+
                         <img src={cineverseLogo} alt="Cineverse Logo" className="login-logo" />
                         <img src={TatinAlien1} alt="Alien" className="Alien-image" />
+
                     </Row>
 
 
                     <Row className="mb-2">
+
                         <h5>
+                            
                             ¡Bienvenido a CINEVERSE!
+
                         </h5>
+
                     </Row>
 
 
@@ -101,23 +119,33 @@ export const Login = () => {
                                 <Col md={6} className="d-flex-justify-content-end">
 
                                     <Button variant="secondary" type="submit">
+
                                         Iniciar sesión
+
                                     </Button>
 
                                     <section>
-                                        ‎ {/* ESTE ES UN CARACTER INVISIBLE */}
+
+                                        ‎
+
                                     </section>
+
                                 </Col>
 
 
                                 <Col>
 
                                     <section>
+
                                         ¿No tienes cuenta?
+
                                     </section>
 
+
                                     <Button variant="secondary" onClick={goToRegisterHandler}>
+
                                         Registrarse
+
                                     </Button>
 
                                 </Col>

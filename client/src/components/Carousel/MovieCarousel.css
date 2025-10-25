@@ -1,6 +1,6 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
 
-/* MovieCarousel.css */
 
 .carousel-section {
   padding: 20px;
@@ -60,7 +60,6 @@
   100% { border-color: #ff00ff; }
 }
 
-/* Flechas del carrusel */
 .carousel-arrow {
   position: absolute;
   top: 50%;
