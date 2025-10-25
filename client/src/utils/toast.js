@@ -12,7 +12,7 @@ export const successToast = (message) =>
         closeOnClick: true,
         pauseOnHover: true,
         draggable: true,
-        theme: "colored",
+        theme: "colored"
     });
 };
 
@@ -26,6 +26,15 @@ export const errorToast = (message) =>
         closeOnClick: true,
         pauseOnHover: true,
         draggable: true,
-        theme: "colored",
+        theme: "colored"
+    });
+};
+
+export const confirmToast = (message) => 
+{
+    toast.info(message, 
+    {
+        position: "top-right",
+        theme: "colored"
     });
 };
