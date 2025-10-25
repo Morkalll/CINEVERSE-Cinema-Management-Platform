@@ -173,8 +173,6 @@ export const CreateCandyForm = () =>
 
     <div>
 
-      <h2>Agregar Candy</h2>
-
       <form onSubmit={handleSubmit} className="candy-form" noValidate>
         
 
