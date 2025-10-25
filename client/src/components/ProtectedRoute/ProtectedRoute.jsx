@@ -1,32 +1,27 @@
 import { Navigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { errorToast } from "../../utils/toast";
 import { useEffect } from "react";
+import { useAuth } from "../../context/AuthContext";
 
 
 export const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem("token");
-  const userRole = localStorage.getItem("role"); 
-  
-  useEffect(() => {
-  console.log("Token:", token);
-  console.log("Rol:", userRole);
-}, [token, userRole]);
+  const { user, token, loading } = useAuth();
 
-  
-  if (!token) {
-    useEffect(() => {
-      toast.error("Debes iniciar sesión para acceder");
-    }, []);
-    return <Navigate to="/login" replace />;
-  }
-  
-  if (userRole !== "admin" && userRole !== "sysadmin") {
-    useEffect(() => {
-        toast.error("No tienes permiso para acceder a esta página");
-    }, [])
+  useEffect(() => {
+    if (loading) return;
+
+    if (!token) {
+      errorToast("Debes iniciar sesión para acceder");
+    } else if (user?.role !== "admin" && user?.role !== "sysadmin") {
+      errorToast("No tienes permiso para acceder a esta página");
+    }
+  }, [loading, token, user]);
+
+  if (loading) return null;
+  if (!token) return <Navigate to="/login" replace />;
+  if (user?.role !== "admin" && user?.role !== "sysadmin") {
     return <Navigate to="/home" replace />;
   }
-  
-  
+
   return children;
 };
