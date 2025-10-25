@@ -29,8 +29,7 @@ export const MovieDetail = () =>
 
         if (!response.ok)
         {
-          console.log(response)
-          throw new Error(`HTTP error! status: ${response.status}`);
+          console.log("No se pudo traer la película")
         }
 
         setMovie(await response.json());
@@ -39,7 +38,7 @@ export const MovieDetail = () =>
       
       catch (error) 
       {
-        console.error("Error fetching movie:", error);
+        console.error("Error trayendo la película", error);
       } 
       
       finally 
@@ -57,6 +56,7 @@ export const MovieDetail = () =>
 
   }, [id]);
 
+
   if (loading) return <div>Cargando...</div>;
   if (!movie) return <div>No se encontró la película</div>;
 
@@ -64,37 +64,60 @@ export const MovieDetail = () =>
   const releaseFullYear = new Date(movie.releaseDate).getFullYear();
   const releaseMonth = new Date(movie.releaseDate).getMonth() + 1;
   const releaseDay = new Date(movie.releaseDate).getDate();
+  const showtimes = movie.movieShowings
+  
 
-/*REVISAR ESTOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO*/
-  const showtimes = movie.showtimes
-    || movie.movieShowings
-    || movie.MovieShowings
-    || movie.showings
-    || movie.MovieShowing
-    || movie.showingsList
-    || [];
-/*REVISAR ESTOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO*/
-
-
-  const handleAddTicket = (showtime) => 
+  const handlePlus = (screen) => 
   {
+    const quantityInCart = getItemQuantity(screen.id, "ticket");
+    const available = screen.capacity ?? null;
+    const price = Number(screen.ticketPrice ?? screen.price ?? 0);
+
+
     if (!user) 
     {
-      alert("Debes iniciar sesión para comprar entradas.");
+      errorToast("Debes iniciar sesión para comprar entradas.");
       return;
     }
 
-    const item = 
+    if (available !== null && quantityInCart >= available) 
     {
-      refId: showtime.id,
-      type: "ticket",
-      name: `${movie.title} — ${showtime.screenName} (${new Date(showtime.showtime).toLocaleString()})`,
-      price: Number(showtime.ticketPrice ?? showtime.price ?? 0),
-    };
+      errorToast("No hay más entradas disponibles para esta función.");
+      return;
+    }
 
-    addToCart(item, 1);
+
+    addToCart(
+    {
+      refId: screen.id,
+      type: "ticket",
+      name: `${movie.title} — ${screen.screenName} (${new Date(screen.showtime).toLocaleString()})`,
+      price,
+    }, 1);
+
+
+    successToast("Entrada agregada al carrito");
 
   };
+
+
+  const handleMinus = (screen) => 
+  {
+    const quantityInCart = getItemQuantity(screen.id, "ticket");
+
+
+    if (quantityInCart <= 0) 
+    {
+      return;
+    }
+
+
+    updateQuantity(screen.id, "ticket", quantityInCart - 1);
+
+    successToast("Cantidad actualizada");
+
+  };
+
 
   return (
 
@@ -116,7 +139,7 @@ export const MovieDetail = () =>
             <p><strong>────────────────</strong></p>
             <p><strong>Duración:</strong> {movie.duration} minutos</p>
             <p><strong>────────────────</strong></p>
-            <p><strong>Calificación:</strong> {movie.rating}</p>
+            <p><strong>Calificación:</strong> {movie.rating} </p>
             <p><strong>────────────────</strong></p>
             <p><strong>Director:</strong> {movie.director}</p>
             <p><strong>────────────────</strong></p>
@@ -135,124 +158,96 @@ export const MovieDetail = () =>
 
             <h3>HORARIOS</h3>
 
-            {showtimes.length === 0 ? 
-            (
-              <p>No hay funciones disponibles.</p>
-            ) 
-            
-            : (
-              
-              <ul>
-                
-                {showtimes.map((screen) => 
-                {
-                  const quantityInCart = getItemQuantity(screen.id, "ticket");
-                  const available = screen.capacity ?? null;
-                  const price = Number(screen.ticketPrice ?? screen.price ?? 0);
 
+            {showtimes.length === 0 
 
-                  const handlePlus = () => 
+              ? (
+                <p>No hay funciones disponibles.</p>
+              ) 
+
+              : (
+                    
+                <ul>
+
+                  {showtimes.map((screen) => 
                   {
-                    if (!user) 
-                    {
-                      errorToast("Debes iniciar sesión para comprar entradas.");
-                      return;
-                    }
+                    const quantityInCart = getItemQuantity(screen.id, "ticket");
+                    const available = screen.capacity ?? null;
+                    const price = Number(screen.ticketPrice ?? screen.price ?? 0);
 
-                    if (available !== null && quantityInCart >= available) 
-                    {
-                      errorToast("No hay más entradas disponibles para esta función.");
-                      return;
-                    }
+                    return (
 
-                    addToCart(
-                      {
-                        refId: screen.id,
-                        type: "ticket",
-                        name: `${movie.title} — ${screen.screenName} (${new Date(screen.showtime).toLocaleString()})`,
-                        price,
-                      }, 1
+                      <li key={screen.id} style={{ marginBottom: "0.6rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                      
+
+                        <div style={{ flex: 1 }}>
+
+
+                          <div style={{ marginBottom: "0.25rem", fontWeight: 600 }}>
+
+                            <strong>{screen.screenName}</strong> — {new Date(screen.showtime).toLocaleString()}
+
+                          </div>
+                          
+
+                          <div style={{ marginBottom: "0.25rem", color: "#666" }}>
+
+                            Precio: ${price} {available !== null && <span style={{ marginLeft: 8 }}>• Disponible: {available}</span>}
+                            
+                          </div>
+
+
+                        </div>
+
+
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+
+
+                          <button
+
+                            onClick={() => handleMinus(screen)}
+                            aria-label={`Restar entrada ${movie.title} ${screen.screenName}`}
+                            className="quantity-button"
+
+                          > - </button>
+
+
+                          <div style={{ minWidth: 24, textAlign: "center", fontWeight: 600 }}>
+
+                            {quantityInCart}
+
+                          </div>
+
+
+                          <button
+
+                            onClick={() => handlePlus(screen)}
+                            aria-label={`Sumar entrada ${movie.title} ${screen.screenName}`}
+                            className="quantity-button"
+
+                          > + </button>
+
+                        </div>
+
+
+                      </li>
+
+
                     );
 
-                    successToast("Entrada agregada al carrito");
+                  })}
 
-                  };
+                </ul>
 
+              )
 
-                  const handleMinus = () => 
-                  {
-                    if (quantityInCart <= 0) 
-                    {
-                      return;
-                    }
-
-                    updateQuantity(screen.id, "ticket", quantityInCart - 1);
-
-                    successToast("Cantidad actualizada");
-
-                  };
-
-
-                  return (
-
-                    <li key={screen.id} style={{ marginBottom: "0.6rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                      
-                      <div style={{ flex: 1 }}>
-                        
-                        <div style={{ marginBottom: "0.25rem", fontWeight: 600 }}>
-                          
-                          <strong>{screen.screenName}</strong> — {new Date(screen.showtime).toLocaleString()}
-                        
-                        </div>
-                        
-                        <div style={{ marginBottom: "0.25rem", color: "#666" }}>
-                          
-                          Precio: ${price} {available !== null && <span style={{ marginLeft: 8 }}>• Disponible: {available}</span>}
-                        
-                        </div>
-
-                      </div>
-
-
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        
-                        <button
-                          onClick={handleMinus}
-                          aria-label={`Restar entrada ${movie.title} ${screen.screenName}`}
-                          className="quantity-button"
-                        > - </button>
-
-                        <div style={{ minWidth: 24, textAlign: "center", fontWeight: 600 }}>
-
-                          {quantityInCart}
-
-                        </div>
-
-                        <button
-                          onClick={handlePlus}
-                          aria-label={`Sumar entrada ${movie.title} ${screen.screenName}`}
-                          className="quantity-button"
-                        > + </button>
-
-                      </div>
-
-                    </li>
-
-                  );
-
-                })}
-
-              </ul>
-
-            )}
+            }
 
           </div>
 
 
           <div className="section-seats">
           
-            <h3 style={{ marginTop: "2rem" }}>SELECCIÓN DE ASIENTOS</h3>
-
             <SeatSelector
             onConfirm={(seats) => 
             {
