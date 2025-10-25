@@ -4,8 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import { Button } from "react-bootstrap";
 import { useNavigate } from "react-router";
 import { API_URL } from "../../services/api";
-import { toast } from "react-toastify";
-import { successToast, errorToast } from "../../utils/toast";
+import { successToast, errorToast, confirmToast } from "../../utils/toast";
 
 
 export const UserProfile = () => 
@@ -103,7 +102,7 @@ export const UserProfile = () =>
 
     const handleCancelOrder = (orderId) => 
     {
-        toast.info(
+        confirmToast(
 
             ({ closeToast }) => (
 
