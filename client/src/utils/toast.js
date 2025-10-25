@@ -35,6 +35,7 @@ export const confirmToast = (message) =>
     toast.info(message, 
     {
         position: "top-right",
-        theme: "colored"
+        autoClose: false,
+        closeButton: false,
     });
 };
