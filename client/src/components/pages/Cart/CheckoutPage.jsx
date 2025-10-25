@@ -2,8 +2,11 @@
 import { Checkout } from "../../../components/Cart/Checkout";
 import { NavBar } from "../../NavBar/NavBar";
 
-export const CheckoutPage = () => {
+
+export const CheckoutPage = () => 
+{
     return (
+
         <div className="NavBar">
 
             <NavBar />
@@ -11,5 +14,7 @@ export const CheckoutPage = () => {
             <Checkout />
 
         </div>
+
     );
+
 };

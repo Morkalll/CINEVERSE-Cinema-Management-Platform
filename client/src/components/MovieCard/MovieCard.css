@@ -23,7 +23,6 @@
   box-shadow: 0 0 20px #ff00ccaa;
 }
 
-/* Contenedor de imagen */
 .movie-poster-container {
   width: 100%;
   height: 270px;
@@ -38,7 +37,6 @@
   display: block;
 }
 
-/* Título */
 .movie-title {
   font-size: 0.95rem;
   font-weight: 600;

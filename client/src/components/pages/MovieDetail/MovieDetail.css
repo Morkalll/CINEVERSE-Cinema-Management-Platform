@@ -1,4 +1,6 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+
 
 .movie-detail-container {
   width: 900px;
@@ -25,7 +27,6 @@
   box-shadow: 0 0 48px 0 #ff00ccbb, 0 0 0 6px #9900ff99;
 }
 
-/* Contenedor del poster y la info debajo */
 .poster-section {
   display: flex;
   flex-direction: column;
@@ -33,7 +34,6 @@
   gap: 28px;
 }
 
-/* Info debajo del póster */
 .extra-info {
   display: flex;
   flex-direction: column;
@@ -64,7 +64,6 @@
   letter-spacing: 1px;
 }
 
-/* Título a la derecha */
 .movie-detail-container .movie-title{
   font-size: 2.6rem;
   color: #fff;

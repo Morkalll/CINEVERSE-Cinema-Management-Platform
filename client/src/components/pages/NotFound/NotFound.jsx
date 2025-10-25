@@ -26,7 +26,7 @@ export const NotFound = () =>
         <div className="text-center mt-3">
 
             <h2>
-                Flaco qué hiciste?
+                Parece que no se pudo encontrar esta página...
             </h2>
 
             <Button className="text-center" onClick={goBackToHomeHandler}>
