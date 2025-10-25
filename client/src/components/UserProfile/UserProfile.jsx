@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import { Button } from "react-bootstrap";
 import { useNavigate } from "react-router";
 import { API_URL } from "../../services/api";
+import { toast } from "react-toastify";
 import { successToast, errorToast } from "../../utils/toast";
 
 
@@ -100,13 +101,56 @@ export const UserProfile = () =>
     };
 
 
-    const handleCancelOrder = async (orderId) => 
+    const handleCancelOrder = (orderId) => 
     {
-        if (!window.confirm("¿Estás seguro que querés cancelar esta orden?")) 
-        {
-            return;
-        }
+        toast.info(
 
+            ({ closeToast }) => (
+
+                <div>
+
+                    <p>¿Estás seguro que querés cancelar esta orden?</p>
+
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+
+                        <button 
+                            
+                            onClick={() => 
+                            {
+                                closeToast();
+                                confirmCancelOrder(orderId);
+                            }}
+                            
+                            style={{ padding: '4px 12px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px' }}
+                        
+                        > Sí, cancelar </button>
+
+                        <button 
+
+                            onClick={closeToast}
+                            
+                            style={{ padding: '4px 12px', background: '#6c757d', color: 'white', border: 'none', borderRadius: '4px' }}
+                        
+                        > No, no cancelar </button>
+
+                    </div>
+
+                </div>
+
+            ),
+
+            {
+                autoClose: false,
+                closeButton: false,
+            }
+
+        );
+
+    };
+
+
+    const confirmCancelOrder = async (orderId) => 
+    {
         try 
         {
             const endpoint = (API_URL || "http://localhost:3000/api").replace(/\/+$/, "") + `/orders/${orderId}`;
