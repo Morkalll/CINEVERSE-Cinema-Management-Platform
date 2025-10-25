@@ -67,7 +67,7 @@ export const CandyCard = ({ id, name, image, description, stock, price }) =>
 
                 <p className='candy-description'>{description}</p>
                 <p className='candy-price'>Precio: ${price}</p>
-                <p className='candy-available'>Disponible : {stock}</p>
+                <p className='candy-available'>Disponible: {stock}</p>
 
                 <div className='candy-bottom' style={{ display: "flex", alignItems: "center", gap: 8 }}>
 

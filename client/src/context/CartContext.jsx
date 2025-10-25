@@ -44,7 +44,7 @@ export const CartProvider = ({ children }) =>
     }, [cart]);
 
 
-    const findIndex = (refId, type) => cart.findIndex((item) => item.refId === refId && item.type === type);
+    const findIndex = (refId, type) => cart.findIndex((cartItem) => cartItem.refId === refId && cartItem.type === type);
 
 
     const addToCart = (item, quantity = 1) => 
@@ -57,7 +57,7 @@ export const CartProvider = ({ children }) =>
 
         setCart((prev) => 
         {
-            const idx = prev.findIndex((item) => item.refId === item.refId && item.type === item.type);
+            const idx = prev.findIndex((cartItem) => cartItem.refId === item.refId && cartItem.type === item.type);
 
             if (idx >= 0) 
             {
@@ -78,7 +78,7 @@ export const CartProvider = ({ children }) =>
 
     const removeFromCart = (refId, type) => 
     {
-        setCart((prev) => prev.filter((item) => !(item.refId === refId && item.type === type)));
+        setCart((prev) => prev.filter((cartItem) => !(cartItem.refId === refId && cartItem.type === type)));
     };
 
 
@@ -95,12 +95,12 @@ export const CartProvider = ({ children }) =>
         {
             if (newQuantity <= 0)
             {
-                return prev.filter((item) => !(item.refId === refId && item.type === type));
+                return prev.filter((cartItem) => !(cartItem.refId === refId && cartItem.type === type));
             }
 
-            return prev.map((item) => (item.refId === refId && item.type === type 
-                ? { ...item, quantity: newQuantity } 
-                : item));
+            return prev.map((cartItem) => (cartItem.refId === refId && cartItem.type === type 
+                ? { ...cartItem, quantity: newQuantity } 
+                : cartItem));
         });
 
     };
