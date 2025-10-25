@@ -9,7 +9,7 @@ export const registerUser = async (req, res) =>
 {
     try 
     {
-        const { username, email, password, role } = req.body;
+        const { username, email, password } = req.body;
 
         if (!email || !password) 
         {
@@ -35,7 +35,7 @@ export const registerUser = async (req, res) =>
             username,
             email,
             password: hashedPassword,
-            role: role || "user",
+            role: "user",
         });
 
         return res.status(201).json({ id: newUser.id, email: newUser.email });
@@ -44,7 +44,7 @@ export const registerUser = async (req, res) =>
     
     catch (error) 
     {
-        console.error("Error registerUser:", error);
+        console.error("Error registerUser", error);
         return res.status(500).json({ message: "Error interno" });
     }
 };
@@ -84,8 +84,10 @@ export const loginUser = async (req, res) =>
         });
 
 
-        return res.json({token,
-            user: {
+        return res.json(
+        {   token,
+            user: 
+            {
                 id: user.id,
                 username: user.username,
                 email: user.email,
@@ -110,7 +112,8 @@ export const getUser = async (req, res) =>
 
     if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
 
-    res.json({
+    res.json(
+    {
         id: user.id,
         username: user.username,
         email: user.email,

@@ -38,7 +38,7 @@ export const CandyCard = ({ id, name, image, description, stock, price }) =>
     };
 
 
-    const handleMinus = () => 
+    const handleDeleteProduct = () => 
     {
         if (quantityInCart <= 0) 
         {
@@ -51,19 +51,8 @@ export const CandyCard = ({ id, name, image, description, stock, price }) =>
     };
 
 
-    const handlePlus = () => 
-    {
-        if (stock !== undefined && quantityInCart >= stock) 
-        {
-            errorToast("No hay suficiente stock");
-            return;
-        }
-
-        handleAddProduct();
-    };
-
-
     return (
+
         <div className='candy-card'>
 
             <div className='candy-image-container'>
@@ -81,15 +70,20 @@ export const CandyCard = ({ id, name, image, description, stock, price }) =>
                 <p className='candy-available'>Disponible : {stock}</p>
 
                 <div className='candy-bottom' style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <button className='add-button-new' onClick={handleMinus} aria-label={`Restar ${name}`}>-</button>
+
+                    <button className='add-button-new' onClick={handleDeleteProduct} aria-label={`Restar ${name}`}> - </button>
 
                     <div style={{ minWidth: 28, textAlign: "center" }}>{quantityInCart}</div>
 
-                    <button className='add-button-new' onClick={handlePlus} aria-label={`Sumar ${name}`}>+</button>
+                    <button className='add-button-new' onClick={handleAddProduct} aria-label={`Sumar ${name}`}> + </button>
+                
                 </div>
 
             </div>
             
         </div>
+
     );
+
 };
+

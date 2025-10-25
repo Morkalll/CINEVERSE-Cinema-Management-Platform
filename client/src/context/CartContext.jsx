@@ -98,7 +98,9 @@ export const CartProvider = ({ children }) =>
                 return prev.filter((item) => !(item.refId === refId && item.type === type));
             }
 
-            return prev.map((item) => (item.refId === refId && item.type === type ? { ...item, quantity: newQuantity } : item));
+            return prev.map((item) => (item.refId === refId && item.type === type 
+                ? { ...item, quantity: newQuantity } 
+                : item));
         });
 
     };
@@ -147,7 +149,9 @@ export const CartProvider = ({ children }) =>
     {
         const found = cart.find((item) => item.refId === refId && item.type === type);
 
-        return found ? Number(found.quantity || 0) : 0;
+        return found 
+        ? Number(found.quantity || 0) 
+        : 0;
     };
 
 
