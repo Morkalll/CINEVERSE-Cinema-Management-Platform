@@ -15,6 +15,7 @@ import productsRoutes from './routes/products.routes.js';
 import orderRoutes from "./routes/order.routes.js";
 import movieShowingsRoutes from "./routes/movieshowing.routes.js";
 import screenRoutes from "./routes/screen.routes.js"
+import seatRoutes from "./routes/seats.routes.js"
 import * as fs from "node:fs"
 
 
@@ -39,6 +40,7 @@ async function main()
     app.use("/api/orders", orderRoutes);
     app.use("/api", movieShowingsRoutes); 
     app.use("/api", screenRoutes); 
+    app.use("/api", seatRoutes);
 
     app.listen(PORT);
     console.log(`🚀 Server listening on port ${PORT}`);

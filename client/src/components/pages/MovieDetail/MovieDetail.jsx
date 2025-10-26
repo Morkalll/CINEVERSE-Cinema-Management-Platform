@@ -1,9 +1,8 @@
-
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { NavBar } from '../../NavBar/NavBar';
 import './MovieDetail.css';
-import  SeatSelector  from "../../SeatSelector/SeatSelector";
+import SeatSelector from "../../SeatSelector/SeatSelector";
 import { useCart } from "../../../context/CartContext";
 import { useAuth } from "../../../context/AuthContext";
 import { successToast, errorToast } from "../../../utils/toast";
@@ -13,6 +12,7 @@ export const MovieDetail = () =>
 {
   const [movie, setMovie] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedShowing, setSelectedShowing] = useState(null); // 🎯 NUEVO ESTADO
 
   const { id } = useParams();
   const { addToCart, getItemQuantity, updateQuantity } = useCart();
@@ -32,7 +32,14 @@ export const MovieDetail = () =>
           console.log("No se pudo traer la película")
         }
 
-        setMovie(await response.json());
+        const movieData = await response.json();
+        setMovie(movieData);
+        
+        // 🎯 SELECCIONAR AUTOMÁTICAMENTE LA PRIMERA FUNCIÓN
+        if (movieData.movieShowings && movieData.movieShowings.length > 0) {
+          setSelectedShowing(movieData.movieShowings[0]);
+          console.log("✅ Primera función seleccionada:", movieData.movieShowings[0]);
+        }
 
       } 
       
@@ -174,10 +181,25 @@ export const MovieDetail = () =>
                     const quantityInCart = getItemQuantity(screen.id, "ticket");
                     const available = screen.capacity ?? null;
                     const price = Number(screen.ticketPrice ?? screen.price ?? 0);
+                    const isSelected = selectedShowing?.id === screen.id; // 🎯 VERIFICAR SI ESTÁ SELECCIONADA
 
                     return (
 
-                      <li key={screen.id} style={{ marginBottom: "0.6rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                      <li 
+                        key={screen.id} 
+                        onClick={() => setSelectedShowing(screen)} // 🎯 CLICK PARA SELECCIONAR
+                        style={{ 
+                          marginBottom: "0.6rem", 
+                          display: "flex", 
+                          alignItems: "center", 
+                          justifyContent: "space-between", 
+                          gap: 12,
+                          cursor: "pointer",
+                          backgroundColor: isSelected ? "#e3f2fd" : "transparent",
+                          padding: "8px",
+                          borderRadius: "4px",
+                          border: isSelected ? "2px solid #1976d2" : "2px solid transparent"
+                        }}>
                       
 
                         <div style={{ flex: 1 }}>
@@ -186,6 +208,7 @@ export const MovieDetail = () =>
                           <div style={{ marginBottom: "0.25rem", fontWeight: 600 }}>
 
                             <strong>{screen.screenName}</strong> — {new Date(screen.showtime).toLocaleString()}
+                            {isSelected && <span style={{ marginLeft: 8, color: "#1976d2" }}>✓ Seleccionada</span>}
 
                           </div>
                           
@@ -205,7 +228,7 @@ export const MovieDetail = () =>
 
                           <button
 
-                            onClick={() => handleMinus(screen)}
+                            onClick={(e) => { e.stopPropagation(); handleMinus(screen); }}
                             aria-label={`Restar entrada ${movie.title} ${screen.screenName}`}
                             className="quantity-button"
 
@@ -221,7 +244,7 @@ export const MovieDetail = () =>
 
                           <button
 
-                            onClick={() => handlePlus(screen)}
+                            onClick={(e) => { e.stopPropagation(); handlePlus(screen); }}
                             aria-label={`Sumar entrada ${movie.title} ${screen.screenName}`}
                             className="quantity-button"
 
@@ -248,26 +271,25 @@ export const MovieDetail = () =>
 
           <div className="section-seats">
           
-            <SeatSelector
-            onConfirm={(seats) => 
-            {
-              if (!user) 
-              {
-                errorToast("Debes iniciar sesión para continuar.");
-                return;
-              }
-
-              if (seats.length === 0) 
-              { 
-                errorToast("Debes seleccionar al menos un asiento.");
-                return;
-              }
-
-              successToast(`Seleccionaste ${seats.length} asientos: ${seats.join(", ")}`);
-
-            }}
+            {selectedShowing ? (
+              <>
+                <h3 style={{ marginBottom: "1rem" }}>
+                  SELECCIONAR ASIENTOS - {selectedShowing.screenName}
+                </h3>
+                <SeatSelector    
+                  rows={5}
+                  seatsPerRow={8}
+                  showingId={selectedShowing.id}
+                />
+              </>
+            ) : (
+              <p style={{ color: "#666", fontStyle: "italic" }}>
+                Selecciona una función para elegir tus asientos
+              </p>
+            )}
             
-          /></div>
+          </div>
+
 
         </div>
 

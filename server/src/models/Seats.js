@@ -23,4 +23,10 @@ export const Seat = sequelize.define("Seat",
         type: DataTypes.BOOLEAN,
         defaultValue: false,
     },
+
+    showingId:
+    {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    }
 });
