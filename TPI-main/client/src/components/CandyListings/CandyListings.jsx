@@ -1,0 +1,59 @@
+
+import './CandyListings.css';
+
+import { useEffect, useState } from 'react';
+import { CandyCard } from '../CandyCard/CandyCard';
+
+
+export const CandyListings = () => 
+{
+    const [candy, setCandy] = useState([]);
+
+    useEffect(() => 
+    {
+      const fetchCandy = async () => 
+        {
+            try 
+            {
+                const response = await fetch('http://localhost:3000/api/candy');
+
+                if (!response.ok) 
+                {
+                    throw new Error("Error al traer los candy")
+                }
+
+                setCandy(await response.json());
+
+            } 
+            
+            catch (error) 
+            {
+                console.error("Error al obtener los productos", error);
+            }}
+                
+        fetchCandy();
+
+    }, []);
+
+    return (
+
+        <div className='snackbar'>
+
+            {candy.map(candy => (
+                
+                <CandyCard
+                    key={candy.id}
+                    id={candy.id}
+                    name={candy.name}
+                    image={candy.image}
+                    description={candy.description}
+                    stock={candy.stock}
+                    price={candy.price}
+                />
+
+            ))}
+
+        </div>
+    );
+};
+

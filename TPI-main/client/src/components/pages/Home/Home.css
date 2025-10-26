@@ -1,0 +1,63 @@
+
+body {
+  background-color: #000; 
+  margin: 0;
+  padding: 0;
+  font-family: 'Bebas Neue', sans-serif;
+}
+
+
+.home-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4rem; 
+  padding: 0 2rem;
+  background-color: #0a0a0a; 
+  color: #fff; 
+}
+
+.NavBar {
+  width: 100%;
+  z-index: 10;
+}
+
+.carousel-section {
+  margin-top: 2rem; 
+  margin-bottom: 2rem; 
+}
+
+.carousel-section h2 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: center;
+  background: linear-gradient(90deg, #ff00ff, #9900ff, #5100ff);
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  margin-bottom: 1.5rem;
+}
+
+.listings-section {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.showcase {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+  padding: 2rem 0;
+}
+
+.showcase-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: left;
+  margin-bottom: 2rem;
+  background: linear-gradient(90deg, #ff00ff, #9900ff, #5100ff);
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
