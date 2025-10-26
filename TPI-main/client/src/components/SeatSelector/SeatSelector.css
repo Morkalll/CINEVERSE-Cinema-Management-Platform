@@ -1,0 +1,75 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+
+.seat-selector {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    font-family: 'Bebas Neue', sans-serif;
+    color: #fff;
+}
+
+.seat-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: rgba(30, 0, 50, 0.4);
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 0 20px #5100ff55;
+}
+
+.seat-row {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.seat {
+    width: 28px;
+    height: 28px;
+    background-color: #111;
+    border: 2px solid #9900ff;
+    color: #fff;
+    font-size: 0.9rem;
+    text-align: center;
+    line-height: 26px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.seat:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 8px #ff00cc;
+}
+
+.seat.selected {
+    background: linear-gradient(90deg, #ff00cc, #9900ff);
+    box-shadow: 0 0 10px #ff00cc99;
+}
+
+.seat.occupied {
+    background-color: #333;
+    border-color: #555;
+    color: #777;
+    cursor: not-allowed;
+}
+
+.confirm-button {
+    background: linear-gradient(90deg, #ff00cc, #9900ff);
+    color: white;
+    font-size: 1.2rem;
+    padding: 10px 28px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.confirm-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px #ff00cc99;
+}
