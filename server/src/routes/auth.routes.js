@@ -8,8 +8,11 @@ const router = Router();
 
 
 router.post("/register", registerUser);
+
 router.post("/login", loginUser);
+
 router.get("/profile", getUser);
+
 
 router.post("/register-admin", registerAdmin);
 

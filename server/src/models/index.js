@@ -4,6 +4,7 @@ import { MovieShowing } from './MovieShowing.js';
 import { Ticket } from './Ticket.js';
 import { User } from './User.js';
 import { Screen } from './Screen.js';
+import { Seat } from './Seats.js';
 
 
 Movie.hasMany(MovieShowing, 
@@ -52,7 +53,19 @@ Screen.hasMany(MovieShowing,
 
 MovieShowing.belongsTo(Screen, 
 {
-  foreignKey: 'screenId',
+  foreignKey: 'screenId'
+});
+
+
+Screen.hasMany(Seat, 
+{ 
+  foreignKey: "showingId",
+  as: "seats" 
+});
+
+Seat.belongsTo(MovieShowing, 
+{ 
+  foreignKey: "showingId" 
 });
 
 
@@ -61,5 +74,6 @@ export {
   MovieShowing,
   Ticket,
   User,
-  Screen
+  Screen,
+  Seat
 };
