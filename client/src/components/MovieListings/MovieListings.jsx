@@ -38,7 +38,7 @@ export const MovieListings = () =>
 
   return (
   <>
-  <h1 className="showcase-title"> ──────────────── Cartelera ────────────────</h1>
+  <h1 className="showcase-title"></h1>
 
     <div className="showcase">
 
