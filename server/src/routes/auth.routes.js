@@ -4,6 +4,7 @@ import { registerUser, loginUser, getUser } from "../services/user.services.js";
 import { registerAdmin } from "../services/admin.services.js";
 
 
+
 const router = Router();
 
 
@@ -15,6 +16,7 @@ router.get("/profile", getUser);
 
 
 router.post("/register-admin", registerAdmin);
+
 
 
 export default router;

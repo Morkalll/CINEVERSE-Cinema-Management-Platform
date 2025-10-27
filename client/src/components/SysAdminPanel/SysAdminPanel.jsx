@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { NavBar } from "../../components/NavBar/NavBar";
 import { successToast, errorToast } from "../../utils/toast";
 import { apiRequest } from "../../services/api";
+import { useAuth } from "../../context/AuthContext";
 import "./SysAdminPanel.css";
 
 export const SysAdminPanel = () => {
+    const navigate = useNavigate();
+    const { user } = useAuth();
     const [activeTab, setActiveTab] = useState("users");
-    
     
     const [users, setUsers] = useState([]);
     const [admins, setAdmins] = useState([]);
@@ -24,8 +27,20 @@ export const SysAdminPanel = () => {
     const [formData, setFormData] = useState({});
 
     useEffect(() => {
+        if (!user) {
+            errorToast("Debes iniciar sesión");
+            navigate("/login");
+            return;
+        }
+
+        if (user.role !== "sysadmin") {
+            errorToast("No tienes permisos para acceder a esta página");
+            navigate("/home");
+            return;
+        }
+
         fetchAllData();
-    }, []);
+    }, [user, navigate]);
 
     const fetchAllData = async () => {
         try {
@@ -174,7 +189,6 @@ export const SysAdminPanel = () => {
                     <p>Gestión centralizada del sistema de cine</p>
                 </div>
 
-                {/* Tabs */}
                 <div className="tabs-container">
                     <button 
                         className={`tab-btn ${activeTab === "users" ? "active" : ""}`}
@@ -412,7 +426,6 @@ export const SysAdminPanel = () => {
                     </div>
                 )}
 
-                {/* Contenido de Funciones */}
                 {activeTab === "showings" && (
                     <div className="sysadmin-section">
                         <div className="section-header">
@@ -540,6 +553,7 @@ export const SysAdminPanel = () => {
                         </div>
                     </div>
                 )}
+
 
                 {showFormModal && (
                     <div className="modal-overlay" onClick={() => setShowFormModal(false)}>
