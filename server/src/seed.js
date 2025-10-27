@@ -4,6 +4,7 @@ import { MovieShowing } from './models/MovieShowing.js';
 import { Products } from './models/Products.js';
 import { Screen } from './models/Screen.js';
 import { sequelize } from './db.js';
+import { Seat } from './models/Seats.js';
 
 
 await sequelize.sync({ alter: true });
@@ -137,10 +138,10 @@ await Screen.bulkCreate(
     capacity: 40
   },
 
-]),
+])
 
 
-await MovieShowing.bulkCreate(
+const showings = await MovieShowing.bulkCreate(
 [
   {
     movieId: 1,
@@ -206,7 +207,7 @@ await MovieShowing.bulkCreate(
     ticketPrice: 1400.00,
   },
 
-]),
+])
 
 
 await Products.bulkCreate(
@@ -275,6 +276,30 @@ await Products.bulkCreate(
   }
 
 ])
+
+const rows = 5;
+const seatsPerRow = 8;
+const allSeats = [];
+
+for (const showing of showings) 
+{
+  for (let row = 1; row <= rows; row++) 
+  {
+    for (let seat = 1; seat <= seatsPerRow; seat++) 
+    {
+      allSeats.push({
+        label: `${row}-${seat}`,
+        reserved: false,
+        showingId: showing.id
+      });
+    }
+  }
+  console.log(` Asientos preparados para función ${showing.id}`);
+}
+
+await Seat.bulkCreate(allSeats);
+console.log(` Total de asientos creados: ${allSeats.length}`);
+
 
   
 console.log('¡Películas insertadas correctamente y funciones creadas!');

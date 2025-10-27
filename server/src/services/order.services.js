@@ -58,7 +58,7 @@ export const createOrder = async (req, res) =>
                         orderId: createdOrder.id,
                         type: "ticket",
                         refId: item.refId,
-                        name: `${show.movieId} - ${show.screenName}`,
+                        name: `${show.movieTitle} - ${show.screenId}`,
                         price,
                         quantity: item.quantity,
                     });

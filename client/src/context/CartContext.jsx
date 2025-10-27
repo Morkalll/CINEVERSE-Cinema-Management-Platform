@@ -49,6 +49,7 @@ export const CartProvider = ({ children }) =>
 
     const addToCart = (item, quantity = 1) => 
     {
+        console.log("Añadiendo al carrito:", item, "Cantidad:", quantity);
         if (!item || item.refId == null || !item.type)
         {
             console.warn("Item inválido", item);
