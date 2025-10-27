@@ -56,20 +56,37 @@ export default function SeatSelector({ rows = 5, seatsPerRow = 8, showingId, mov
     }, [showingId]);
 
 
-    // 🎯 Sincronizar asientos seleccionados con el carrito
     useEffect(() => 
     {
         if (!showingInfo) return;
 
-        const currentQuantity = getItemQuantity(showingId, "ticket");
         const selectedCount = selected.length;
+        const currentQuantity = getItemQuantity(showingId, "ticket");
 
-        // Si la cantidad en el carrito no coincide con los asientos seleccionados
+        // Si la cantidad en el carrito no coincide con los asientos seleccionados...
         if (currentQuantity !== selectedCount) 
         {
-            updateQuantity(showingId, "ticket", selectedCount);
+            // Si es el PRIMER asiento que seleccionamos, el item no está en el carrito.
+            // Debemos usar `addToCart` para agregar los detalles (nombre, precio).
+            if (selectedCount > 0 && currentQuantity === 0) 
+            {
+                const price = Number(showingInfo.ticketPrice ?? showingInfo.price ?? 0);
+                
+                // Agregamos el item con la cantidad correcta de una vez
+                addToCart({
+                    refId: showingId,
+                    type: "ticket",
+                    name: `${movieTitle} — ${showingInfo.screenName} (${new Date(showingInfo.showtime).toLocaleString()})`,
+                    price,
+                }, selectedCount); // Usamos selectedCount, no 1
+            }
+            // Si el item ya está en el carrito, solo actualizamos su cantidad
+            else 
+            {
+                updateQuantity(showingId, "ticket", selectedCount);
+            }
         }
-    }, [selected, showingId, showingInfo, getItemQuantity, updateQuantity]);
+    }, [selected, showingId, showingInfo, getItemQuantity, updateQuantity, addToCart, movieTitle]);
 
 
     const toggleSeat = (row, seat) => 
@@ -94,37 +111,37 @@ export default function SeatSelector({ rows = 5, seatsPerRow = 8, showingId, mov
                 : [...prev, id];
 
             // 🎯 Actualizar el carrito según la selección
-            if (showingInfo) 
-            {
-                const price = Number(showingInfo.ticketPrice ?? showingInfo.price ?? 0);
-                const available = showingInfo.capacity ?? null;
-
-                if (!isCurrentlySelected) 
-                {
-                    // Seleccionando un asiento nuevo
-                    if (available !== null && newSelection.length > available) 
-                    {
-                        errorToast("No hay más entradas disponibles para esta función.");
-                        return prev;
-                    }
-
-                    addToCart({
-                        refId: showingId,
-                        type: "ticket",
-                        name: `${movieTitle} — ${showingInfo.screenName} (${new Date(showingInfo.showtime).toLocaleString()})`,
-                        price,
-                    }, 1);
-                } 
-                else 
-                {
-                    // Deseleccionando un asiento
-                    const currentQuantity = getItemQuantity(showingId, "ticket");
-                    if (currentQuantity > 0) 
-                    {
-                        updateQuantity(showingId, "ticket", currentQuantity - 1);
-                    }
-                }
-            }
+            //if (showingInfo) 
+            //{
+            //    const price = Number(showingInfo.ticketPrice ?? showingInfo.price ?? 0);
+            //    const available = showingInfo.capacity ?? null;
+//
+            //    if (!isCurrentlySelected) 
+            //    {
+            //        // Seleccionando un asiento nuevo
+            //        if (available !== null && newSelection.length > available) 
+            //        {
+            //            errorToast("No hay más entradas disponibles para esta función.");
+            //            return prev;
+            //        }
+//
+            //        addToCart({
+            //            refId: showingId,
+            //            type: "ticket",
+            //            name: `${movieTitle} — ${showingInfo.screenName} (${new Date(showingInfo.showtime).toLocaleString()})`,
+            //            price,
+            //        }, 1);
+            //    } 
+            //    else 
+            //    {
+            //        // Deseleccionando un asiento
+            //        const currentQuantity = getItemQuantity(showingId, "ticket");
+            //        if (currentQuantity > 0) 
+            //        {
+            //            updateQuantity(showingId, "ticket", currentQuantity - 1);
+            //        }
+            //    }
+            //}
 
             return newSelection;
         });

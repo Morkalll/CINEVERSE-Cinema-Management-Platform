@@ -195,10 +195,8 @@ export const MovieDetail = () =>
                           justifyContent: "space-between", 
                           gap: 12,
                           cursor: "pointer",
-                          backgroundColor: isSelected ? "#e3f2fd" : "transparent",
                           padding: "8px",
                           borderRadius: "4px",
-                          border: isSelected ? "2px solid #1976d2" : "2px solid transparent"
                         }}>
                       
 
@@ -226,31 +224,12 @@ export const MovieDetail = () =>
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
 
 
-                          <button
-
-                            onClick={(e) => { e.stopPropagation(); handleMinus(screen); }}
-                            aria-label={`Restar entrada ${movie.title} ${screen.screenName}`}
-                            className="quantity-button"
-                            disabled = "true"
-
-                          > - </button>
-
 
                           <div style={{ minWidth: 24, textAlign: "center", fontWeight: 600 }}>
 
                             {quantityInCart}
 
                           </div>
-
-
-                          <button
-
-                            onClick={(e) => { e.stopPropagation(); handlePlus(screen); }}
-                            aria-label={`Sumar entrada ${movie.title} ${screen.screenName}`}
-                            className="quantity-button"
-                            disabled = "true"
-
-                          > + </button>
 
                         </div>
 
@@ -282,6 +261,8 @@ export const MovieDetail = () =>
                   rows={5}
                   seatsPerRow={8}
                   showingId={selectedShowing.id}
+                  movieTitle={movie.title} 
+                  showingInfo={selectedShowing}
                 />
               </>
             ) : (
