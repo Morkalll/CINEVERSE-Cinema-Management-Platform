@@ -64,6 +64,7 @@ export const reserveSeats = async (req, res) =>
     try 
     {
         const { userId, showingId, seats } = req.body;
+        console.log(userId, showingId, seats)
 
         if (!userId || !showingId || !seats || seats.length === 0) 
         {

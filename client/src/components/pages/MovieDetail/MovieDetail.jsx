@@ -12,7 +12,7 @@ export const MovieDetail = () =>
 {
   const [movie, setMovie] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [selectedShowing, setSelectedShowing] = useState(null); // 🎯 NUEVO ESTADO
+  const [selectedShowing, setSelectedShowing] = useState(null); 
 
   const { id } = useParams();
   const { addToCart, getItemQuantity, updateQuantity } = useCart();
@@ -35,7 +35,7 @@ export const MovieDetail = () =>
         const movieData = await response.json();
         setMovie(movieData);
         
-        // 🎯 SELECCIONAR AUTOMÁTICAMENTE LA PRIMERA FUNCIÓN
+        
         if (movieData.movieShowings && movieData.movieShowings.length > 0) {
           setSelectedShowing(movieData.movieShowings[0]);
           console.log("✅ Primera función seleccionada:", movieData.movieShowings[0]);
@@ -181,13 +181,13 @@ export const MovieDetail = () =>
                     const quantityInCart = getItemQuantity(screen.id, "ticket");
                     const available = screen.capacity ?? null;
                     const price = Number(screen.ticketPrice ?? screen.price ?? 0);
-                    const isSelected = selectedShowing?.id === screen.id; // 🎯 VERIFICAR SI ESTÁ SELECCIONADA
+                    const isSelected = selectedShowing?.id === screen.id;
 
                     return (
 
                       <li 
                         key={screen.id} 
-                        onClick={() => setSelectedShowing(screen)} // 🎯 CLICK PARA SELECCIONAR
+                        onClick={() => setSelectedShowing(screen)} 
                         style={{ 
                           marginBottom: "0.6rem", 
                           display: "flex", 
@@ -231,6 +231,7 @@ export const MovieDetail = () =>
                             onClick={(e) => { e.stopPropagation(); handleMinus(screen); }}
                             aria-label={`Restar entrada ${movie.title} ${screen.screenName}`}
                             className="quantity-button"
+                            disabled = "true"
 
                           > - </button>
 
@@ -247,6 +248,7 @@ export const MovieDetail = () =>
                             onClick={(e) => { e.stopPropagation(); handlePlus(screen); }}
                             aria-label={`Sumar entrada ${movie.title} ${screen.screenName}`}
                             className="quantity-button"
+                            disabled = "true"
 
                           > + </button>
 
@@ -274,7 +276,7 @@ export const MovieDetail = () =>
             {selectedShowing ? (
               <>
                 <h3 style={{ marginBottom: "1rem" }}>
-                  SELECCIONAR ASIENTOS - {selectedShowing.screenName}
+                  {selectedShowing.screenName}
                 </h3>
                 <SeatSelector    
                   rows={5}

@@ -2,7 +2,7 @@
 import { MovieShowing } from "../models/MovieShowing.js";
 import { Movie } from "../models/Movie.js";
 import { Seat } from "../models/Seats.js";
-
+import { sequelize } from "../db.js"; 
 
 export const findAllMovieShowings = async (req, res) => 
 {
@@ -57,47 +57,59 @@ export const findOneMovieShowings = async (req, res) =>
 
 export const createMovieShowings = async (req, res) => 
 {
+    const transaction = await sequelize.transaction();
     try 
     {
-        const { movieId, showtime, screenId, ticketPrice } = req.body;
-        
-        const showing = await MovieShowing.create(
+        const movieId = req.body.movieId
+        const showtime = req.body.showtime
+        const screenId = req.body.screenId
+        const ticketPrice = req.body.price
+
+        if (!movieId || !showtime) 
+        {
+            return res.status(400).json({ message: "MovieID y Showtime son requeridos" });
+        }
+
+
+
+        const newShowing = await MovieShowing.create(
         {
             movieId,
             showtime,
             screenId,
             ticketPrice
         });
+
+    const seats = [];
+            const rows = 5;
+            const seatsPerRow = 8;
         
-        const seats = [];
-        const rows = 5;
-        const seatsPerRow = 8;
-        
-        for (let row = 1; row <= rows; row++) 
-        {
-            for (let seat = 1; seat <= seatsPerRow; seat++) 
+            for (let row = 1; row <= rows; row++) 
             {
-                seats.push({
-                    label: `${row}-${seat}`,
-                    reserved: false,
-                    showingId: showing.id
-                });
-            }
+                for (let seat = 1; seat <= seatsPerRow; seat++) 
+                {
+                    seats.push({
+                        label: `${row}-${seat}`,
+                        reserved: false,
+                        showingId: newShowing.id
+                    });
+                }
         }
         
         await Seat.bulkCreate(seats);
-        
-        console.log(`Función ${showing.id} creada con ${seats.length} asientos`);
-        
-        res.status(201).json(showing);
-        
-    } 
+        await transaction.commit();
 
+        return res.status(201).json(newShowing);
+       
+    } 
+    
     catch (error) 
     {
+        await transaction.rollback()
         console.error(error);
-        res.status(500).json({ message: "Error al crear función" });
+        return res.status(500).json({ message: "Error interno" });
     }
+
 };
 
 

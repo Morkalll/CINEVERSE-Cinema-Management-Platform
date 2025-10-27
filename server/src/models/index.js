@@ -57,7 +57,7 @@ MovieShowing.belongsTo(Screen,
 });
 
 
-Screen.hasMany(Seat, 
+MovieShowing.hasMany(Seat, 
 { 
   foreignKey: "showingId",
   as: "seats" 
