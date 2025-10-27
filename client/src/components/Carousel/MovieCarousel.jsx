@@ -1,8 +1,6 @@
-
 import { useRef, useEffect, useState } from 'react';
 import ReactSwipe from 'react-swipe';
 import './MovieCarousel.css';
-
 
 export const MovieCarousel = () => 
 {
@@ -23,22 +21,16 @@ export const MovieCarousel = () =>
         }
 
         const data = await response.json();
-
         setMovies(data);
-
       } 
-      
       catch (error) 
       {
         console.error('Error:', error);
       }
-
     };
 
     fetchMovies();
-
   }, []);
-
 
   useEffect(() => 
   {
@@ -51,63 +43,55 @@ export const MovieCarousel = () =>
     }, 3000);
 
     return () => clearInterval(interval);
-
   }, []);
 
+  if (movies.length === 0) {
+    return (
+      <section className="carousel-section">
+        <h1 className="showcase-title">
+          ─────────────── Recomendadas ───────────────
+        </h1>
+        <div className="carousel-wrapper">
+          <p>Cargando películas...</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
-    
     <section className="carousel-section">
-      
       <h1 className="showcase-title">
-
         ─────────────── Recomendadas ───────────────
-
       </h1>
 
       <div className="carousel-wrapper">
-
         <button className="carousel-arrow left" onClick={() => swipeRef.current.prev()}>
-
           &#10094;
-
         </button>
 
         <button className="carousel-arrow right" onClick={() => swipeRef.current.next()}>
-
           &#10095;
-
         </button>
 
-
-        <ReactSwipe className="carousel-swipe"
-          swipeOptions={
-          {
+        <ReactSwipe 
+          className="carousel-swipe"
+          swipeOptions={{
             continuous: true,
             speed: 400,
           }}
           ref={swipeRef}>
 
           {movies.map((movie) => (
-
             <div key={movie.id} className="carousel-slide">
-              
               <img
                 src={movie.posterCarousel}
                 alt={movie.title}
                 className="carousel-poster"
               />
-
             </div>
-
           ))}
-
         </ReactSwipe>
-
       </div>
-
     </section>
-
   );
-
 };
