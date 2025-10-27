@@ -18,6 +18,7 @@ import { CreateMoviesForm } from './components/Forms/CreateMovieForm';
 import { CreateCandyForm } from './components/Forms/CreateCandyForm';
 import { CreateMovieShowingForm } from './components/Forms/CreateMovieShowingForm';
 import { ProtectedRoute } from './components/ProtectedRoute/ProtectedRoute';
+import { SysAdminPanel } from './components/SysAdminPanel/SysAdminPanel';
 
 
 function App() 
@@ -42,6 +43,7 @@ function App()
         <Route path="/addmovie" element= { <ProtectedRoute> {<CreateMoviesForm />} </ProtectedRoute> } />
         <Route path="/addcandy" element= { <ProtectedRoute> {<CreateCandyForm/>} </ProtectedRoute> } />
         <Route path="/addmovieshowing" element= { <ProtectedRoute> {<CreateMovieShowingForm/>} </ProtectedRoute> } />
+        <Route path= "/sysadmin" element= {<SysAdminPanel/>}/>
       </Routes>
 
       <ToastContainer />
