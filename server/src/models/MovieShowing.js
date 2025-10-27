@@ -1,7 +1,6 @@
 
 import { DataTypes } from "sequelize";
 import { sequelize } from "../db.js";
-import { Seat } from "./Seats.js";
 
 
 export const MovieShowing = sequelize.define("MovieShowing",
@@ -12,7 +11,6 @@ export const MovieShowing = sequelize.define("MovieShowing",
         primaryKey: true,
         autoIncrement: true
     },
-
 
     movieId:
     {
@@ -26,7 +24,6 @@ export const MovieShowing = sequelize.define("MovieShowing",
         allowNull: false
     },
 
-
     screenId: 
     {
         type: DataTypes.INTEGER,
@@ -38,7 +35,6 @@ export const MovieShowing = sequelize.define("MovieShowing",
         type: DataTypes.FLOAT,
         allowNull: false,
     },
-
 
     format:
     {
@@ -53,6 +49,3 @@ export const MovieShowing = sequelize.define("MovieShowing",
     timestamps: false,
 });
 
-
-MovieShowing.hasMany(Seat, { foreignKey: "showingId" });
-Seat.belongsTo(MovieShowing, { foreignKey: "showingId" });

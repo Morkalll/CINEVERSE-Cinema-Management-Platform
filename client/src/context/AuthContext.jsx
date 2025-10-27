@@ -160,60 +160,6 @@ export const AuthProvider = ({ children }) =>
 
     };
 
-/* BORRAR ESTOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO */
-    const loginAdmin = async (email, password) => {
-        try {
-            const res = await fetch(`${API_URL}/auth/login-admin`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
-            });
-
-            if (!res.ok) {
-                const errBody = await res.json().catch(() => null);
-                throw new Error(errBody?.message || "Error al iniciar sesión");
-            }
-
-            const data = await res.json();
-
-            // Si backend devolviera data.user, preferirlo.
-            if (data.user) {
-                const u = data.user;
-                const normalized = {
-                    id: u.id,
-                    username: u.username,
-                    email: u.email,
-                    role: u.role,
-                };
-                setUser(normalized);
-            }
-
-            // Si el backend devuelve token, decodificamos y normalizamos
-            if (data.token) {
-                setToken(data.token);
-                try {
-                    const payload = jwtDecode(data.token);
-                    const normalized = {
-                        id: payload.id,
-                        username: payload.username,
-                        email: payload.email,
-                        role: payload.role,
-                        exp: payload.exp,
-                    };
-                    setUser(normalized);
-                } catch (e) {
-                    console.warn("No se pudo decodificar token:", e);
-                }
-            }
-
-            return { success: true, data };
-        } catch (err) {
-            console.error("Algo ha fallado en login:", err);
-            return { success: false, error: err.message || "Error" };
-        }
-    };
-/* BORRAR ESTOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO */
-
 
     const logout = () => 
     {
@@ -270,7 +216,6 @@ export const AuthProvider = ({ children }) =>
         token,
         loading,
         login,
-        loginAdmin,
         logout,
         fetchProfile,
         isAuthenticated: !!token,
