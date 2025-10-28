@@ -9,22 +9,22 @@ import App from './App.jsx'
 
 
 createRoot(document.getElementById('root')).render
-  (
-    <StrictMode>
+(
+  <StrictMode>
 
-      <AuthProvider>
+    <AuthProvider>
 
-        <CartProvider>
+      <CartProvider>
 
-          <BrowserRouter>
+        <BrowserRouter>
 
-            <App />
+          <App />
 
-          </BrowserRouter>
+        </BrowserRouter>
 
-        </CartProvider>
+      </CartProvider>
 
-      </AuthProvider>
+    </AuthProvider>
 
-    </StrictMode>
-  )
+  </StrictMode>
+)

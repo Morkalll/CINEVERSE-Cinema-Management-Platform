@@ -12,11 +12,11 @@ router.get("/candy", findAllProducts);
 
 router.get("/candy/:id", findOneProduct);
 
-router.post("/candy", verifyToken, authorize(["admin", "sysAdmin"]), createProduct);
+router.post("/candy", verifyToken, authorize(["admin", "sysadmin"]), createProduct);
 
-router.put("/candy/:id", verifyToken, authorize(["admin", "sysAdmin"]), updateProduct);
+router.put("/candy/:id", verifyToken, authorize(["admin", "sysadmin"]), updateProduct);
 
-router.delete("/candy/:id", verifyToken, authorize(["admin", "sysAdmin"]), deleteProduct);
+router.delete("/candy/:id", verifyToken, authorize(["admin", "sysadmin"]), deleteProduct);
 
 
 export default router;

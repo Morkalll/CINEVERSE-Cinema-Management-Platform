@@ -132,11 +132,7 @@ export const Login = () =>
 
                                     </Button>
 
-                                    <section>
-
-                                        ‎
-
-                                    </section>
+                                    <section>­</section>
 
                                 </Col>
 

@@ -12,11 +12,11 @@ router.get("/screens", findAllScreens);
 
 router.get("/screens/:id", findOneScreen);
 
-router.post("/screens", verifyToken, authorize(["admin", "sysAdmin"]), createScreen);
+router.post("/screens", verifyToken, authorize(["admin", "sysadmin"]), createScreen);
 
-router.put("/screens/:id", verifyToken, authorize(["admin", "sysAdmin"]), updateScreen);
+router.put("/screens/:id", verifyToken, authorize(["admin", "sysadmin"]), updateScreen);
 
-router.delete("/screens/:id", verifyToken, authorize(["admin", "sysAdmin"]), deleteScreen);
+router.delete("/screens/:id", verifyToken, authorize(["admin", "sysadmin"]), deleteScreen);
 
 
 export default router;

@@ -12,11 +12,11 @@ router.get("/movielistings", findAllMovies);
 
 router.get("/movielistings/:id", findOneMovie);
 
-router.post("/movielistings", verifyToken, authorize(["admin", "sysAdmin"]), createMovie);
+router.post("/movielistings", verifyToken, authorize(["admin", "sysadmin"]), createMovie);
 
-router.put("/movielistings/:id", verifyToken, authorize(["admin", "sysAdmin"]), updateMovie);
+router.put("/movielistings/:id", verifyToken, authorize(["admin", "sysadmin"]), updateMovie);
 
-router.delete("/movielistings/:id", verifyToken, authorize(["admin", "sysAdmin"]), deleteMovie);
+router.delete("/movielistings/:id", verifyToken, authorize(["admin", "sysadmin"]), deleteMovie);
 
 
 export default router;

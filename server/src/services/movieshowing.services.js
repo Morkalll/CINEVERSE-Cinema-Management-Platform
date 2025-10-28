@@ -39,7 +39,7 @@ export const findOneMovieShowings = async (req, res) =>
 
         if (!oneShowing) 
         {
-            return res.status(404).json({ message: "MovieShowing no encontrada" });
+            return res.status(404).json({ message: "Función no encontrada" });
         }
 
         return res.json(oneShowing);
@@ -121,7 +121,7 @@ export const updateMovieShowings = async (req, res) =>
         const { movieId, showtime, screen, availableSeats } = req.body;
 
         const showingToUpdate = await MovieShowing.findByPk(id);
-        if (!showingToUpdate) return res.status(404).json({ message: "MovieShowing no encontrado" });
+        if (!showingToUpdate) return res.status(404).json({ message: "Función no encontrada" });
 
         await showingToUpdate.update({ movieId, showtime, screen, availableSeats });
         await showingToUpdate.save();
@@ -141,23 +141,36 @@ export const updateMovieShowings = async (req, res) =>
 
 export const deleteMovieShowings = async (req, res) => 
 {
+    const transaction = await sequelize.transaction();
+    
     try 
     {
         const { id } = req.params;
-        const showingToDelete = await MovieShowing.findByPk(id);
+        const showingToDelete = await MovieShowing.findByPk(id, { transaction });
 
-        if (!showingToDelete) return res.status(404).json({ message: "MovieShowing no encontrado" });
+        if (!showingToDelete) {
+            await transaction.rollback();
+            return res.status(404).json({ message: "MovieShowing no encontrado" });
+        }
 
-        await showingToDelete.destroy();
-        return res.send(`MovieShowing con id: ${id} ha sido borrado`);
+        // Delete all seats for this showing first
+        await Seat.destroy({ 
+            where: { showingId: id },
+            transaction 
+        });
+
+        // Then delete the showing
+        await showingToDelete.destroy({ transaction });
+        
+        await transaction.commit();
+        return res.status(200).json({ message: `Función con id: ${id} eliminada correctamente` });
 
     } 
-    
     catch (error) 
     {
-        console.error(error);
-        return res.status(500).json({ message: "Error interno" });
+        await transaction.rollback();
+        console.error("Error deleting showing:", error);
+        return res.status(500).json({ message: error.message || "Error interno" });
     }
-
 };
 
