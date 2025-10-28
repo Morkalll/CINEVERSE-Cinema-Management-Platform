@@ -33,7 +33,15 @@ export const Login = () =>
         if (result.success) 
         {
             successToast("¡Inicio de sesión exitoso!");
-            navigate("/home");
+            const userRole = result.data.user.role;
+            
+            if (userRole === "sysadmin") {
+                navigate("/sysadmin");
+            } else if (userRole === "admin") {
+                navigate("/admin");
+            } else {
+                navigate("/home");
+            }
         } 
         
         else 
