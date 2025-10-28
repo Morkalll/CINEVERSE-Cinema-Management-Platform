@@ -11,7 +11,7 @@ export const Checkout = () =>
     const { token, user } = useAuth();
 
 
-    const handleConfirm = async () => 
+ const handleConfirm = async () => 
     {
         if (!user) 
         {
@@ -27,14 +27,48 @@ export const Checkout = () =>
 
         try 
         {
-            const items = cart.map((it) => (
+            const ticketItems = cart.filter(item => item.type === "ticket");
+            
+            if (ticketItems.length > 0) 
             {
+                for (const ticketItem of ticketItems) 
+                {
+                    if (ticketItem.seats && ticketItem.seats.length > 0) 
+                    {
+                        const seatResponse = await fetch(
+                            `${API_URL}/seats/reserve`,
+                            {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "Authorization": `Bearer ${token}`
+                                },
+                                body: JSON.stringify({
+                                    userId: user.id,
+                                    showingId: ticketItem.refId,
+                                    seats: ticketItem.seats
+                                })
+                            }
+                        );
+
+                        const seatData = await seatResponse.json();
+
+                        if (!seatResponse.ok) 
+                        {
+                            throw new Error(seatData.message || "Error al reservar asientos");
+                        }
+                    }
+                }
+            }
+
+            const items = cart.map((it) => ({
                 type: it.type,
                 refId: it.refId,
                 quantity: it.quantity,
+                seats: it.seats || undefined, // Include seats for ticket items
             }));
 
-            const res = await fetch((API_URL) + "/orders", 
+            const res = await fetch(`${API_URL}/orders`, 
             {
                 method: "POST",
                 headers: {
@@ -52,12 +86,11 @@ export const Checkout = () =>
 
             const data = await res.json();
 
-            successToast("Pedido realizado con éxito");
+            successToast("¡Pedido realizado con éxito!");
 
             clearCart();
 
             console.log("Order created:", data);
-
         } 
         
         catch (err) 
@@ -65,7 +98,6 @@ export const Checkout = () =>
             console.error(err);
             errorToast(err.message || "Error al procesar el pedido");
         }
-
     };
 
     if (!cart || cart.length === 0) 

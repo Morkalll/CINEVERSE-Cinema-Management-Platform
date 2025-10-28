@@ -63,7 +63,11 @@ export const CartProvider = ({ children }) =>
             if (idx >= 0) 
             {
                 const newCart = [...prev];
-                newCart[idx] = { ...newCart[idx], quantity: Number(newCart[idx].quantity || 0) + Number(quantity) };
+                newCart[idx] = { 
+                    ...newCart[idx], 
+                    quantity: Number(newCart[idx].quantity || 0) + Number(quantity),
+                    seats: item.seats || newCart[idx].seats // Preserve or update seats
+                };
                 return newCart;
             } 
             
@@ -83,7 +87,7 @@ export const CartProvider = ({ children }) =>
     };
 
 
-    const updateQuantity = (refId, type, newQuantity) => 
+    const updateQuantity = (refId, type, newQuantity, seats = undefined) => 
     {
         newQuantity = Number(newQuantity);
 
@@ -99,9 +103,17 @@ export const CartProvider = ({ children }) =>
                 return prev.filter((cartItem) => !(cartItem.refId === refId && cartItem.type === type));
             }
 
-            return prev.map((cartItem) => (cartItem.refId === refId && cartItem.type === type 
-                ? { ...cartItem, quantity: newQuantity } 
-                : cartItem));
+            return prev.map((cartItem) => {
+                if (cartItem.refId === refId && cartItem.type === type) {
+                    const updated = { ...cartItem, quantity: newQuantity };
+                    // Update seats if provided
+                    if (seats !== undefined) {
+                        updated.seats = seats;
+                    }
+                    return updated;
+                }
+                return cartItem;
+            });
         });
 
     };
@@ -180,4 +192,3 @@ export const CartProvider = ({ children }) =>
 
 
 export const useCart = () => useContext(CartContext);
-

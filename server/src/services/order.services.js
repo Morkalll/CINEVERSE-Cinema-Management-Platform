@@ -1,9 +1,10 @@
 
 import Order from "../models/Order.js";
-import OrderItem from "../models/OrderItem.js";
+import { OrderItem } from "../models/OrderItem.js";  // Changed to named import
 import { sequelize } from "../db.js";
 import { MovieShowing } from "../models/MovieShowing.js";
 import { Products } from "../models/Products.js";
+import { Seat } from "../models/Seats.js";
 
 
 export const createOrder = async (req, res) => 
@@ -61,6 +62,7 @@ export const createOrder = async (req, res) =>
                         name: `${show.movieTitle} - ${show.screenId}`,
                         price,
                         quantity: item.quantity,
+                        seats: item.seats || null, // Store seat labels
                     });
 
                 } 
@@ -183,7 +185,7 @@ export const deleteOrder = async (req, res) =>
         }
 
 
-        const order = await Order.findByPk(orderId, { include: [OrderItem], transaction: transaction });
+        const order = await Order.findByPk(orderId, { transaction: transaction });
 
 
         if (!order) 
@@ -198,9 +200,17 @@ export const deleteOrder = async (req, res) =>
             return res.status(403).json({ message: "No autorizado para cancelar esta orden" });
         }
 
-
-        for (const item of order.OrderItems || []) 
+        const orderItems = await OrderItem.findAll(
         {
+            where: { orderId: order.id },
+            transaction: transaction
+        });
+
+        for (const item of orderItems) 
+        {
+            console.log("🔄 Processing item:", item.id, "Type:", item.type);
+            
+          
             if (item.type === "product") 
             {
                 try 
@@ -234,11 +244,28 @@ export const deleteOrder = async (req, res) =>
                         await show.save({ transaction: transaction });
                     }
                     
+                    if (item.seats && Array.isArray(item.seats) && item.seats.length > 0) 
+                    {
+                        
+                        await Seat.update(
+                            { reserved: false },
+                            { 
+                                where: 
+                                { 
+                                    showingId: item.refId,
+                                    label: item.seats 
+                                },
+                                transaction: transaction
+                            }
+                        );
+            
+                    } 
+                    
                 } 
                 
                 catch (e) 
                 {
-                    console.warn("No se pudo restaurar la capacidad de Show", item.refId, e);
+                    console.log("No se pudo restaurar la capacidad de Show o liberar asientos", item.refId, e);
                 }
             }
         }
@@ -253,6 +280,7 @@ export const deleteOrder = async (req, res) =>
     
     catch (err) 
     {
+        await transaction.rollback();
         console.error("deleteOrder error:", err);
         return res.status(500).json({ message: err.message || "Error cancelando la orden" });
     }
