@@ -1,4 +1,3 @@
-
 import { Movie } from './Movie.js';
 import { MovieShowing } from './MovieShowing.js';
 import { Ticket } from './Ticket.js';
@@ -7,10 +6,11 @@ import { Screen } from './Screen.js';
 import { Seat } from './Seats.js';
 
 
+// Movie -> MovieShowing (one-to-many)
 Movie.hasMany(MovieShowing, 
 {
   foreignKey: 'movieId',
-  onDelete: 'CASCADE',
+  onDelete: 'CASCADE',  // ✅ When movie deleted, delete all showings
   as: "movieShowings"
 });
 
@@ -21,6 +21,7 @@ MovieShowing.belongsTo(Movie,
 });
 
 
+// User -> Ticket (one-to-many)
 User.hasMany(Ticket, 
 {
   foreignKey: 'userId',
@@ -33,6 +34,7 @@ Ticket.belongsTo(User,
 });
 
 
+// MovieShowing -> Ticket (one-to-many)
 MovieShowing.hasMany(Ticket, 
 {
   foreignKey: 'movieShowingId',
@@ -45,10 +47,11 @@ Ticket.belongsTo(MovieShowing,
 });
 
 
+// Screen -> MovieShowing (one-to-many)
 Screen.hasMany(MovieShowing, 
 {
   foreignKey: 'screenId',
-  onDelete: 'SET NULL'
+  onDelete: 'CASCADE'  // ✅ CHANGED from SET NULL to CASCADE
 });
 
 MovieShowing.belongsTo(Screen, 
@@ -57,9 +60,11 @@ MovieShowing.belongsTo(Screen,
 });
 
 
+// MovieShowing -> Seat (one-to-many)
 MovieShowing.hasMany(Seat, 
 { 
   foreignKey: "showingId",
+  onDelete: 'CASCADE',  // ✅ ADDED CASCADE
   as: "seats" 
 });
 

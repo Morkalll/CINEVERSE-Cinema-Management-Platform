@@ -1,6 +1,5 @@
-
 import Order from "../models/Order.js";
-import { OrderItem } from "../models/OrderItem.js";  // Changed to named import
+import { OrderItem } from "../models/OrderItem.js";
 import { sequelize } from "../db.js";
 import { MovieShowing } from "../models/MovieShowing.js";
 import { Products } from "../models/Products.js";
@@ -62,7 +61,7 @@ export const createOrder = async (req, res) =>
                         name: `${show.movieTitle} - ${show.screenId}`,
                         price,
                         quantity: item.quantity,
-                        seats: item.seats || null, // Store seat labels
+                        seats: item.seats || null,
                     });
 
                 } 
@@ -157,6 +156,30 @@ export const getUserOrders = async (req, res) =>
     catch (err) 
     {
         console.error("getUserOrders error:", err);
+        return res.status(500).json({ message: "Error interno" });
+    }
+
+};
+
+
+// NEW: Get all orders (for sysadmin)
+export const getAllOrders = async (req, res) => 
+{
+    try 
+    {
+        const orders = await Order.findAll(
+        {
+            include: [OrderItem],
+            order: [["createdAt", "DESC"]],
+        });
+
+        return res.json(orders);
+
+    } 
+    
+    catch (err) 
+    {
+        console.error("getAllOrders error:", err);
         return res.status(500).json({ message: "Error interno" });
     }
 

@@ -22,7 +22,7 @@ export const Order = sequelize.define("order",
     status: 
     { 
         type: DataTypes.STRING, 
-        defaultValue: "pending" 
+        defaultValue: "created" 
     },
 
     createdAt: 

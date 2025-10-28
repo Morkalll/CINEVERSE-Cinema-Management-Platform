@@ -1,6 +1,7 @@
-
 import { Movie } from "../models/Movie.js";
 import { MovieShowing } from "../models/MovieShowing.js";
+import { Seat } from "../models/Seats.js";
+import { sequelize } from "../db.js";
 
 
 export const findAllMovies = async (req, res) => 
@@ -109,22 +110,50 @@ export const updateMovie = async (req, res) =>
 
 export const deleteMovie = async (req, res) => 
 {
+    const transaction = await sequelize.transaction();
+    
     try 
     {
         const { id } = req.params;
-        const movieToDelete = await Movie.findByPk(id);
+        const movieToDelete = await Movie.findByPk(id, { transaction });
 
-        if (!movieToDelete) return res.status(404).json({ message: "Película no encontrada" });
+        if (!movieToDelete) {
+            await transaction.rollback();
+            return res.status(404).json({ message: "Película no encontrada" });
+        }
 
-        await movieToDelete.destroy();
-        return res.send(`Movie with id: ${id} deleted`);
+        // Find all showings for this movie
+        const showings = await MovieShowing.findAll({ 
+            where: { movieId: id },
+            transaction 
+        });
+
+        // Delete seats for each showing
+        for (const showing of showings) {
+            await Seat.destroy({ 
+                where: { showingId: showing.id },
+                transaction 
+            });
+        }
+
+        // Delete all showings for this movie
+        await MovieShowing.destroy({ 
+            where: { movieId: id },
+            transaction 
+        });
+
+        // Finally delete the movie
+        await movieToDelete.destroy({ transaction });
+        
+        await transaction.commit();
+        return res.status(200).json({ message: `Película con id: ${id} eliminada correctamente` });
     }
 
     catch (error) 
     {
-        console.error(error);
-        return res.status(500).json({ message: "Error interno" });
+        await transaction.rollback();
+        console.error("Error deleting movie:", error);
+        return res.status(500).json({ message: error.message || "Error interno" });
     }
 
 };
-

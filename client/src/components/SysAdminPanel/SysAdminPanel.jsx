@@ -3,24 +3,41 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { NavBar } from "../../components/NavBar/NavBar";
 import { successToast, errorToast } from "../../utils/toast";
-import { apiRequest } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import "./SysAdminPanel.css";
 
+
 export const SysAdminPanel = () => {
-    const navigate = useNavigate();
     const { user } = useAuth();
     const [activeTab, setActiveTab] = useState("users");
+    const navigate = useNavigate();
     
     const [users, setUsers] = useState([]);
-    const [admins, setAdmins] = useState([]);
     const [movies, setMovies] = useState([]);
     const [rooms, setRooms] = useState([]);
     const [showings, setShowings] = useState([]);
     const [candy, setCandy] = useState([]);
+    const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     
     const [deleteConfirm, setDeleteConfirm] = useState({ show: false, item: null, type: "" });
+    const [showCreateScreen, setShowCreateScreen] = useState(false);
+    const [newScreenCapacity, setNewScreenCapacity] = useState("");
+
+    const handleGoToRegister = () =>
+    {
+        navigate("/register")
+    }
+
+    const handleGoToRegisterAdmin = () =>
+    {
+        navigate("/register-admin")
+    }
+
+    const handleGoToRegisterSysAdmin = () =>
+    {
+        navigate("/register-sysadmin")
+    }
 
     useEffect(() => {
         if (!user) {
@@ -41,24 +58,69 @@ export const SysAdminPanel = () => {
     const fetchAllData = async () => {
         try {
             setLoading(true);
-            const [usersData, adminsData, moviesData, roomsData, showingsData, candyData] = await Promise.all([
-                apiRequest("/users", "GET"),
-                apiRequest("/admins", "GET"),
-                apiRequest("/movielistings", "GET"),
-                apiRequest("/screens", "GET"),
-                apiRequest("/movieshowings", "GET"),
-                apiRequest("/candy", "GET")
-            ]);
+            const token = localStorage.getItem("token");
+            
+            const headers = {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            };
 
-            setUsers(usersData);
-            setAdmins(adminsData);
-            setMovies(moviesData);
-            setRooms(roomsData);
-            setShowings(showingsData);
-            setCandy(candyData);
-            successToast("Datos cargados correctamente");
+            // Fetch only the endpoints that exist
+            const requests = [];
+            
+            // Users (includes all roles)
+            requests.push(
+                fetch("http://localhost:3000/api/users", { headers })
+                    .then(res => res.ok ? res.json() : [])
+                    .catch(() => [])
+            );
+            
+            // Movies
+            requests.push(
+                fetch("http://localhost:3000/api/movielistings", { headers })
+                    .then(res => res.ok ? res.json() : [])
+                    .catch(() => [])
+            );
+            
+            // Screens
+            requests.push(
+                fetch("http://localhost:3000/api/screens", { headers })
+                    .then(res => res.ok ? res.json() : [])
+                    .catch(() => [])
+            );
+            
+            // Showings
+            requests.push(
+                fetch("http://localhost:3000/api/movieshowings", { headers })
+                    .then(res => res.ok ? res.json() : [])
+                    .catch(() => [])
+            );
+            
+            // Candy
+            requests.push(
+                fetch("http://localhost:3000/api/candy", { headers })
+                    .then(res => res.ok ? res.json() : [])
+                    .catch(() => [])
+            );
+            
+            // Orders
+            requests.push(
+                fetch("http://localhost:3000/api/orders/all", { headers })
+                    .then(res => res.ok ? res.json() : [])
+                    .catch(() => [])
+            );
+
+            const [usersData, moviesData, roomsData, showingsData, candyData, ordersData] = await Promise.all(requests);
+
+            setUsers(usersData || []);
+            setMovies(moviesData || []);
+            setRooms(roomsData || []);
+            setShowings(showingsData || []);
+            setCandy(candyData || []);
+            setOrders(ordersData || []);
         } catch (err) {
-            errorToast(err.message || "Error al cargar los datos");
+            console.error("Error fetching data:", err);
+            errorToast("Error al cargar algunos datos");
         } finally {
             setLoading(false);
         }
@@ -72,39 +134,131 @@ export const SysAdminPanel = () => {
         const { item, type } = deleteConfirm;
         
         try {
+            const token = localStorage.getItem("token");
             const endpoints = {
-                user: "/users",
-                admin: "/users",
-                movie: "/movielistings",
-                screen: "/screens",
-                showing: "/movieshowings",
-                candy: "/candy"
+                user: "/api/users",
+                movie: "/api/movielistings",
+                room: "/api/screens",
+                showing: "/api/movieshowings",
+                candy: "/api/candy",
+                order: "/api/orders"
             };
 
-            await apiRequest(`${endpoints[type]}/${item.id}`, "DELETE");
+            const url = `http://localhost:3000${endpoints[type]}/${item.id}`;
+            console.log("🗑️ Deleting:", type, "with ID:", item.id);
+            console.log("📍 Full URL:", url);
+            console.log("🔑 Token:", token ? "Present" : "Missing");
+
+            const response = await fetch(url, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            console.log("📡 Response status:", response.status);
+            console.log("📋 Response headers:", Object.fromEntries(response.headers.entries()));
+
+            const contentType = response.headers.get("content-type");
+            console.log("📝 Content-Type:", contentType);
+
+            let responseData;
+            const responseText = await response.text();
+            console.log("📄 Raw response:", responseText);
+
+            try {
+                responseData = JSON.parse(responseText);
+                console.log("✅ Parsed as JSON:", responseData);
+            } catch (parseError) {
+                console.error("❌ JSON parse error:", parseError);
+                console.error("❌ Response was not valid JSON:", responseText);
+                throw new Error(`Server returned invalid response: ${responseText}`);
+            }
+
+            if (!response.ok) {
+                throw new Error(responseData.message || `Error ${response.status}`);
+            }
             
-            if (type === "user") setUsers(users.filter((u) => u.id !== item.id));
-            else if (type === "admin") setAdmins(admins.filter((a) => a.id !== item.id));
-            else if (type === "movie") setMovies(movies.filter((m) => m.id !== item.id));
-            else if (type === "room") setRooms(rooms.filter((r) => r.id !== item.id));
-            else if (type === "showing") setShowings(showings.filter((s) => s.id !== item.id));
-            else if (type === "candy") setCandy(candy.filter((c) => c.id !== item.id));
+            if (type === "user") {
+                setUsers(users.filter((u) => u.id !== item.id));
+            }
+            else if (type === "movie") {
+                // Remove the movie
+                setMovies(movies.filter((m) => m.id !== item.id));
+                // Also remove all showings for this movie (cascade effect)
+                setShowings(showings.filter((s) => s.movieId !== item.id));
+            }
+            else if (type === "room") {
+                // Remove the screen
+                setRooms(rooms.filter((r) => r.id !== item.id));
+                // Also remove all showings for this screen (cascade effect)
+                setShowings(showings.filter((s) => s.screenId !== item.id));
+            }
+            else if (type === "showing") {
+                setShowings(showings.filter((s) => s.id !== item.id));
+            }
+            else if (type === "candy") {
+                setCandy(candy.filter((c) => c.id !== item.id));
+            }
+            else if (type === "order") {
+                setOrders(orders.filter((o) => o.id !== item.id));
+            }
 
             successToast(`${getItemTypeName(type)} eliminado correctamente`);
             setDeleteConfirm({ show: false, item: null, type: "" });
         } catch (err) {
+            console.error("❌ DELETE ERROR:", err);
+            console.error("❌ Error stack:", err.stack);
             errorToast(err.message || "Error al eliminar");
+        }
+    };
+
+    const handleCreateScreen = async (e) => {
+        e.preventDefault();
+        
+        const capacity = parseInt(newScreenCapacity);
+        
+        if (!capacity || capacity <= 0) {
+            errorToast("La capacidad debe ser mayor a 0");
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch("http://localhost:3000/api/screens", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ capacity })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || "Error al crear la sala");
+            }
+
+            const newScreen = await response.json();
+            setRooms([...rooms, newScreen]);
+            setNewScreenCapacity("");
+            setShowCreateScreen(false);
+            successToast("Sala creada correctamente");
+        } catch (err) {
+            console.error("Error creating screen:", err);
+            errorToast(err.message || "Error al crear la sala");
         }
     };
 
     const getItemTypeName = (type) => {
         const names = {
             user: "Usuario",
-            admin: "Administrador",
             movie: "Película",
             room: "Sala",
             showing: "Función",
-            candy: "Candy"
+            candy: "Candy",
+            order: "Orden"
         };
         return names[type] || type;
     };
@@ -138,12 +292,6 @@ export const SysAdminPanel = () => {
                         Usuarios ({users.length})
                     </button>
                     <button 
-                        className={`tab-btn ${activeTab === "admins" ? "active" : ""}`}
-                        onClick={() => setActiveTab("admins")}
-                    >
-                        Admins ({admins.length})
-                    </button>
-                    <button 
                         className={`tab-btn ${activeTab === "movies" ? "active" : ""}`}
                         onClick={() => setActiveTab("movies")}
                     >
@@ -167,12 +315,19 @@ export const SysAdminPanel = () => {
                     >
                         Candy ({candy.length})
                     </button>
+                    <button 
+                        className={`tab-btn ${activeTab === "orders" ? "active" : ""}`}
+                        onClick={() => setActiveTab("orders")}
+                    >
+                        Órdenes ({orders.length})
+                    </button>
                 </div>
 
                 {activeTab === "users" && (
                     <div className="sysadmin-section">
                         <div className="section-header">
                             <h2>Usuarios Registrados</h2>
+                            <p className="info-message">Incluye usuarios, admins y sysadmins</p>
                         </div>
                         
                         {users.length === 0 ? (
@@ -196,7 +351,11 @@ export const SysAdminPanel = () => {
                                                 <td>{user.name || user.username}</td>
                                                 <td>{user.email}</td>
                                                 <td>
-                                                    <span className="badge badge-info">
+                                                    <span className={`badge ${
+                                                        user.role === 'sysadmin' ? 'badge-danger' :
+                                                        user.role === 'admin' ? 'badge-warning' : 
+                                                        'badge-info'
+                                                    }`}>
                                                         {user.role || "Usuario"}
                                                     </span>
                                                 </td>
@@ -212,54 +371,12 @@ export const SysAdminPanel = () => {
                                         ))}
                                     </tbody>
                                 </table>
-                            </div>
-                        )}
-                    </div>
-                )}
 
-                {activeTab === "admins" && (
-                    <div className="sysadmin-section">
-                        <div className="section-header">
-                            <h2>Administradores</h2>
-                        </div>
-                        
-                        {admins.length === 0 ? (
-                            <p className="empty-message">No hay administradores registrados</p>
-                        ) : (
-                            <div className="table-container">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Nombre</th>
-                                            <th>Email</th>
-                                            <th>Rol</th>
-                                            <th>Acciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {admins.map((admin) => (
-                                            <tr key={admin.id}>
-                                                <td>{admin.id}</td>
-                                                <td>{admin.name || admin.username}</td>
-                                                <td>{admin.email}</td>
-                                                <td>
-                                                    <span className="badge badge-warning">
-                                                        {admin.role || "Admin"}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <button
-                                                        className="delete-btn"
-                                                        onClick={() => handleDeleteClick(admin, "admin")}
-                                                    >
-                                                        Eliminar
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+
+                                <button onClick={handleGoToRegister}> Crear nuevo usuario </button>
+                                <button onClick={handleGoToRegisterAdmin}> Crear nuevo admin </button>
+                                <button onClick={handleGoToRegisterSysAdmin}> Crear nuevo sysadmin </button>
+
                             </div>
                         )}
                     </div>
@@ -300,7 +417,7 @@ export const SysAdminPanel = () => {
                                                 <td>{movie.title}</td>
                                                 <td>{movie.genre}</td>
                                                 <td>{movie.duration} min</td>
-                                                <td>⭐ {movie.rating}</td>
+                                                <td>{movie.rating}</td>
                                                 <td>{new Date(movie.releaseDate).toLocaleDateString()}</td>
                                                 <td>
                                                     <button
@@ -323,7 +440,12 @@ export const SysAdminPanel = () => {
                     <div className="sysadmin-section">
                         <div className="section-header">
                             <h2>Salas</h2>
-                            <p className="info-message">Las salas se gestionan desde la base de datos</p>
+                            <button 
+                                className="add-btn" 
+                                onClick={() => setShowCreateScreen(true)}
+                            >
+                                + Agregar Sala
+                            </button>
                         </div>
                         
                         {rooms.length === 0 ? (
@@ -343,7 +465,7 @@ export const SysAdminPanel = () => {
                                         {rooms.map((room) => (
                                             <tr key={room.id}>
                                                 <td>{room.id}</td>
-                                                <td>{room.name}</td>
+                                                <td>Sala {room.id}</td>
                                                 <td>🪑 {room.capacity} asientos</td>
                                                 <td>
                                                     <button
@@ -396,7 +518,7 @@ export const SysAdminPanel = () => {
                                                 <td>
                                                     {movies.find(m => m.id === showing.movieId)?.title || `ID: ${showing.movieId}`}
                                                 </td>
-                                                <td>{showing.screenName || showing.screenId}</td>
+                                                <td>Sala {showing.screenId}</td>
                                                 <td>
                                                     {new Date(showing.showtime).toLocaleString()}
                                                 </td>
@@ -467,6 +589,95 @@ export const SysAdminPanel = () => {
                                 </table>
                             </div>
                         )}
+                    </div>
+                )}
+
+                {activeTab === "orders" && (
+                    <div className="sysadmin-section">
+                        <div className="section-header">
+                            <h2>Órdenes</h2>
+                        </div>
+                        
+                        {orders.length === 0 ? (
+                            <p className="empty-message">No hay órdenes registradas</p>
+                        ) : (
+                            <div className="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Usuario ID</th>
+                                            <th>Total</th>
+                                            <th>Estado</th>
+                                            <th>Items</th>
+                                            <th>Fecha</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {orders.map((order) => (
+                                            <tr key={order.id}>
+                                                <td>{order.id}</td>
+                                                <td>{order.userId}</td>
+                                                <td>${order.total.toFixed(2)}</td>
+                                                <td>
+                                                    <span className={`badge ${order.status === 'pending' ? 'badge-warning' : 'badge-success'}`}>
+                                                        {order.status}
+                                                    </span>
+                                                </td>
+                                                <td>{order.orderItems?.length || 0} items</td>
+                                                <td>{new Date(order.createdAt).toLocaleString()}</td>
+                                                <td>
+                                                    <button
+                                                        className="delete-btn"
+                                                        onClick={() => handleDeleteClick(order, "order")}
+                                                    >
+                                                        Eliminar
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {showCreateScreen && (
+                    <div className="delete-confirm-overlay" onClick={() => setShowCreateScreen(false)}>
+                        <div className="delete-confirm-box" onClick={(e) => e.stopPropagation()}>
+                            <h3>Crear Nueva Sala</h3>
+                            <form onSubmit={handleCreateScreen}>
+                                <div className="form-group">
+                                    <label>Capacidad (número de asientos):</label>
+                                    <input 
+                                        type="number"
+                                        min="1"
+                                        value={newScreenCapacity}
+                                        onChange={(e) => setNewScreenCapacity(e.target.value)}
+                                        placeholder="Ej: 40"
+                                        required
+                                        autoFocus
+                                    />
+                                </div>
+                                <div className="delete-confirm-buttons">
+                                    <button 
+                                        type="button"
+                                        className="cancel-btn"
+                                        onClick={() => setShowCreateScreen(false)}
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button 
+                                        type="submit"
+                                        className="add-btn"
+                                    >
+                                        Crear Sala
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 )}
 

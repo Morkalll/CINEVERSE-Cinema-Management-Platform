@@ -9,12 +9,11 @@ import { registerSysAdmin } from "../services/sysadmin.services.js";
 const router = Router();
 
 
-router.post("/register", registerUser);
-
 router.post("/login", loginUser);
 
 router.get("/profile", getUser);
 
+router.post("/register", registerUser);
 
 router.post("/register-admin", registerAdmin);
 
