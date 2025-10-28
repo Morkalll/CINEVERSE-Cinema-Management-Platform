@@ -74,9 +74,9 @@ export const SysAdminPanel = () => {
         try {
             const endpoints = {
                 user: "/users",
-                admin: "/admins",
+                admin: "/users",
                 movie: "/movielistings",
-                room: "/screens",
+                screen: "/screens",
                 showing: "/movieshowings",
                 candy: "/candy"
             };
