@@ -19,6 +19,7 @@ import { CreateCandyForm } from './components/Forms/CreateCandyForm';
 import { CreateMovieShowingForm } from './components/Forms/CreateMovieShowingForm';
 import { ProtectedRoute } from './components/ProtectedRoute/ProtectedRoute';
 import { SysAdminPanel } from './components/SysAdminPanel/SysAdminPanel';
+import { RegisterSysAdmin } from './components/pages/RegisterSysadmin/RegisterSysAdmin';
 
 
 function App() 
@@ -40,10 +41,11 @@ function App()
         <Route path='candy' element={<Candy />} />
         <Route path='*' element={<NotFound />} />
         <Route path="/checkout" element={<CheckoutPage />} />
-        <Route path="/addmovie" element= { <ProtectedRoute> {<CreateMoviesForm />} </ProtectedRoute> } />
-        <Route path="/addcandy" element= { <ProtectedRoute> {<CreateCandyForm/>} </ProtectedRoute> } />
-        <Route path="/addmovieshowing" element= { <ProtectedRoute> {<CreateMovieShowingForm/>} </ProtectedRoute> } />
-        <Route path= "/sysadmin" element= {<SysAdminPanel/>}/>
+        <Route path="/addmovie" element= {<ProtectedRoute allowedRoles={["admin","sysadmin"]}> {<CreateMoviesForm />} </ProtectedRoute> } />
+        <Route path="/addcandy" element= {<ProtectedRoute allowedRoles={["admin","sysadmin"]}> {<CreateCandyForm/>} </ProtectedRoute> } />
+        <Route path="/addmovieshowing" element= { <ProtectedRoute allowedRoles={["admin","sysadmin"]}> {<CreateMovieShowingForm/>} </ProtectedRoute> } />
+        <Route path= "/sysadmin" element={<ProtectedRoute allowedRoles={["sysadmin"]}> <SysAdminPanel /> </ProtectedRoute>}/>
+        <Route path= "/register-sysadmin" element= {<RegisterSysAdmin/>}/>
       </Routes>
 
       <ToastContainer />

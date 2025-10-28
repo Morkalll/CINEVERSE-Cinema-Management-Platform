@@ -1,41 +1,53 @@
+
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { NavBar } from "../../components/NavBar/NavBar";
 import { successToast, errorToast } from "../../utils/toast";
 import { apiRequest } from "../../services/api";
+import { useAuth } from "../../context/AuthContext";
 import "./SysAdminPanel.css";
 
 export const SysAdminPanel = () => {
+    const navigate = useNavigate();
+    const { user } = useAuth();
     const [activeTab, setActiveTab] = useState("users");
-    
     
     const [users, setUsers] = useState([]);
     const [admins, setAdmins] = useState([]);
     const [movies, setMovies] = useState([]);
     const [rooms, setRooms] = useState([]);
     const [showings, setShowings] = useState([]);
+    const [candy, setCandy] = useState([]);
     const [loading, setLoading] = useState(true);
     
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [showFormModal, setShowFormModal] = useState(false);
-    const [selectedItem, setSelectedItem] = useState(null);
-    const [formType, setFormType] = useState("");
-    const [actionType, setActionType] = useState(""); 
-    
-    const [formData, setFormData] = useState({});
+    const [deleteConfirm, setDeleteConfirm] = useState({ show: false, item: null, type: "" });
 
     useEffect(() => {
+        if (!user) {
+            errorToast("Debes iniciar sesión");
+            navigate("/login");
+            return;
+        }
+
+        if (user.role !== "sysadmin") {
+            errorToast("No tienes permisos para acceder a esta página");
+            navigate("/home");
+            return;
+        }
+
         fetchAllData();
-    }, []);
+    }, [user, navigate]);
 
     const fetchAllData = async () => {
         try {
             setLoading(true);
-            const [usersData, adminsData, moviesData, roomsData, showingsData] = await Promise.all([
+            const [usersData, adminsData, moviesData, roomsData, showingsData, candyData] = await Promise.all([
                 apiRequest("/users", "GET"),
                 apiRequest("/admins", "GET"),
-                apiRequest("/movies", "GET"),
-                apiRequest("/rooms", "GET"),
-                apiRequest("/movie-showings", "GET")
+                apiRequest("/movielistings", "GET"),
+                apiRequest("/screens", "GET"),
+                apiRequest("/movieshowings", "GET"),
+                apiRequest("/candy", "GET")
             ]);
 
             setUsers(usersData);
@@ -43,6 +55,7 @@ export const SysAdminPanel = () => {
             setMovies(moviesData);
             setRooms(roomsData);
             setShowings(showingsData);
+            setCandy(candyData);
             successToast("Datos cargados correctamente");
         } catch (err) {
             errorToast(err.message || "Error al cargar los datos");
@@ -52,94 +65,36 @@ export const SysAdminPanel = () => {
     };
 
     const handleDeleteClick = (item, type) => {
-        setSelectedItem(item);
-        setFormType(type);
-        setShowDeleteModal(true);
+        setDeleteConfirm({ show: true, item, type });
     };
 
     const handleConfirmDelete = async () => {
+        const { item, type } = deleteConfirm;
+        
         try {
             const endpoints = {
                 user: "/users",
                 admin: "/admins",
-                movie: "/movies",
-                room: "/rooms",
-                showing: "/movie-showings"
+                movie: "/movielistings",
+                room: "/screens",
+                showing: "/movieshowings",
+                candy: "/candy"
             };
 
-            await apiRequest(`${endpoints[formType]}/${selectedItem.id}`, "DELETE");
+            await apiRequest(`${endpoints[type]}/${item.id}`, "DELETE");
             
-            if (formType === "user") setUsers(users.filter((u) => u.id !== selectedItem.id));
-            else if (formType === "admin") setAdmins(admins.filter((a) => a.id !== selectedItem.id));
-            else if (formType === "movie") setMovies(movies.filter((m) => m.id !== selectedItem.id));
-            else if (formType === "room") setRooms(rooms.filter((r) => r.id !== selectedItem.id));
-            else if (formType === "showing") setShowings(showings.filter((s) => s.id !== selectedItem.id));
+            if (type === "user") setUsers(users.filter((u) => u.id !== item.id));
+            else if (type === "admin") setAdmins(admins.filter((a) => a.id !== item.id));
+            else if (type === "movie") setMovies(movies.filter((m) => m.id !== item.id));
+            else if (type === "room") setRooms(rooms.filter((r) => r.id !== item.id));
+            else if (type === "showing") setShowings(showings.filter((s) => s.id !== item.id));
+            else if (type === "candy") setCandy(candy.filter((c) => c.id !== item.id));
 
-            successToast(`${getItemTypeName(formType)} eliminado correctamente`);
-            setShowDeleteModal(false);
-            setSelectedItem(null);
+            successToast(`${getItemTypeName(type)} eliminado correctamente`);
+            setDeleteConfirm({ show: false, item: null, type: "" });
         } catch (err) {
             errorToast(err.message || "Error al eliminar");
         }
-    };
-
-    const handleCreateClick = (type) => {
-        setFormType(type);
-        setActionType("create");
-        setFormData({});
-        setShowFormModal(true);
-    };
-
-    const handleEditClick = (item, type) => {
-        setFormType(type);
-        setActionType("edit");
-        setSelectedItem(item);
-        setFormData(item);
-        setShowFormModal(true);
-    };
-
-    const handleFormSubmit = async (e) => {
-        e.preventDefault();
-        
-        try {
-            const endpoints = {
-                movie: "/movies",
-                room: "/rooms",
-                showing: "/movie-showings"
-            };
-
-            if (actionType === "create") {
-                const newItem = await apiRequest(endpoints[formType], "POST", formData);
-                
-                if (formType === "movie") setMovies([...movies, newItem]);
-                else if (formType === "room") setRooms([...rooms, newItem]);
-                else if (formType === "showing") setShowings([...showings, newItem]);
-                
-                successToast(`${getItemTypeName(formType)} creado correctamente`);
-            } else {
-                const updatedItem = await apiRequest(`${endpoints[formType]}/${selectedItem.id}`, "PUT", formData);
-                
-                if (formType === "movie") {
-                    setMovies(movies.map(m => m.id === selectedItem.id ? updatedItem : m));
-                } else if (formType === "room") {
-                    setRooms(rooms.map(r => r.id === selectedItem.id ? updatedItem : r));
-                } else if (formType === "showing") {
-                    setShowings(showings.map(s => s.id === selectedItem.id ? updatedItem : s));
-                }
-                
-                successToast(`${getItemTypeName(formType)} actualizado correctamente`);
-            }
-            
-            setShowFormModal(false);
-            setFormData({});
-        } catch (err) {
-            errorToast(err.message || "Error al guardar");
-        }
-    };
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
     };
 
     const getItemTypeName = (type) => {
@@ -148,7 +103,8 @@ export const SysAdminPanel = () => {
             admin: "Administrador",
             movie: "Película",
             room: "Sala",
-            showing: "Función"
+            showing: "Función",
+            candy: "Candy"
         };
         return names[type] || type;
     };
@@ -174,7 +130,6 @@ export const SysAdminPanel = () => {
                     <p>Gestión centralizada del sistema de cine</p>
                 </div>
 
-                {/* Tabs */}
                 <div className="tabs-container">
                     <button 
                         className={`tab-btn ${activeTab === "users" ? "active" : ""}`}
@@ -205,6 +160,12 @@ export const SysAdminPanel = () => {
                         onClick={() => setActiveTab("showings")}
                     >
                         Funciones ({showings.length})
+                    </button>
+                    <button 
+                        className={`tab-btn ${activeTab === "candy" ? "active" : ""}`}
+                        onClick={() => setActiveTab("candy")}
+                    >
+                        Candy ({candy.length})
                     </button>
                 </div>
 
@@ -308,7 +269,10 @@ export const SysAdminPanel = () => {
                     <div className="sysadmin-section">
                         <div className="section-header">
                             <h2>Películas</h2>
-                            <button className="add-btn" onClick={() => handleCreateClick("movie")}>
+                            <button 
+                                className="add-btn" 
+                                onClick={() => navigate("/addmovie")}
+                            >
                                 + Agregar Película
                             </button>
                         </div>
@@ -340,12 +304,6 @@ export const SysAdminPanel = () => {
                                                 <td>{new Date(movie.releaseDate).toLocaleDateString()}</td>
                                                 <td>
                                                     <button
-                                                        className="edit-btn"
-                                                        onClick={() => handleEditClick(movie, "movie")}
-                                                    >
-                                                        Editar
-                                                    </button>
-                                                    <button
                                                         className="delete-btn"
                                                         onClick={() => handleDeleteClick(movie, "movie")}
                                                     >
@@ -365,9 +323,7 @@ export const SysAdminPanel = () => {
                     <div className="sysadmin-section">
                         <div className="section-header">
                             <h2>Salas</h2>
-                            <button className="add-btn" onClick={() => handleCreateClick("room")}>
-                                + Agregar Sala
-                            </button>
+                            <p className="info-message">Las salas se gestionan desde la base de datos</p>
                         </div>
                         
                         {rooms.length === 0 ? (
@@ -391,12 +347,6 @@ export const SysAdminPanel = () => {
                                                 <td>🪑 {room.capacity} asientos</td>
                                                 <td>
                                                     <button
-                                                        className="edit-btn"
-                                                        onClick={() => handleEditClick(room, "room")}
-                                                    >
-                                                        Editar
-                                                    </button>
-                                                    <button
                                                         className="delete-btn"
                                                         onClick={() => handleDeleteClick(room, "room")}
                                                     >
@@ -412,12 +362,14 @@ export const SysAdminPanel = () => {
                     </div>
                 )}
 
-                {/* Contenido de Funciones */}
                 {activeTab === "showings" && (
                     <div className="sysadmin-section">
                         <div className="section-header">
                             <h2>Funciones</h2>
-                            <button className="add-btn" onClick={() => handleCreateClick("showing")}>
+                            <button 
+                                className="add-btn" 
+                                onClick={() => navigate("/addmovieshowing")}
+                            >
                                 + Agregar Función
                             </button>
                         </div>
@@ -444,18 +396,12 @@ export const SysAdminPanel = () => {
                                                 <td>
                                                     {movies.find(m => m.id === showing.movieId)?.title || `ID: ${showing.movieId}`}
                                                 </td>
-                                                <td>{showing.screenName}</td>
+                                                <td>{showing.screenName || showing.screenId}</td>
                                                 <td>
                                                     {new Date(showing.showtime).toLocaleString()}
                                                 </td>
-                                                <td>${showing.ticketPrice}</td>
+                                                <td>${showing.ticketPrice || showing.price}</td>
                                                 <td>
-                                                    <button
-                                                        className="edit-btn"
-                                                        onClick={() => handleEditClick(showing, "showing")}
-                                                    >
-                                                        Editar
-                                                    </button>
                                                     <button
                                                         className="delete-btn"
                                                         onClick={() => handleDeleteClick(showing, "showing")}
@@ -472,61 +418,67 @@ export const SysAdminPanel = () => {
                     </div>
                 )}
 
-                {showDeleteModal && (
-                    <div className="modal-overlay" onClick={() => setShowDeleteModal(false)}>
-                        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                            <div className="modal-header">
-                                <h3>Confirmar Eliminación</h3>
-                                <button 
-                                    className="modal-close"
-                                    onClick={() => setShowDeleteModal(false)}
-                                >
-                                    ×
-                                </button>
+                {activeTab === "candy" && (
+                    <div className="sysadmin-section">
+                        <div className="section-header">
+                            <h2>Candy</h2>
+                            <button 
+                                className="add-btn" 
+                                onClick={() => navigate("/addcandy")}
+                            >
+                                + Agregar Candy
+                            </button>
+                        </div>
+                        
+                        {candy.length === 0 ? (
+                            <p className="empty-message">No hay productos de candy registrados</p>
+                        ) : (
+                            <div className="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Nombre</th>
+                                            <th>Precio</th>
+                                            <th>Stock</th>
+                                            <th>Descripción</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {candy.map((item) => (
+                                            <tr key={item.id}>
+                                                <td>{item.id}</td>
+                                                <td>{item.name}</td>
+                                                <td>${item.price}</td>
+                                                <td>{item.stock}</td>
+                                                <td>{item.description?.substring(0, 50)}...</td>
+                                                <td>
+                                                    <button
+                                                        className="delete-btn"
+                                                        onClick={() => handleDeleteClick(item, "candy")}
+                                                    >
+                                                        Eliminar
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
-                            
-                            <div className="modal-body">
-                                {selectedItem && (
-                                    <>
-                                        <p>
-                                            ¿Estás seguro que deseas eliminar este {getItemTypeName(formType).toLowerCase()}?
-                                        </p>
-                                        <div className="user-info">
-                                            {formType === "user" || formType === "admin" ? (
-                                                <>
-                                                    <strong>Nombre:</strong> {selectedItem.name || selectedItem.username}<br />
-                                                    <strong>Email:</strong> {selectedItem.email}<br />
-                                                </>
-                                            ) : formType === "movie" ? (
-                                                <>
-                                                    <strong>Título:</strong> {selectedItem.title}<br />
-                                                    <strong>Género:</strong> {selectedItem.genre}<br />
-                                                </>
-                                            ) : formType === "room" ? (
-                                                <>
-                                                    <strong>Nombre:</strong> {selectedItem.name}<br />
-                                                    <strong>Capacidad:</strong> {selectedItem.capacity} asientos<br />
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <strong>Película:</strong> {movies.find(m => m.id === selectedItem.movieId)?.title}<br />
-                                                    <strong>Sala:</strong> {selectedItem.screenName}<br />
-                                                    <strong>Fecha:</strong> {new Date(selectedItem.showtime).toLocaleString()}<br />
-                                                </>
-                                            )}
-                                            <strong>ID:</strong> {selectedItem.id}
-                                        </div>
-                                        <p className="warning-message">
-                                            <strong>⚠️ Esta acción no se puede deshacer</strong>
-                                        </p>
-                                    </>
-                                )}
-                            </div>
-                            
-                            <div className="modal-footer">
+                        )}
+                    </div>
+                )}
+
+                {deleteConfirm.show && (
+                    <div className="delete-confirm-overlay" onClick={() => setDeleteConfirm({ show: false, item: null, type: "" })}>
+                        <div className="delete-confirm-box" onClick={(e) => e.stopPropagation()}>
+                            <h3>Confirmar Eliminación</h3>
+                            <p>¿Estás seguro que deseas eliminar este {getItemTypeName(deleteConfirm.type).toLowerCase()}?</p>
+                            <div className="delete-confirm-buttons">
                                 <button 
                                     className="cancel-btn"
-                                    onClick={() => setShowDeleteModal(false)}
+                                    onClick={() => setDeleteConfirm({ show: false, item: null, type: "" })}
                                 >
                                     Cancelar
                                 </button>
@@ -536,234 +488,6 @@ export const SysAdminPanel = () => {
                                 >
                                     Eliminar
                                 </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {showFormModal && (
-                    <div className="modal-overlay" onClick={() => setShowFormModal(false)}>
-                        <div className="modal-content modal-form" onClick={(e) => e.stopPropagation()}>
-                            <div className="modal-header">
-                                <h3>
-                                    {actionType === "create" ? "Crear" : "Editar"} {getItemTypeName(formType)}
-                                </h3>
-                                <button 
-                                    className="modal-close"
-                                    onClick={() => setShowFormModal(false)}
-                                >
-                                    ×
-                                </button>
-                            </div>
-                            
-                            <div className="modal-body">
-                                <form onSubmit={handleFormSubmit}>
-                                    {formType === "movie" && (
-                                        <>
-                                            <div className="form-group">
-                                                <label>Título *</label>
-                                                <input
-                                                    type="text"
-                                                    name="title"
-                                                    value={formData.title || ""}
-                                                    onChange={handleInputChange}
-                                                    required
-                                                />
-                                            </div>
-                                            <div className="form-group">
-                                                <label>Género *</label>
-                                                <input
-                                                    type="text"
-                                                    name="genre"
-                                                    value={formData.genre || ""}
-                                                    onChange={handleInputChange}
-                                                    required
-                                                />
-                                            </div>
-                                            <div className="form-row">
-                                                <div className="form-group">
-                                                    <label>Duración (min) *</label>
-                                                    <input
-                                                        type="number"
-                                                        name="duration"
-                                                        value={formData.duration || ""}
-                                                        onChange={handleInputChange}
-                                                        required
-                                                    />
-                                                </div>
-                                                <div className="form-group">
-                                                    <label>Rating *</label>
-                                                    <input
-                                                        type="number"
-                                                        step="0.1"
-                                                        name="rating"
-                                                        value={formData.rating || ""}
-                                                        onChange={handleInputChange}
-                                                        required
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div className="form-group">
-                                                <label>Fecha de estreno *</label>
-                                                <input
-                                                    type="date"
-                                                    name="releaseDate"
-                                                    value={formData.releaseDate ? formData.releaseDate.split('T')[0] : ""}
-                                                    onChange={handleInputChange}
-                                                    required
-                                                />
-                                            </div>
-                                            <div className="form-group">
-                                                <label>Director *</label>
-                                                <input
-                                                    type="text"
-                                                    name="director"
-                                                    value={formData.director || ""}
-                                                    onChange={handleInputChange}
-                                                    required
-                                                />
-                                            </div>
-                                            <div className="form-group">
-                                                <label>Poster URL *</label>
-                                                <input
-                                                    type="url"
-                                                    name="poster"
-                                                    value={formData.poster || ""}
-                                                    onChange={handleInputChange}
-                                                    required
-                                                />
-                                            </div>
-                                            <div className="form-group">
-                                                <label>Poster Carousel URL</label>
-                                                <input
-                                                    type="url"
-                                                    name="posterCarousel"
-                                                    value={formData.posterCarousel || ""}
-                                                    onChange={handleInputChange}
-                                                />
-                                            </div>
-                                            <div className="form-group">
-                                                <label>Sinopsis *</label>
-                                                <textarea
-                                                    name="synopsis"
-                                                    value={formData.synopsis || ""}
-                                                    onChange={handleInputChange}
-                                                    rows="4"
-                                                    required
-                                                />
-                                            </div>
-                                        </>
-                                    )}
-
-                                    {formType === "room" && (
-                                        <>
-                                            <div className="form-group">
-                                                <label>Nombre de la sala *</label>
-                                                <input
-                                                    type="text"
-                                                    name="name"
-                                                    value={formData.name || ""}
-                                                    onChange={handleInputChange}
-                                                    placeholder="Ej: Sala 1"
-                                                    required
-                                                />
-                                            </div>
-                                            <div className="form-group">
-                                                <label>Capacidad (asientos) *</label>
-                                                <input
-                                                    type="number"
-                                                    name="capacity"
-                                                    value={formData.capacity || ""}
-                                                    onChange={handleInputChange}
-                                                    min="1"
-                                                    required
-                                                />
-                                            </div>
-                                        </>
-                                    )}
-
-                                    {formType === "showing" && (
-                                        <>
-                                            <div className="form-group">
-                                                <label>Película *</label>
-                                                <select
-                                                    name="movieId"
-                                                    value={formData.movieId || ""}
-                                                    onChange={handleInputChange}
-                                                    required
-                                                >
-                                                    <option value="">Seleccionar película</option>
-                                                    {movies.map(movie => (
-                                                        <option key={movie.id} value={movie.id}>
-                                                            {movie.title}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                            <div className="form-group">
-                                                <label>Sala *</label>
-                                                <select
-                                                    name="screenId"
-                                                    value={formData.screenId || ""}
-                                                    onChange={(e) => {
-                                                        const selectedRoom = rooms.find(r => r.id === parseInt(e.target.value));
-                                                        setFormData({
-                                                            ...formData,
-                                                            screenId: parseInt(e.target.value),
-                                                            screenName: selectedRoom?.name || ""
-                                                        });
-                                                    }}
-                                                    required
-                                                >
-                                                    <option value="">Seleccionar sala</option>
-                                                    {rooms.map(room => (
-                                                        <option key={room.id} value={room.id}>
-                                                            {room.name} ({room.capacity} asientos)
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                            <div className="form-group">
-                                                <label>Fecha y Hora *</label>
-                                                <input
-                                                    type="datetime-local"
-                                                    name="showtime"
-                                                    value={formData.showtime ? formData.showtime.slice(0, 16) : ""}
-                                                    onChange={handleInputChange}
-                                                    required
-                                                />
-                                            </div>
-                                            <div className="form-group">
-                                                <label>Precio del ticket *</label>
-                                                <input
-                                                    type="number"
-                                                    step="0.01"
-                                                    name="ticketPrice"
-                                                    value={formData.ticketPrice || ""}
-                                                    onChange={handleInputChange}
-                                                    min="0"
-                                                    required
-                                                />
-                                            </div>
-                                        </>
-                                    )}
-
-                                    <div className="modal-footer">
-                                        <button 
-                                            type="button"
-                                            className="cancel-btn"
-                                            onClick={() => setShowFormModal(false)}
-                                        >
-                                            Cancelar
-                                        </button>
-                                        <button 
-                                            type="submit"
-                                            className="save-btn"
-                                        >
-                                            {actionType === "create" ? "Crear" : "Guardar"}
-                                        </button>
-                                    </div>
-                                </form>
                             </div>
                         </div>
                     </div>
