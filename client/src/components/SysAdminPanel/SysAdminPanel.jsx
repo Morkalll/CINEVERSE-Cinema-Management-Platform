@@ -145,9 +145,9 @@ export const SysAdminPanel = () => {
             };
 
             const url = `http://localhost:3000${endpoints[type]}/${item.id}`;
-            console.log("🗑️ Deleting:", type, "with ID:", item.id);
-            console.log("📍 Full URL:", url);
-            console.log("🔑 Token:", token ? "Present" : "Missing");
+            console.log(" Deleting:", type, "with ID:", item.id);
+            console.log(" Full URL:", url);
+            console.log(" Token:", token ? "Present" : "Missing");
 
             const response = await fetch(url, {
                 method: "DELETE",
@@ -157,22 +157,22 @@ export const SysAdminPanel = () => {
                 }
             });
 
-            console.log("📡 Response status:", response.status);
-            console.log("📋 Response headers:", Object.fromEntries(response.headers.entries()));
+            console.log(" Response status:", response.status);
+            console.log(" Response headers:", Object.fromEntries(response.headers.entries()));
 
             const contentType = response.headers.get("content-type");
-            console.log("📝 Content-Type:", contentType);
+            console.log(" Content-Type:", contentType);
 
             let responseData;
             const responseText = await response.text();
-            console.log("📄 Raw response:", responseText);
+            console.log(" Raw response:", responseText);
 
             try {
                 responseData = JSON.parse(responseText);
-                console.log("✅ Parsed as JSON:", responseData);
+                console.log(" Parsed as JSON:", responseData);
             } catch (parseError) {
-                console.error("❌ JSON parse error:", parseError);
-                console.error("❌ Response was not valid JSON:", responseText);
+                console.error(" JSON parse error:", parseError);
+                console.error(" Response was not valid JSON:", responseText);
                 throw new Error(`Server returned invalid response: ${responseText}`);
             }
 
@@ -184,15 +184,15 @@ export const SysAdminPanel = () => {
                 setUsers(users.filter((u) => u.id !== item.id));
             }
             else if (type === "movie") {
-                // Remove the movie
+                
                 setMovies(movies.filter((m) => m.id !== item.id));
-                // Also remove all showings for this movie (cascade effect)
+                
                 setShowings(showings.filter((s) => s.movieId !== item.id));
             }
             else if (type === "room") {
-                // Remove the screen
+                
                 setRooms(rooms.filter((r) => r.id !== item.id));
-                // Also remove all showings for this screen (cascade effect)
+                
                 setShowings(showings.filter((s) => s.screenId !== item.id));
             }
             else if (type === "showing") {
@@ -208,8 +208,8 @@ export const SysAdminPanel = () => {
             successToast(`${getItemTypeName(type)} eliminado correctamente`);
             setDeleteConfirm({ show: false, item: null, type: "" });
         } catch (err) {
-            console.error("❌ DELETE ERROR:", err);
-            console.error("❌ Error stack:", err.stack);
+            console.error(" DELETE ERROR:", err);
+            console.error(" Error stack:", err.stack);
             errorToast(err.message || "Error al eliminar");
         }
     };
@@ -466,7 +466,7 @@ export const SysAdminPanel = () => {
                                             <tr key={room.id}>
                                                 <td>{room.id}</td>
                                                 <td>Sala {room.id}</td>
-                                                <td>🪑 {room.capacity} asientos</td>
+                                                <td>{room.capacity} asientos</td>
                                                 <td>
                                                     <button
                                                         className="delete-btn"
