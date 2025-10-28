@@ -21,6 +21,10 @@ export const TestRoom = () => {
         navigate("/register-admin")
     }
 
+    const goToRegisterSysAdminHandler = () =>{
+        navigate("/register-sysadmin")
+    }
+
     const goToHomeHandler = () => {
         navigate("/home")
     }
@@ -68,6 +72,10 @@ export const TestRoom = () => {
 
             <Button className="text-center" onClick={goToRegisterAdminHandler}>
                 Register Admin
+            </Button>
+
+            <Button className="text-center" onClick={goToRegisterSysAdminHandler}>
+                Register SysAdmin
             </Button>
 
             <Button className="text-center" onClick={goToHomeHandler}>
