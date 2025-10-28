@@ -19,7 +19,7 @@ import { CreateCandyForm } from './components/Forms/CreateCandyForm';
 import { CreateMovieShowingForm } from './components/Forms/CreateMovieShowingForm';
 import { ProtectedRoute } from './components/ProtectedRoute/ProtectedRoute';
 import { SysAdminPanel } from './components/SysAdminPanel/SysAdminPanel';
-import { RegisterSysAdmin } from './components/pages/RegisterSysadmin/RegisterSysAdmin';
+import { RegisterSysAdmin } from './components/pages/RegisterSysadmin/RegisterSysadmin';
 
 
 function App() 
