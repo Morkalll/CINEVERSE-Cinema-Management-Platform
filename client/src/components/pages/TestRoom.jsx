@@ -45,6 +45,10 @@ export const TestRoom = () => {
         navigate("/checkout")
     }
 
+    const goToSysAdminPanelHandler = () => {
+    navigate("/sysadmin")
+    }
+
 
     //AGREGAR MÁS PÁGINAS A MEDIDA QUE SE CREEN
 
@@ -68,6 +72,10 @@ export const TestRoom = () => {
 
             <Button className="text-center" onClick={goToRegisterAdminHandler}>
                 Register Admin
+            </Button>
+
+            <Button className="text-center" onClick={goToSysAdminPanelHandler}>
+                SysAdmin Panel
             </Button>
 
             <Button className="text-center" onClick={goToHomeHandler}>

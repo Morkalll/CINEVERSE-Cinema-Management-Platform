@@ -1,11 +1,10 @@
+
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { NavBar } from '../../NavBar/NavBar';
 import './MovieDetail.css';
 import SeatSelector from "../../SeatSelector/SeatSelector";
 import { useCart } from "../../../context/CartContext";
-import { useAuth } from "../../../context/AuthContext";
-import { successToast, errorToast } from "../../../utils/toast";
 
 
 export const MovieDetail = () => 
@@ -15,8 +14,7 @@ export const MovieDetail = () =>
   const [selectedShowing, setSelectedShowing] = useState(null); 
 
   const { id } = useParams();
-  const { addToCart, getItemQuantity, updateQuantity } = useCart();
-  const { user } = useAuth();
+  const { getItemQuantity } = useCart();
 
 
   useEffect(() => 
@@ -72,58 +70,6 @@ export const MovieDetail = () =>
   const releaseMonth = new Date(movie.releaseDate).getMonth() + 1;
   const releaseDay = new Date(movie.releaseDate).getDate();
   const showtimes = movie.movieShowings
-  
-
-  const handlePlus = (screen) => 
-  {
-    const quantityInCart = getItemQuantity(screen.id, "ticket");
-    const available = screen.capacity ?? null;
-    const price = Number(screen.ticketPrice ?? screen.price ?? 0);
-
-
-    if (!user) 
-    {
-      errorToast("Debes iniciar sesión para comprar entradas.");
-      return;
-    }
-
-    if (available !== null && quantityInCart >= available) 
-    {
-      errorToast("No hay más entradas disponibles para esta función.");
-      return;
-    }
-
-
-    addToCart(
-    {
-      refId: screen.id,
-      type: "ticket",
-      name: `${movie.title} — ${screen.screenName} (${new Date(screen.showtime).toLocaleString()})`,
-      price,
-    }, 1);
-
-
-    successToast("Entrada agregada al carrito");
-
-  };
-
-
-  const handleMinus = (screen) => 
-  {
-    const quantityInCart = getItemQuantity(screen.id, "ticket");
-
-
-    if (quantityInCart <= 0) 
-    {
-      return;
-    }
-
-
-    updateQuantity(screen.id, "ticket", quantityInCart - 1);
-
-    successToast("Cantidad actualizada");
-
-  };
 
 
   return (
@@ -221,21 +167,7 @@ export const MovieDetail = () =>
                         </div>
 
 
-                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-
-
-
-                          <div style={{ minWidth: 24, textAlign: "center", fontWeight: 600 }}>
-
-                            {quantityInCart}
-
-                          </div>
-
-                        </div>
-
-
                       </li>
-
 
                     );
 

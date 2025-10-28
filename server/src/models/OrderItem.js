@@ -42,6 +42,13 @@ export const OrderItem = sequelize.define("orderItem",
         type: DataTypes.INTEGER, 
         allowNull: false 
     },
+
+    seats: 
+    { 
+        type: DataTypes.JSON, 
+        allowNull: true,
+        defaultValue: null
+    },
 });
 
 Order.hasMany(OrderItem, { foreignKey: "orderId" });
