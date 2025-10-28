@@ -1,6 +1,5 @@
 
 import './MovieListings.css';
-
 import { useEffect, useState } from 'react';
 import { MovieCard } from '../MovieCard/MovieCard';
 
