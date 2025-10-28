@@ -277,6 +277,7 @@ await Products.bulkCreate(
 
 ])
 
+
 const rows = 5;
 const seatsPerRow = 8;
 const allSeats = [];
@@ -294,11 +295,11 @@ for (const showing of showings)
       });
     }
   }
-  console.log(` Asientos preparados para función ${showing.id}`);
+  console.log(`Asientos preparados para función ${showing.id}`);
 }
 
 await Seat.bulkCreate(allSeats);
-console.log(` Total de asientos creados: ${allSeats.length}`);
+console.log(`Total de asientos creados: ${allSeats.length}`);
 
 
   

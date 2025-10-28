@@ -8,7 +8,7 @@ ________________________________________________________________________________
 
 - Cliente (User)
 
-- Dueño del cine (Admin)
+- Empleado/Dueño del cine (Admin)
 
 - Administrador (SysAdmin)
 
@@ -21,25 +21,37 @@ Películas:
 - id
 - título
 - género
-- duración
 - clasificación
+- duración
 - sinopsis
 - póster
 
 Funciones:
 - id
 - película
+- fecha y horario
 - sala
-- fecha
-- horario
 - precio
-- asientos disponibles
+
+Salas:
+- id
+- capacidad
 
 Entradas:
 - id
 - función
-- asiento
+- fecha
 - usuario (cliente)
+- asiento
+- precio
+
+Candy:
+- id
+- nombre
+- precio
+- stock
+- imagen
+- descripción
 
 ________________________________________________________________________________________________
 
@@ -49,15 +61,11 @@ ________________________________________________________________________________
 User:
 - Registrarse / iniciar sesión
 - Ver cartelera y horarios
-- Seleccionar butacas y comprar entradas
+- Seleccionar butacas, y comprar entradas y/o candy
 
 Admin:
-- Cargar nuevas películas
-- Crear funciones (asignar película, sala, horario)
-- Gestionar disponibilidad de asientos
+- Gestionar películas, funciones, salas, candy y órdenes existentes
 
 SysAdmin:
-- Ver todas las ventas
-- Gestionar usuarios y empleados
-
+- Gestionar películas, funciones, salas, candy, órdenes existentes, usuarios y admins
 ________________________________________________________________________________________________

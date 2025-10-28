@@ -36,12 +36,6 @@ export const MovieShowing = sequelize.define("MovieShowing",
         allowNull: false,
     },
 
-    format:
-    {
-        type: DataTypes.ENUM('2D', '3D', 'IMAX', '4D'),
-        allowNull: false,
-        defaultValue: '2D'
-    }
 },
 
 {

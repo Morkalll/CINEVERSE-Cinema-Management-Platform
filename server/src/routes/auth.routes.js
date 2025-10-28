@@ -17,7 +17,8 @@ router.get("/profile", getUser);
 
 
 router.post("/register-admin", registerAdmin);
-router.post("/register-sysadmin", registerSysAdmin)
+
+router.post("/register-sysadmin", registerSysAdmin);
 
 
 
