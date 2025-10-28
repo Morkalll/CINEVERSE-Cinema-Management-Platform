@@ -78,9 +78,26 @@
   height: 40px;
   cursor: pointer;
   transition: transform 0.3s;
+  margin-left: -600px
 }
 
 .cart-icon:hover {
   transform: scale(1.05);
   filter: drop-shadow(0 0 5px #ff00cc);
+}
+
+.sysadmin-link {
+  background: linear-gradient(90deg, #00ff88, #00cc66);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 30px;
+  transition: all 0.3s;
+}
+
+.sysadmin-link:hover {
+  text-shadow: 0 0 10px #00ff88, 0 0 20px #00cc66;
+  transform: scale(1.05);
 }

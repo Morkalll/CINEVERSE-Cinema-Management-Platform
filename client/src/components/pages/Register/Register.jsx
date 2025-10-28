@@ -5,6 +5,7 @@ import { Button, Card, Col, Form, FormGroup, Row } from "react-bootstrap"
 import { successToast, errorToast } from "../../../utils/toast";
 import { apiRequest } from "../../../services/api";
 import TatinAlien2 from '../../../assets/images/Alien 2.png'
+import { NavBar } from "../../NavBar/NavBar";
 
 
 export const Register = () => 
@@ -131,6 +132,9 @@ export const Register = () =>
 
     return (
 
+        <>
+        <NavBar/>
+
         <Card className="mt-5 mx-3 p-3 px-5 shadow">
 
             <Card.Body>
@@ -241,7 +245,7 @@ export const Register = () =>
                             <Col md={6} className="d-flex-justify-content-end">
                                 
                                 <Button variant="secondary" type="submit">
-                                   
+                                
                                     Registrarse
                                 
                                 </Button>
@@ -257,5 +261,6 @@ export const Register = () =>
             </Card.Body>
             
         </Card>
+        </>
     )
 }
