@@ -54,17 +54,6 @@ export const createProduct = async (req, res) =>
       return res.status(400).json({ message: "Campos requeridos" });
     }
 
-    const existingProduct = await Products.create({
-      where : {name}
-    })
-
-    if (existingProduct) 
-    {
-      return res.status(400).json({ 
-        message: "Ya existe un producto con ese nombre" 
-      });
-    }
-    
     
     const newProduct = await Products.create(
     {
