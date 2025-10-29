@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { NavBar } from "../../components/NavBar/NavBar";
@@ -23,23 +22,25 @@ export const SysAdminPanel = () => {
     
     const [deleteConfirm, setDeleteConfirm] = useState({ show: false, item: null, type: "" });
     const [showCreateScreen, setShowCreateScreen] = useState(false);
-    const [newScreenCapacity, setNewScreenCapacity] = useState("");
-    const [cancelConfirm, setCancelConfirm] = useState({ show: false, order: null });
+    const [showCreateScreenConfirm, setShowCreateScreenConfirm] = useState(false);
 
-    const handleGoToRegister = () =>
-    {
-        navigate("/register")
-    }
+    // Edit modal states
+    const [editModal, setEditModal] = useState({ show: false, item: null, type: "" });
+    const [editForm, setEditForm] = useState({});
+    
 
-    const handleGoToRegisterAdmin = () =>
+    const handleGoToRegisterAdmin = () => 
     {
-        navigate("/register-admin")
-    }
+        if (!checkSysAdminAuth()) return;
+        navigate("/register-admin");
+    };
 
-    const handleGoToRegisterSysAdmin = () =>
+    const handleGoToRegisterSysAdmin = () => 
     {
-        navigate("/register-sysadmin")
-    }
+        if (!checkSysAdminAuth()) return;
+        navigate("/register-sysadmin");
+    };
+
 
     useEffect(() => {
         if (!user) {
@@ -121,12 +122,9 @@ export const SysAdminPanel = () => {
         }
     };
 
-    
-
-
-
-    const handleDeleteClick = (item, type) => {
-        setDeleteConfirm({ show: true, item, type });
+    const handleDeleteClick = (item, type) => 
+    {
+      setDeleteConfirm({ show: true, item, type });
     };
 
     const handleCancelClick = (order) => {
@@ -183,9 +181,6 @@ export const SysAdminPanel = () => {
             };
 
             const url = `http://localhost:3000${endpoints[type]}/${item.id}`;
-            console.log(" Deleting:", type, "with ID:", item.id);
-            console.log(" Full URL:", url);
-            console.log(" Token:", token ? "Present" : "Missing");
 
             const response = await fetch(url, {
                 method: "DELETE",
@@ -195,22 +190,12 @@ export const SysAdminPanel = () => {
                 }
             });
 
-            console.log(" Response status:", response.status);
-            console.log(" Response headers:", Object.fromEntries(response.headers.entries()));
-
-            const contentType = response.headers.get("content-type");
-            console.log(" Content-Type:", contentType);
-
-            let responseData;
             const responseText = await response.text();
-            console.log(" Raw response:", responseText);
+            let responseData;
 
             try {
                 responseData = JSON.parse(responseText);
-                console.log(" Parsed as JSON:", responseData);
             } catch (parseError) {
-                console.error(" JSON parse error:", parseError);
-                console.error(" Response was not valid JSON:", responseText);
                 throw new Error(`Server returned invalid response: ${responseText}`);
             }
             
@@ -229,77 +214,173 @@ export const SysAdminPanel = () => {
             
             if (type === "user") {
                 setUsers(users.filter((u) => u.id !== item.id));
-            }
-            else if (type === "movie") {
-                
+            } else if (type === "movie") {
                 setMovies(movies.filter((m) => m.id !== item.id));
-                
                 setShowings(showings.filter((s) => s.movieId !== item.id));
-            }
-            else if (type === "room") {
-                
+            } else if (type === "room") {
                 setRooms(rooms.filter((r) => r.id !== item.id));
-                
                 setShowings(showings.filter((s) => s.screenId !== item.id));
-            }
-            else if (type === "showing") {
+            } else if (type === "showing") {
                 setShowings(showings.filter((s) => s.id !== item.id));
-            }
-            else if (type === "candy") {
+            } else if (type === "candy") {
                 setCandy(candy.filter((c) => c.id !== item.id));
-            }
-            else if (type === "order") {
+            } else if (type === "order") {
                 setOrders(orders.filter((o) => o.id !== item.id));
             }
 
             successToast(`${getItemTypeName(type)} eliminado correctamente`);
             setDeleteConfirm({ show: false, item: null, type: "" });
         } catch (err) {
-            console.error(" DELETE ERROR:", err);
-            console.error(" Error stack:", err.stack);
+            console.error("DELETE ERROR:", err);
             errorToast(err.message || "Error al eliminar");
         }
     };
 
-    
-
-
-    const handleCreateScreen = async (e) => {
-        e.preventDefault();
+    const handleEditClick = (item, type) => {
+        let formData = {};
         
-        const capacity = parseInt(newScreenCapacity);
-        
-        if (!capacity || capacity <= 0) {
-            errorToast("La capacidad debe ser mayor a 0");
-            return;
+        if (type === "movie") {
+            formData = {
+                title: item.title || "",
+                genre: item.genre || "",
+                director: item.director || "",
+                rating: item.rating || "",
+                duration: item.duration || "",
+                synopsis: item.synopsis || "",
+                poster: item.poster || "",
+                posterCarousel: item.posterCarousel || "",
+                releaseDate: item.releaseDate ? new Date(item.releaseDate).toISOString().split('T')[0] : ""
+            };
+        } else if (type === "room") {
+            formData = {
+                capacity: item.capacity || ""
+            };
+        } else if (type === "showing") {
+            const showtimeDate = new Date(item.showtime);
+            formData = {
+                movieId: item.movieId || "",
+                screenId: item.screenId || "",
+                date: showtimeDate.toISOString().split('T')[0],
+                showtime: showtimeDate.toTimeString().slice(0, 5),
+                price: item.ticketPrice || item.price || ""
+            };
+        } else if (type === "candy") {
+            formData = {
+                name: item.name || "",
+                price: item.price || "",
+                stock: item.stock || "",
+                image: item.image || "",
+                description: item.description || ""
+            };
         }
+        
+        setEditForm(formData);
+        setEditModal({ show: true, item, type });
+    };
 
+    const handleEditFormChange = (field, value) => {
+        setEditForm({ ...editForm, [field]: value });
+    };
+
+    const handleConfirmEdit = async () => {
+        const { item, type } = editModal;
+        
         try {
             const token = localStorage.getItem("token");
-            const response = await fetch("http://localhost:3000/api/screens", {
-                method: "POST",
+            const endpoints = {
+                movie: "/api/movielistings",
+                room: "/api/screens",
+                showing: "/api/movieshowings",
+                candy: "/api/candy"
+            };
+
+            let bodyData = { ...editForm };
+            
+            // For showings, combine date and time
+            if (type === "showing") {
+                const datetime = new Date(`${editForm.date}T${editForm.showtime}`).toISOString();
+                bodyData = {
+                    movieId: editForm.movieId,
+                    screenId: editForm.screenId,
+                    showtime: datetime,
+                    price: editForm.price
+                };
+            }
+
+            const url = `http://localhost:3000${endpoints[type]}/${item.id}`;
+
+            const response = await fetch(url, {
+                method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`
                 },
-                body: JSON.stringify({ capacity })
+                body: JSON.stringify(bodyData)
             });
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || "Error al crear la sala");
+                throw new Error(errorData.message || `Error ${response.status}`);
             }
 
-            const newScreen = await response.json();
-            setRooms([...rooms, newScreen]);
-            setNewScreenCapacity("");
-            setShowCreateScreen(false);
-            successToast("Sala creada correctamente");
+            const updatedItem = await response.json();
+            
+            // Update local state
+            if (type === "movie") {
+                setMovies(movies.map(m => m.id === item.id ? updatedItem : m));
+            } else if (type === "room") {
+                setRooms(rooms.map(r => r.id === item.id ? updatedItem : r));
+            } else if (type === "showing") {
+                // Manually add the movie relationship since backend doesn't include it
+                const updatedShowing = {
+                    ...updatedItem,
+                    movieId: Number(updatedItem.movieId),
+                    movie: movies.find(m => m.id === Number(updatedItem.movieId))
+                };
+                setShowings(showings.map(s => s.id === item.id ? updatedShowing : s));
+            } else if (type === "candy") {
+                setCandy(candy.map(c => c.id === item.id ? updatedItem : c));
+            }
+
+            successToast(`${getItemTypeName(type)} actualizado correctamente`);
+            setEditModal({ show: false, item: null, type: "" });
         } catch (err) {
-            console.error("Error creating screen:", err);
-            errorToast(err.message || "Error al crear la sala");
+            console.error("EDIT ERROR:", err);
+            errorToast(err.message || "Error al actualizar");
         }
     };
+
+    const handleCreateScreen = async () => {
+    try {
+        const token = localStorage.getItem("token");
+        
+        // Calculate the next screen number based on highest existing ID
+        const maxId = rooms.length > 0 ? Math.max(...rooms.map(r => r.id)) : 0;
+        const capacity = 40; // Default capacity
+        
+        const response = await fetch("http://localhost:3000/api/screens", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ capacity })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || "Error al crear la sala");
+        }
+
+        const newScreen = await response.json();
+        setRooms([...rooms, newScreen]);
+        setShowCreateScreenConfirm(false);
+        successToast("Sala creada correctamente");
+    } catch (err) {
+        console.error("Error creating screen:", err);
+        errorToast(err.message || "Error al crear la sala");
+    }
+};
 
     const getItemTypeName = (type) => {
         const names = {
@@ -311,6 +392,221 @@ export const SysAdminPanel = () => {
             order: "Orden"
         };
         return names[type] || type;
+    };
+
+
+    const renderEditModalContent = () => {
+        const { type } = editModal;
+
+        if (type === "movie") {
+            return (
+                <div className="modal-form-body">
+                    <div className="form-group">
+                        <label>Título:</label>
+                        <input
+                            type="text"
+                            value={editForm.title || ""}
+                            onChange={(e) => handleEditFormChange("title", e.target.value)}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>Género:</label>
+                        <input
+                            type="text"
+                            value={editForm.genre || ""}
+                            onChange={(e) => handleEditFormChange("genre", e.target.value)}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>Director:</label>
+                        <input
+                            type="text"
+                            value={editForm.director || ""}
+                            onChange={(e) => handleEditFormChange("director", e.target.value)}
+                        />
+                    </div>
+                    <div className="form-row">
+                        <div className="form-group">
+                            <label>Rating (0-10):</label>
+                            <input
+                                type="number"
+                                step="0.1"
+                                min="0"
+                                max="10"
+                                value={editForm.rating || ""}
+                                onChange={(e) => handleEditFormChange("rating", e.target.value)}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Duración (min):</label>
+                            <input
+                                type="number"
+                                min="1"
+                                value={editForm.duration || ""}
+                                onChange={(e) => handleEditFormChange("duration", e.target.value)}
+                            />
+                        </div>
+                    </div>
+                    <div className="form-group">
+                        <label>Sinopsis:</label>
+                        <textarea
+                            value={editForm.synopsis || ""}
+                            onChange={(e) => handleEditFormChange("synopsis", e.target.value)}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>Poster (URL):</label>
+                        <input
+                            type="text"
+                            value={editForm.poster || ""}
+                            onChange={(e) => handleEditFormChange("poster", e.target.value)}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>Poster Carousel (URL):</label>
+                        <input
+                            type="text"
+                            value={editForm.posterCarousel || ""}
+                            onChange={(e) => handleEditFormChange("posterCarousel", e.target.value)}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>Fecha de Estreno:</label>
+                        <input
+                            type="date"
+                            value={editForm.releaseDate || ""}
+                            onChange={(e) => handleEditFormChange("releaseDate", e.target.value)}
+                        />
+                    </div>
+                </div>
+            );
+        } else if (type === "room") {
+            return (
+                <div className="modal-form-body">
+                    <div className="form-group">
+                        <label>Capacidad (número de asientos):</label>
+                        <input
+                            type="number"
+                            min="1"
+                            value={editForm.capacity || ""}
+                            onChange={(e) => handleEditFormChange("capacity", e.target.value)}
+                        />
+                    </div>
+                </div>
+            );
+        } else if (type === "showing") {
+            return (
+                <div className="modal-form-body">
+                    <div className="form-group">
+                        <label>Película:</label>
+                        <select
+                            value={editForm.movieId || ""}
+                            onChange={(e) => handleEditFormChange("movieId", Number(e.target.value))}
+                        >
+                            <option value="">Seleccionar película</option>
+                            {movies.map((movie) => (
+                                <option key={movie.id} value={movie.id}>
+                                    {movie.title}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="form-group">
+                        <label>Sala:</label>
+                        <select
+                            value={editForm.screenId || ""}
+                            onChange={(e) => handleEditFormChange("screenId", Number(e.target.value))}
+                        >
+                            <option value="">Seleccionar sala</option>
+                            {rooms.map((room) => (
+                                <option key={room.id} value={room.id}>
+                                    Sala {room.id}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="form-row">
+                        <div className="form-group">
+                            <label>Fecha:</label>
+                            <input
+                                type="date"
+                                value={editForm.date || ""}
+                                onChange={(e) => handleEditFormChange("date", e.target.value)}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Hora:</label>
+                            <input
+                                type="time"
+                                value={editForm.showtime || ""}
+                                onChange={(e) => handleEditFormChange("showtime", e.target.value)}
+                            />
+                        </div>
+                    </div>
+                    <div className="form-group">
+                        <label>Precio ($):</label>
+                        <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={editForm.price || ""}
+                            onChange={(e) => handleEditFormChange("price", e.target.value)}
+                        />
+                    </div>
+                </div>
+            );
+        } else if (type === "candy") {
+            return (
+                <div className="modal-form-body">
+                    <div className="form-group">
+                        <label>Nombre:</label>
+                        <input
+                            type="text"
+                            value={editForm.name || ""}
+                            onChange={(e) => handleEditFormChange("name", e.target.value)}
+                        />
+                    </div>
+                    <div className="form-row">
+                        <div className="form-group">
+                            <label>Precio ($):</label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={editForm.price || ""}
+                                onChange={(e) => handleEditFormChange("price", e.target.value)}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Stock:</label>
+                            <input
+                                type="number"
+                                min="0"
+                                value={editForm.stock || ""}
+                                onChange={(e) => handleEditFormChange("stock", e.target.value)}
+                            />
+                        </div>
+                    </div>
+                    <div className="form-group">
+                        <label>Imagen (URL):</label>
+                        <input
+                            type="text"
+                            value={editForm.image || ""}
+                            onChange={(e) => handleEditFormChange("image", e.target.value)}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>Descripción:</label>
+                        <textarea
+                            value={editForm.description || ""}
+                            onChange={(e) => handleEditFormChange("description", e.target.value)}
+                        />
+                    </div>
+                </div>
+            );
+        }
+
+        return null;
     };
 
     if (loading) {
@@ -422,11 +718,8 @@ export const SysAdminPanel = () => {
                                     </tbody>
                                 </table>
 
-
-                                <button onClick={handleGoToRegister}> Crear nuevo usuario </button>
                                 <button onClick={handleGoToRegisterAdmin}> Crear nuevo admin </button>
                                 <button onClick={handleGoToRegisterSysAdmin}> Crear nuevo sysadmin </button>
-
                             </div>
                         )}
                     </div>
@@ -471,6 +764,12 @@ export const SysAdminPanel = () => {
                                                 <td>{new Date(movie.releaseDate).toLocaleDateString()}</td>
                                                 <td>
                                                     <button
+                                                        className="edit-btn"
+                                                        onClick={() => handleEditClick(movie, "movie")}
+                                                    >
+                                                        Editar
+                                                    </button>
+                                                    <button
                                                         className="delete-btn"
                                                         onClick={() => handleDeleteClick(movie, "movie")}
                                                     >
@@ -490,12 +789,12 @@ export const SysAdminPanel = () => {
                     <div className="sysadmin-section">
                         <div className="section-header">
                             <h2>Salas</h2>
-                            <button 
-                                className="add-btn" 
-                                onClick={() => setShowCreateScreen(true)}
-                            >
-                                + Agregar Sala
-                            </button>
+                                <button 
+                                    className="add-btn" 
+                                    onClick={() => setShowCreateScreenConfirm(true)}
+                                >
+                                    + Agregar Sala
+                                </button>
                         </div>
                         
                         {rooms.length === 0 ? (
@@ -507,7 +806,6 @@ export const SysAdminPanel = () => {
                                         <tr>
                                             <th>ID</th>
                                             <th>Nombre</th>
-                                            <th>Capacidad</th>
                                             <th>Acciones</th>
                                         </tr>
                                     </thead>
@@ -516,8 +814,7 @@ export const SysAdminPanel = () => {
                                             <tr key={room.id}>
                                                 <td>{room.id}</td>
                                                 <td>Sala {room.id}</td>
-                                                <td>{room.capacity} asientos</td>
-                                                <td>
+                                                <td>                           
                                                     <button
                                                         className="delete-btn"
                                                         onClick={() => handleDeleteClick(room, "room")}
@@ -575,6 +872,12 @@ export const SysAdminPanel = () => {
                                                 <td>${showing.ticketPrice || showing.price}</td>
                                                 <td>
                                                     <button
+                                                        className="edit-btn"
+                                                        onClick={() => handleEditClick(showing, "showing")}
+                                                    >
+                                                        Editar
+                                                    </button>
+                                                    <button
                                                         className="delete-btn"
                                                         onClick={() => handleDeleteClick(showing, "showing")}
                                                     >
@@ -626,6 +929,12 @@ export const SysAdminPanel = () => {
                                                 <td>{item.stock}</td>
                                                 <td>{item.description?.substring(0, 50)}...</td>
                                                 <td>
+                                                    <button
+                                                        className="edit-btn"
+                                                        onClick={() => handleEditClick(item, "candy")}
+                                                    >
+                                                        Editar
+                                                    </button>
                                                     <button
                                                         className="delete-btn"
                                                         onClick={() => handleDeleteClick(item, "candy")}
@@ -705,49 +1014,76 @@ export const SysAdminPanel = () => {
                     </div>
                 )}
 
-                {showCreateScreen && (
-                    <div className="delete-confirm-overlay" onClick={() => setShowCreateScreen(false)}>
-                        <div className="delete-confirm-box" onClick={(e) => e.stopPropagation()}>
-                            <h3>Crear Nueva Sala</h3>
-                            <form onSubmit={handleCreateScreen}>
-                                <div className="form-group">
-                                    <label>Capacidad (número de asientos):</label>
-                                    <input 
-                                        type="number"
-                                        min="1"
-                                        value={newScreenCapacity}
-                                        onChange={(e) => setNewScreenCapacity(e.target.value)}
-                                        placeholder="Ej: 40"
-                                        required
-                                        autoFocus
-                                    />
-                                </div>
-                                <div className="delete-confirm-buttons">
-                                    <button 
-                                        type="button"
-                                        className="cancel-btn"
-                                        onClick={() => setShowCreateScreen(false)}
-                                    >
-                                        Cancelar
-                                    </button>
-                                    <button 
-                                        type="submit"
-                                        className="add-btn"
-                                    >
-                                        Crear Sala
-                                    </button>
-                                </div>
-                            </form>
+                {/* Create Screen Confirmation Modal */}
+                {showCreateScreenConfirm && (
+                    <div className="modal-overlay" onClick={() => setShowCreateScreenConfirm(false)}>
+                        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h3>Confirmar Creación de Sala</h3>
+                                <button className="modal-close" onClick={() => setShowCreateScreenConfirm(false)}>×</button>
+                            </div>
+                            <div className="modal-body">
+                                <p>¿Estás seguro que deseas crear una nueva sala?</p>
+                            </div>
+                            <div className="modal-footer">
+                                <button 
+                                    className="cancel-btn"
+                                    onClick={() => setShowCreateScreenConfirm(false)}
+                                >
+                                    Cancelar
+                                </button>
+                                <button 
+                                    className="add-btn"
+                                    onClick={handleCreateScreen}
+                                >
+                                    Crear Sala
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}
 
+                {/* Edit Modal */}
+                {editModal.show && (
+                    <div className="modal-overlay" onClick={() => setEditModal({ show: false, item: null, type: "" })}>
+                        <div className={`modal-content modal-form ${editModal.type === 'movie' ? 'modal-form-large' : ''}`} onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h3>Editar {getItemTypeName(editModal.type)}</h3>
+                                <button className="modal-close" onClick={() => setEditModal({ show: false, item: null, type: "" })}>×</button>
+                            </div>
+                            <div className="modal-body">
+                                {renderEditModalContent()}
+                            </div>
+                            <div className="modal-footer">
+                                <button 
+                                    className="cancel-btn"
+                                    onClick={() => setEditModal({ show: false, item: null, type: "" })}
+                                >
+                                    Cancelar
+                                </button>
+                                <button 
+                                    className="save-btn"
+                                    onClick={handleConfirmEdit}
+                                >
+                                    Guardar Cambios
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Delete Confirmation Modal */}
                 {deleteConfirm.show && (
-                    <div className="delete-confirm-overlay" onClick={() => setDeleteConfirm({ show: false, item: null, type: "" })}>
-                        <div className="delete-confirm-box" onClick={(e) => e.stopPropagation()}>
-                            <h3>Confirmar Eliminación</h3>
-                            <p>¿Estás seguro que deseas eliminar este {getItemTypeName(deleteConfirm.type).toLowerCase()}?</p>
-                            <div className="delete-confirm-buttons">
+                    <div className="modal-overlay" onClick={() => setDeleteConfirm({ show: false, item: null, type: "" })}>
+                        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h3>Confirmar Eliminación</h3>
+                                <button className="modal-close" onClick={() => setDeleteConfirm({ show: false, item: null, type: "" })}>×</button>
+                            </div>
+                            <div className="modal-body">
+                                <p>¿Estás seguro que deseas eliminar este {getItemTypeName(deleteConfirm.type).toLowerCase()}?</p>
+                            </div>
+                            <div className="modal-footer">
                                 <button 
                                     className="cancel-btn"
                                     onClick={() => setDeleteConfirm({ show: false, item: null, type: "" })}

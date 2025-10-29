@@ -62,9 +62,9 @@ export const TestRoom = () => {
 
         <div className="text-center mt-3">
 
-            <h2>
-                ELIGE LA PÁGINA A LA QUE QUIERAS ACCEDER:
-            </h2>
+            <h1>
+                BORRAR CUANDO ACABE EL DEBUG
+            </h1>
 
             <Button className="text-center" onClick={goToLoginHandler}>
                 Login
