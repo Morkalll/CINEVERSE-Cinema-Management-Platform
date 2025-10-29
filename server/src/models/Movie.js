@@ -53,8 +53,13 @@ export const Movie = sequelize.define("Movie",
     posterCarousel:
     {
         type: DataTypes.STRING
-    }
+    },
     
+  
+    releaseDate :
+    {
+        type: DataTypes.DATE
+    }
 },
 
 {
