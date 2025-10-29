@@ -33,7 +33,7 @@ export const NavBar = () =>
         <Link to="/candy" className="nav-link"> • CANDY • </Link>
         
         {user && user.role === "sysadmin" && (
-          <Link to="/sysadmin" className="nav-link sysadmin-link"> • PANEL ADMIN • </Link>
+          <Link to="/sysadmin" className="nav-link sysadmin-link"> • ADMIN • </Link>
         )}
 
       </div>

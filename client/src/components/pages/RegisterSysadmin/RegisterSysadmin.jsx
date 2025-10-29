@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { Button, Card, Col, Form, FormGroup, Row } from "react-bootstrap"
 import { successToast, errorToast } from "../../../utils/toast";
 import { apiRequest } from "../../../services/api";
+import { NavBar } from "../../NavBar/NavBar";
 import TatinAlien2 from '../../../assets/images/Alien 2.png'
 
 
@@ -115,6 +116,8 @@ export const RegisterSysAdmin = () =>
     }
 
     return (
+        <>
+        <NavBar />
         <Card className="mt-5 mx-3 p-3 px-5 shadow">
             <Card.Body>
                 <Row className="mb-2">
@@ -208,5 +211,6 @@ export const RegisterSysAdmin = () =>
                 </Row>
             </Card.Body>
         </Card>
+        </>
     )
 }

@@ -66,45 +66,38 @@ export const SysAdminPanel = () => {
                 "Authorization": `Bearer ${token}`
             };
 
-            // Fetch only the endpoints that exist
             const requests = [];
             
-            // Users (includes all roles)
             requests.push(
                 fetch("http://localhost:3000/api/users", { headers })
                     .then(res => res.ok ? res.json() : [])
                     .catch(() => [])
             );
             
-            // Movies
             requests.push(
                 fetch("http://localhost:3000/api/movielistings", { headers })
                     .then(res => res.ok ? res.json() : [])
                     .catch(() => [])
             );
             
-            // Screens
             requests.push(
                 fetch("http://localhost:3000/api/screens", { headers })
                     .then(res => res.ok ? res.json() : [])
                     .catch(() => [])
             );
             
-            // Showings
             requests.push(
                 fetch("http://localhost:3000/api/movieshowings", { headers })
                     .then(res => res.ok ? res.json() : [])
                     .catch(() => [])
             );
             
-            // Candy
             requests.push(
                 fetch("http://localhost:3000/api/candy", { headers })
                     .then(res => res.ok ? res.json() : [])
                     .catch(() => [])
             );
             
-            // Orders
             requests.push(
                 fetch("http://localhost:3000/api/orders/all", { headers })
                     .then(res => res.ok ? res.json() : [])
@@ -281,7 +274,7 @@ export const SysAdminPanel = () => {
             <NavBar />
             <div className="sysadmin-panel">
                 <div className="header-section">
-                    <h1>Panel del SysAdmin</h1>
+                    <h1>Administración</h1>
                     <p>Gestión centralizada del sistema de cine</p>
                 </div>
 
