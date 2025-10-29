@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import { NavBar } from "../NavBar/NavBar";
 import "./CreateMovieForm.css"; 
 
 
@@ -247,6 +248,7 @@ export const CreateMovieShowingForm = () =>
     return (
 
         <div>
+            <NavBar />
 
             <form onSubmit={handleSubmit} className="movie-form" noValidate>
                 

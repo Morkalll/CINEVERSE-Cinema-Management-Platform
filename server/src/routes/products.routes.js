@@ -1,4 +1,3 @@
-
 import { Router } from "express";
 import { verifyToken } from "../services/token.services.js";
 import { authorize } from "../services/auth.services.js";
@@ -14,7 +13,7 @@ router.get("/candy/:id", findOneProduct);
 
 router.post("/candy", verifyToken, authorize(["admin", "sysadmin"]), createProduct);
 
-router.put("/candy/:id", verifyToken, authorize(["admin", "sysadmin"]), updateProduct);
+router.patch("/candy/:id", verifyToken, authorize(["admin", "sysadmin"]), updateProduct);
 
 router.delete("/candy/:id", verifyToken, authorize(["admin", "sysadmin"]), deleteProduct);
 

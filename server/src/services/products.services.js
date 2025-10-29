@@ -54,6 +54,7 @@ export const createProduct = async (req, res) =>
       return res.status(400).json({ message: "Campos requeridos" });
     }
 
+    
     const newProduct = await Products.create(
     {
       name,
@@ -86,7 +87,15 @@ export const updateProduct = async (req, res) =>
     const productToUpdate = await Products.findByPk(id);
     if (!productToUpdate) return res.status(404).json({ message: "Producto no encontrado" });
 
-    await productToUpdate.update({ name, price, stock, image, description });
+    // Only update fields that are provided
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (price !== undefined) updateData.price = price;
+    if (stock !== undefined) updateData.stock = stock;
+    if (image !== undefined) updateData.image = image;
+    if (description !== undefined) updateData.description = description;
+
+    await productToUpdate.update(updateData);
     await productToUpdate.save();
 
     return res.json(productToUpdate);

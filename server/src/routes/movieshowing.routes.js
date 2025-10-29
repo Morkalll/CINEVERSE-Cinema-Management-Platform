@@ -1,4 +1,3 @@
-
 import { Router } from "express";
 import { verifyToken } from "../services/token.services.js";
 import { authorize } from "../services/auth.services.js";
@@ -14,10 +13,9 @@ router.get("/movieshowings/:id", findOneMovieShowings);
 
 router.post("/movieshowings", verifyToken, authorize(["admin", "sysadmin"]), createMovieShowings);
 
-router.put("/movieshowings/:id", verifyToken, authorize(["admin", "sysadmin"]), updateMovieShowings);
+router.patch("/movieshowings/:id", verifyToken, authorize(["admin", "sysadmin"]), updateMovieShowings);
 
 router.delete("/movieshowings/:id", verifyToken, authorize(["admin", "sysadmin"]), deleteMovieShowings);
 
 
 export default router;
-
