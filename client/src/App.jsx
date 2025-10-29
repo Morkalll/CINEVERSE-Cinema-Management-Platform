@@ -44,7 +44,7 @@ function App()
         <Route path="/addmovie" element= {<ProtectedRoute allowedRoles={["admin","sysadmin"]}> {<CreateMoviesForm />} </ProtectedRoute> } />
         <Route path="/addcandy" element= {<ProtectedRoute allowedRoles={["admin","sysadmin"]}> {<CreateCandyForm/>} </ProtectedRoute> } />
         <Route path="/addmovieshowing" element= { <ProtectedRoute allowedRoles={["admin","sysadmin"]}> {<CreateMovieShowingForm/>} </ProtectedRoute> } />
-        <Route path= "/sysadmin" element={<ProtectedRoute allowedRoles={["sysadmin"]}> <SysAdminPanel /> </ProtectedRoute>}/>
+        <Route path= "/sysadmin" element={<ProtectedRoute allowedRoles={["admin", "sysadmin"]}> <SysAdminPanel /> </ProtectedRoute>}/>
         <Route path= "/register-sysadmin" element= {<RegisterSysAdmin/>}/>
       </Routes>
 

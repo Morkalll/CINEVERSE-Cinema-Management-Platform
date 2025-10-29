@@ -5,6 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
 import { API_URL } from "../../services/api";
 import { useNavigate } from "react-router";
+import { formatDate } from "../../utils/helper";
 import "./SeatSelector.css";
 
 
@@ -94,7 +95,7 @@ export default function SeatSelector({ rows = 5, seatsPerRow = 8, showingId, mov
                 addToCart({
                     refId: showingId,
                     type: "ticket",
-                    name: `${movieTitle} — ${showingInfo.screenName} (${new Date(showingInfo.showtime).toLocaleString()})`,
+                    name: `${movieTitle} — Sala : ${showingInfo.screenId} (${formatDate(showingInfo.showtime)})`,
                     price,
                     seats: selected, 
                 }, selectedCount);

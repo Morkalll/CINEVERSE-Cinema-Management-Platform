@@ -5,7 +5,7 @@ import { findAllUsers, deleteUser, updateUser } from "../services/user.services.
 
 const router = Router();
 
-router.get("/users", verifyToken, authorize(["sysadmin"]), findAllUsers);
+router.get("/users", verifyToken, authorize(["admin", "sysadmin"]), findAllUsers);
 router.put("/users/:id", verifyToken, authorize(["sysadmin"]), updateUser);
 router.delete("/users/:id", verifyToken, authorize(["sysadmin"]), deleteUser);
 
