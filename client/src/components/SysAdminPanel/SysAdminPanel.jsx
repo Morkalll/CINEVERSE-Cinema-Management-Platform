@@ -21,13 +21,22 @@ export const SysAdminPanel = () => {
     const [loading, setLoading] = useState(true);
     
     const [deleteConfirm, setDeleteConfirm] = useState({ show: false, item: null, type: "" });
-    const [showCreateScreen, setShowCreateScreen] = useState(false);
     const [showCreateScreenConfirm, setShowCreateScreenConfirm] = useState(false);
+    const [cancelConfirm, setCancelConfirm] = useState({ show: false, type: ""} )
 
     // Edit modal states
     const [editModal, setEditModal] = useState({ show: false, item: null, type: "" });
     const [editForm, setEditForm] = useState({});
-    
+
+
+    const checkSysAdminAuth = () => 
+    {
+    if (user.role !== "sysadmin") {
+        errorToast("Solo los sysadmin pueden realizar esta acción");
+        return false;
+    }
+    return true;
+    };
 
     const handleGoToRegisterAdmin = () => 
     {

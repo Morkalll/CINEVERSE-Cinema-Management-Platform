@@ -19,7 +19,7 @@ export const NavBar = () =>
       <div className="navbar-center">
         <Link to="/movielistings" className="nav-link"> • PELÍCULAS • </Link>
         <Link to="/candy" className="nav-link"> • CANDY • </Link>
-        {user && user.role === "sysadmin" && (
+        {user && user.role === "sysadmin" || user && user.role === "admin" &&(
           <Link to="/sysadmin" className="nav-link sysadmin-link"> • PANEL ADMIN • </Link>
         )}
       </div>

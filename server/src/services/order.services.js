@@ -58,7 +58,7 @@ export const createOrder = async (req, res) =>
                         orderId: createdOrder.id,
                         type: "ticket",
                         refId: item.refId,
-                        name: `${show.movieTitle} - ${show.screenId}`,
+                        name: `Película - ID: ${show.screenId}`,
                         price,
                         quantity: item.quantity,
                         seats: item.seats || null,
@@ -145,7 +145,13 @@ export const getUserOrders = async (req, res) =>
         const orders = await Order.findAll(
         {
             where: { userId },
-            include: [OrderItem],
+
+            include: [
+            {
+                model: OrderItem,
+                attributes: ["id", "type", "refId", "name", "price", "quantity", "seats"]
+            }],
+
             order: [["createdAt", "DESC"]],
         });
 
@@ -242,12 +248,6 @@ export const deleteOrder = async (req, res) =>
         {
             await transaction.rollback();
             return res.status(404).json({ message: "Orden no encontrada" });
-        }
-
-        if (order.userId !== userId) 
-        {
-            await transaction.rollback();
-            return res.status(403).json({ message: "No autorizado para cancelar esta orden" });
         }
 
         const orderItems = await OrderItem.findAll(

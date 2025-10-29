@@ -4,7 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import { Button } from "react-bootstrap";
 import { useNavigate } from "react-router";
 import { API_URL } from "../../services/api";
-import { successToast, errorToast, confirmToast } from "../../utils/toast";
+import { errorToast } from "../../utils/toast";
 
 
 export const UserProfile = () => 
@@ -100,101 +100,6 @@ export const UserProfile = () =>
     };
 
 
-    const handleCancelOrder = (orderId) => 
-    {
-        confirmToast(
-
-            ({ closeToast }) => (
-
-                <div>
-
-                    <p>¿Estás seguro que querés cancelar esta orden?</p>
-
-                    <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
-
-                        <button 
-                            
-                            onClick={() => 
-                            {
-                                closeToast();
-                                confirmCancelOrder(orderId);
-                            }}
-                            
-                            style={{ padding: '4px 12px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px' }}
-                        
-                        > Cancelar </button>
-
-                        <button 
-
-                            onClick={closeToast}
-                            
-                            style={{ padding: '4px 12px', background: '#6c757d', color: 'white', border: 'none', borderRadius: '4px' }}
-                        
-                        > No cancelar </button>
-
-                    </div>
-
-                </div>
-
-            ),
-
-        );
-
-    };
-
-
-    const confirmCancelOrder = async (orderId) => 
-    {
-        try 
-        {
-            const endpoint = (API_URL || "http://localhost:3000/api").replace(/\/+$/, "") + `/orders/${orderId}`;
-
-            const res = await fetch(endpoint, 
-            {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${token}` },
-            });
-
-
-            if (!res.ok) 
-            {
-                const raw = await res.text().catch(() => "");
-
-                let parsed = null;
-
-                try 
-                {
-                    parsed = raw ? JSON.parse(raw) : null; 
-                } 
-                
-                catch (e) 
-                { 
-                    parsed = null; 
-                }
-
-                const message = parsed?.message || raw || `Error al cancelar (status ${res.status})`;
-
-                throw new Error(message);
-            }
-
-            const body = await res.json().catch(() => ({ success: true }));
-
-            successToast(body.message || "Orden cancelada correctamente");
-
-            setOrders((prev) => prev.filter((o) => o.id !== orderId));
-
-        } 
-        
-        catch (err) 
-        {
-            console.error("Error al cancelar la orden", err);
-
-            errorToast(err.message || "Error al cancelar la orden");
-        }
-
-    };
-
-
     if (authLoading) 
     {
         return <div>Cargando perfil...</div>;
@@ -254,25 +159,19 @@ export const UserProfile = () =>
                             <div>
 
                                 <ul>
-    {(order.OrderItems || order.orderItems || order.items || []).map((it) => {
-        console.log("Item completo:", it);  
-        return (
-            <li key={it.id || `${it.type}-${it.refId}`}>
-                {it.name || `${it.type} #${it.refId}`} — Cant: {it.quantity} — Precio: ${Number(it.price || 0).toFixed(2)}
-            </li>
-        );
-    })}
-</ul>
+                                    {(order.orderItems).map((it) => {
+                                        console.log("Item completo:", it);  
+                                        return (
+                                            <li key={it.id || `${it.type}-${it.refId}`}>
+                                                {it.name || `${it.type} #${it.refId}`} — Cant: {it.quantity} — Precio: ${Number(it.price || 0).toFixed(2)}
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
                                 
 
                             </div>
 
-
-                            <div>
-
-                                <Button variant="danger" size="sm" onClick={() => handleCancelOrder(order.id)}>Cancelar orden</Button>
-                            
-                            </div>
 
                         </li>
 
