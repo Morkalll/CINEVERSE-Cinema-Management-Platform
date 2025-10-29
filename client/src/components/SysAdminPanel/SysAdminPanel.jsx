@@ -127,8 +127,47 @@ export const SysAdminPanel = () => {
       setDeleteConfirm({ show: true, item, type });
     };
 
+    const handleCancelClick = (order) => {
+        setCancelConfirm({ show: true, order });
+    };
+
+
+    const handleConfirmCancel = async () => {
+        const order = cancelConfirm.order;
+        
+        try {
+            const token = localStorage.getItem("token");
+            
+            const response = await fetch(`http://localhost:3000/api/orders/${order.id}/cancel`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error("Error al cancelar orden");
+            }
+            
+            setOrders(orders.map(o => o.id === order.id ? { ...o, status: "cancelled" } : o));
+            
+            successToast("Orden cancelada exitosamente");
+            setCancelConfirm({ show: false, order: null });
+        } catch (err) {
+            console.error("Error cancelling order:");
+            errorToast(err.message || "Error al cancelar orden");
+        }
+    };
+
     const handleConfirmDelete = async () => {
         const { item, type } = deleteConfirm;
+
+        if (type === "order" && item.status !== "cancelled") {
+            errorToast("Solo se pueden eliminar órdenes canceladas");
+            setDeleteConfirm({ show: false, item: null, type: "" });
+        return;
+    }
         
         try {
             const token = localStorage.getItem("token");
@@ -159,10 +198,19 @@ export const SysAdminPanel = () => {
             } catch (parseError) {
                 throw new Error(`Server returned invalid response: ${responseText}`);
             }
+            
 
+            if (!response.ok && response.status === 403) {
+                if (user.role === "admin") {
+                    throw new Error("Solo el SysAdmin puede eliminar usuarios");
+                }
+
+            }
+            
             if (!response.ok) {
                 throw new Error(responseData.message || `Error ${response.status}`);
             }
+
             
             if (type === "user") {
                 setUsers(users.filter((u) => u.id !== item.id));
@@ -932,13 +980,24 @@ export const SysAdminPanel = () => {
                                                 <td>{order.userId}</td>
                                                 <td>${order.total.toFixed(2)}</td>
                                                 <td>
-                                                    <span className={`badge ${order.status === 'pending' ? 'badge-warning' : 'badge-success'}`}>
+                                                    <span className={`badge ${
+                                                        order.status === 'cancelled' ? 'badge-danger' :
+                                                        'badge-success'
+                                                    }`}>
                                                         {order.status}
                                                     </span>
                                                 </td>
                                                 <td>{order.orderItems?.length || 0} items</td>
                                                 <td>{new Date(order.createdAt).toLocaleString()}</td>
                                                 <td>
+                                                    <button
+                                                        className="cancel-btn"
+                                                        onClick={() => handleCancelClick(order)}
+                                                        style={{ marginRight: '8px' }}
+                                                        disabled={order.status === 'cancelled'}
+                                                    >
+                                                        Cancelar
+                                                    </button>
                                                     <button
                                                         className="delete-btn"
                                                         onClick={() => handleDeleteClick(order, "order")}
@@ -1041,6 +1100,29 @@ export const SysAdminPanel = () => {
                         </div>
                     </div>
                 )}
+
+                {cancelConfirm.show && (
+                <div className="delete-confirm-overlay" onClick={() => setCancelConfirm({ show: false, order: null })}>
+                    <div className="delete-confirm-box" onClick={(e) => e.stopPropagation()}>
+                        <h3>Confirmar Cancelación</h3>
+                        <p>¿Estás seguro que deseas cancelar esta orden #{cancelConfirm.order?.id}?</p>
+                        <div className="delete-confirm-buttons">
+                            <button 
+                                className="cancel-btn"
+                                onClick={() => setCancelConfirm({ show: false, order: null })}
+                            >
+                                No
+                            </button>
+                            <button 
+                                className="delete-btn"
+                                onClick={handleConfirmCancel}
+                            >
+                                Sí, Cancelar Orden
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
             </div>
         </div>
     );
