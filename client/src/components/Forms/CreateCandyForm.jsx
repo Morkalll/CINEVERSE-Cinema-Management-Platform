@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { toast } from "react-toastify";
+import { NavBar } from "../NavBar/NavBar";
 import './CreateCandyForm.css'
 
 
@@ -172,6 +173,7 @@ export const CreateCandyForm = () =>
   return (
 
     <div>
+      <NavBar />
 
       <form onSubmit={handleSubmit} className="candy-form" noValidate>
         
