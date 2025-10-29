@@ -27,7 +27,7 @@ export const findOneProduct = async (req, res) =>
 
     if (!oneProduct) 
     {
-      return res.status(404).send({ message: "Producto no encontrado" });
+      return res.status(404).json({ message: "Producto no encontrado" });
     }
 
     return res.json(oneProduct);
@@ -51,9 +51,10 @@ export const createProduct = async (req, res) =>
 
     if (!name || price == null) 
     {
-      return res.status(400).send({ message: "Campos requeridos" });
+      return res.status(400).json({ message: "Campos requeridos" });
     }
 
+    
     const newProduct = await Products.create(
     {
       name,
@@ -121,14 +122,15 @@ export const deleteProduct = async (req, res) =>
 
     await productToDelete.destroy();
 
-    return res.send(`Producto con ID ${id} borrado`);
+    // FIXED: Return JSON instead of plain text
+    return res.status(200).json({ message: `Producto con id: ${id} eliminado correctamente` });
 
   } 
   
   catch (error) 
   {
-    console.error(error);
-    return res.status(500).json({ message: "Error interno" });
+    console.error("Error deleting product:", error);
+    return res.status(500).json({ message: error.message || "Error interno" });
   }
 
 };

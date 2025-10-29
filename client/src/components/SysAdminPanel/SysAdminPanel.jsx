@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { NavBar } from "../../components/NavBar/NavBar";
 import { successToast, errorToast } from "../../utils/toast";
 import { useAuth } from "../../context/AuthContext";
+import { formatDate } from "../../utils/helper";
 import "./SysAdminPanel.css";
 
 
@@ -48,7 +49,7 @@ export const SysAdminPanel = () => {
             return;
         }
 
-        if (user.role !== "sysadmin") {
+        if (user.role !== "sysadmin" && user.role !== "admin") {
             errorToast("No tienes permisos para acceder a esta página");
             navigate("/home");
             return;
@@ -577,7 +578,7 @@ export const SysAdminPanel = () => {
             <NavBar />
             <div className="sysadmin-panel">
                 <div className="header-section">
-                    <h1>Panel del SysAdmin</h1>
+                    <h1>Administración</h1>
                     <p>Gestión centralizada del sistema de cine</p>
                 </div>
 
@@ -818,7 +819,7 @@ export const SysAdminPanel = () => {
                                                 </td>
                                                 <td>Sala {showing.screenId}</td>
                                                 <td>
-                                                    {new Date(showing.showtime).toLocaleString()}
+                                                    {formatDate(showing.showtime)}
                                                 </td>
                                                 <td>${showing.ticketPrice || showing.price}</td>
                                                 <td>

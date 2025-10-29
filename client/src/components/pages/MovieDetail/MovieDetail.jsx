@@ -5,6 +5,7 @@ import { NavBar } from '../../NavBar/NavBar';
 import './MovieDetail.css';
 import SeatSelector from "../../SeatSelector/SeatSelector";
 import { useCart } from "../../../context/CartContext";
+import { formatDate } from "../../../utils/helper";
 
 
 export const MovieDetail = () => 
@@ -151,7 +152,7 @@ export const MovieDetail = () =>
 
                           <div style={{ marginBottom: "0.25rem", fontWeight: 600 }}>
 
-                            <strong>{screen.screenName}</strong> — {new Date(screen.showtime).toLocaleString()}
+                            <strong>{screen.screenName}</strong> — {formatDate(screen.showtime)}
                             {isSelected && <span style={{ marginLeft: 8, color: "#1976d2" }}>✓ Seleccionada</span>}
 
                           </div>

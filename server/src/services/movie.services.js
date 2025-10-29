@@ -57,6 +57,21 @@ export const createMovie = async (req, res) =>
             return res.status(400).send({ message: "Los campos de título y género son requeridos" });
         }
 
+        const existingMovie = await Movie.findOne({
+            where: sequelize.where(
+                sequelize.fn('LOWER', sequelize.col('title')),
+                sequelize.fn('LOWER', title)
+            )
+        });
+
+
+        if (existingMovie) 
+        {
+        return res.status(409).json({ 
+        message: `La película "${title}" ya existe en la base de datos` 
+    });
+}
+
         const newMovie = await Movie.create(
         {
             title,

@@ -1,6 +1,7 @@
 
 import { Button } from "react-bootstrap"
 import { useNavigate } from "react-router"
+import { NavBar } from "../../NavBar/NavBar"
 
 
 export const NotFound = () =>
@@ -24,6 +25,7 @@ export const NotFound = () =>
     return(
 
         <div className="text-center mt-3">
+            <NavBar />
 
             <h1>
                 Parece que no se pudo encontrar esta página...

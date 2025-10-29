@@ -65,7 +65,7 @@ export const Checkout = () =>
                 type: it.type,
                 refId: it.refId,
                 quantity: it.quantity,
-                seats: it.seats || undefined, // Include seats for ticket items
+                seats: it.seats || undefined,
             }));
 
             const res = await fetch(`${API_URL}/orders`, 
@@ -128,8 +128,10 @@ export const Checkout = () =>
                         <div style={{ flex: 1 }}>
 
                             <div style={{ fontWeight: 600 }}>{item.name}</div>
+                            
 
                             <div style={{ fontSize: 13, color: "#666" }}>{item.type}</div>
+                            
 
                         </div>
 
@@ -141,6 +143,7 @@ export const Checkout = () =>
 
 
                             <button onClick={() => increment(item.refId, item.type, 1)} aria-label="Sumar">+</button>
+                            
 
                             <div style={{ width: 90, textAlign: "right" }}>${(item.price * item.quantity).toFixed(2)}</div>
 

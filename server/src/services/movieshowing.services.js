@@ -69,6 +69,22 @@ export const createMovieShowings = async (req, res) =>
             return res.status(400).json({ message: "MovieID y Showtime son requeridos" });
         }
 
+        const existingShowing = await MovieShowing.findOne({
+            where: {
+                movieId,
+                showtime,
+                screenId
+            },
+        });
+
+        if (existingShowing) 
+        {
+            return res.status(409).json({ 
+                message: "Ya existe una función para esta película en esta sala y horario" 
+            });
+        }
+
+
         const newShowing = await MovieShowing.create(
         {
             movieId,
@@ -157,14 +173,12 @@ export const deleteMovieShowings = async (req, res) =>
             return res.status(404).json({ message: "MovieShowing no encontrado" });
         }
 
-        // Delete all seats for this showing first
+        
         await Seat.destroy({ 
             where: { showingId: id },
             transaction 
         });
 
-        // Then delete the showing
-        await showingToDelete.destroy({ transaction });
         
         await transaction.commit();
         return res.status(200).json({ message: `Función con id: ${id} eliminada correctamente` });

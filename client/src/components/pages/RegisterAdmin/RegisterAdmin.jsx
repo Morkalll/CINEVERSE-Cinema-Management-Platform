@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom"
 import { Button, Card, Col, Form, FormGroup, Row } from "react-bootstrap"
 import { successToast, errorToast } from "../../../utils/toast";
 import { apiRequest } from "../../../services/api";
+import { NavBar } from "../../NavBar/NavBar";
 import TatinAlien2 from '../../../assets/images/Alien 2.png'
 
 
@@ -130,143 +131,147 @@ export const RegisterAdmin = () =>
 
 
     return (
+        <>
+            <NavBar />
 
-        <Card className="mt-5 mx-3 p-3 px-5 shadow">
+            <Card className="mt-5 mx-3 p-3 px-5 shadow">
 
-            <Card.Body>
+                <Card.Body>
 
-                <Row className="mb-2">
+                    <Row className="mb-2">
 
-                    <h1>- ADMIN -</h1>
+                        <h1>- ADMIN -</h1>
 
-                    <h5>Por favor, ingrese los datos del nuevo ADMIN para el registro:</h5>
+                        <h5>Por favor, ingrese los datos del nuevo ADMIN para el registro:</h5>
 
-                    <img src={TatinAlien2} alt="Alien" className="Alien-image" />
+                        <img src={TatinAlien2} alt="Alien" className="Alien-image" />
 
-                </Row>
-
-
-                <Row>
-
-                    <Form onSubmit={handleSubmit} noValidate>
+                    </Row>
 
 
-                        <FormGroup className="mb-4">
+                    <Row>
 
-                            <Form.Control
-
-                                placeholder="Ingresar nombre"
-                                onChange={handleUsernameChange}
-                                onBlur={() => 
-                                {
-                                    setTouched({ ...touched, username: true })
-                                    setError({ ...error, usernameError: username.trim().length < 5 ? "El nombre de usuario debe tener mínimo 5 caracteres" : "" })
-                                }}
-                                value={username}
-                            />
-
-                            {touched.username && error.usernameError && (
-                                <div className="text-danger">{error.usernameError}</div>
-                            )}
-
-                        </FormGroup>
+                        <Form onSubmit={handleSubmit} noValidate>
 
 
-                        <FormGroup className="mb-4">
+                            <FormGroup className="mb-4">
 
-                            <Form.Control
+                                <Form.Control
 
-                                placeholder="Ingresar email"
-                                onChange={handleEmailChange}
-                                onBlur={() => 
-                                {
-                                    setTouched({ ...touched, email: true })
-                                    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
-                                    setError({ ...error, emailError: !emailRegex.test(email) ? "Ingrese un email válido" : "" })
-                                }}
-                                value={email}
-                            />
-
-                            {touched.email && error.emailError && (
-                                <div className="text-danger">{error.emailError}</div>
-                            )}
-
-                        </FormGroup>
-
-
-                        <FormGroup className="mb-4">
-
-                            <Form.Control
-                            
-                                type="password"
-                                placeholder="Ingresar contraseña"
-                                onChange={handlePasswordChange}
-                                onBlur={() => 
-                                {
-                                    setTouched({ ...touched, password: true })
-                                    setError({ ...error, passwordError: password.trim().length < 8 ? "La contraseña debe tener mínimo 8 caracteres" : "" })
-                                    if (touched.confirmedPassword) 
+                                    placeholder="Ingresar nombre"
+                                    onChange={handleUsernameChange}
+                                    onBlur={() => 
                                     {
-                                        setError(prev => ({ ...prev, confirmedPasswordError: confirmedPassword !== password ? "Las contraseñas deben coincidir" : "" }))
-                                    }
-                                }}
-                                value={password}
-                            />
+                                        setTouched({ ...touched, username: true })
+                                        setError({ ...error, usernameError: username.trim().length < 5 ? "El nombre de usuario debe tener mínimo 5 caracteres" : "" })
+                                    }}
+                                    value={username}
+                                />
 
-                            {touched.password && error.passwordError && (
-                                <div className="text-danger">{error.passwordError}</div>
-                            )}
+                                {touched.username && error.usernameError && (
+                                    <div className="text-danger">{error.usernameError}</div>
+                                )}
 
-                        </FormGroup>
-
-
-                        <FormGroup className="mb-4">
-
-                            <Form.Control
-
-                                type="password"
-                                placeholder="Confirmar contraseña"
-                                onChange={handleConfirmedPasswordChange}
-                                onBlur={() => 
-                                {
-                                    setTouched({ ...touched, confirmedPassword: true })
-                                    setError({ ...error, confirmedPasswordError: confirmedPassword !== password ? "Las contraseñas deben coincidir" : "" })
-                                }}
-                                value={confirmedPassword}
-                            />
-
-                            {touched.confirmedPassword && error.confirmedPasswordError && (
-                                <div className="text-danger">{error.confirmedPasswordError}</div>
-                            )}
-
-                        </FormGroup>
+                            </FormGroup>
 
 
-                        <Row>
+                            <FormGroup className="mb-4">
 
-                            <Col />
+                                <Form.Control
 
-                            <Col md={6} className="d-flex-justify-content-end">
+                                    placeholder="Ingresar email"
+                                    onChange={handleEmailChange}
+                                    onBlur={() => 
+                                    {
+                                        setTouched({ ...touched, email: true })
+                                        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+                                        setError({ ...error, emailError: !emailRegex.test(email) ? "Ingrese un email válido" : "" })
+                                    }}
+                                    value={email}
+                                />
 
-                                <Button variant="secondary" type="submit">
+                                {touched.email && error.emailError && (
+                                    <div className="text-danger">{error.emailError}</div>
+                                )}
 
-                                    Registrarse
-
-                                </Button>
-
-                            </Col>
-
-                        </Row>
+                            </FormGroup>
 
 
-                    </Form>
+                            <FormGroup className="mb-4">
 
-                </Row>
+                                <Form.Control
+                            
+                                    type="password"
+                                    placeholder="Ingresar contraseña"
+                                    onChange={handlePasswordChange}
+                                    onBlur={() => 
+                                    {
+                                        setTouched({ ...touched, password: true })
+                                        setError({ ...error, passwordError: password.trim().length < 8 ? "La contraseña debe tener mínimo 8 caracteres" : "" })
+                                        if (touched.confirmedPassword) 
+                                        {
+                                            setError(prev => ({ ...prev, confirmedPasswordError: confirmedPassword !== password ? "Las contraseñas deben coincidir" : "" }))
+                                        }
+                                    }}
+                                    value={password}
+                                />
 
-            </Card.Body>
+                                {touched.password && error.passwordError && (
+                                    <div className="text-danger">{error.passwordError}</div>
+                                )}
 
-        </Card>
+                            </FormGroup>
+
+
+                            <FormGroup className="mb-4">
+
+                                <Form.Control
+
+                                    type="password"
+                                    placeholder="Confirmar contraseña"
+                                    onChange={handleConfirmedPasswordChange}
+                                    onBlur={() => 
+                                    {
+                                        setTouched({ ...touched, confirmedPassword: true })
+                                        setError({ ...error, confirmedPasswordError: confirmedPassword !== password ? "Las contraseñas deben coincidir" : "" })
+                                    }}
+                                    value={confirmedPassword}
+                                />
+
+                                {touched.confirmedPassword && error.confirmedPasswordError && (
+                                    <div className="text-danger">{error.confirmedPasswordError}</div>
+                                )}
+
+                            </FormGroup>
+
+
+                            <Row>
+
+                                <Col />
+
+                                <Col md={6} className="d-flex-justify-content-end">
+
+                                    <Button variant="secondary" type="submit">
+
+                                        Registrarse
+
+                                    </Button>
+
+                                </Col>
+
+                            </Row>
+
+
+                        </Form>
+
+                    </Row>
+
+                </Card.Body>
+
+            </Card>
+            </>
         
-    )
+        )
 
 }
+
