@@ -30,10 +30,11 @@ function App()
 
       <Routes>
 
-        <Route path='/' element={<TestRoom />} />
+        <Route path='/' element={<Home/>} />
+         <Route path='testroom' element={<TestRoom/>} />
         <Route path='login' element={<Login />} />
         <Route path='register' element={<Register />} />
-        <Route path='register-admin' element={<RegisterAdmin />} />
+        <Route path='register-admin' element={<ProtectedRoute allowedRoles={["sysadmin"]}> <RegisterAdmin /> </ProtectedRoute>}/>
         <Route path='home' element={<Home />} />
         <Route path='movielistings' element={<MovieListingsPage />} />
         <Route path="/movie/:id" element={<MovieDetail />} />
@@ -45,7 +46,8 @@ function App()
         <Route path="/addcandy" element= {<ProtectedRoute allowedRoles={["admin","sysadmin"]}> {<CreateCandyForm/>} </ProtectedRoute> } />
         <Route path="/addmovieshowing" element= { <ProtectedRoute allowedRoles={["admin","sysadmin"]}> {<CreateMovieShowingForm/>} </ProtectedRoute> } />
         <Route path= "/sysadmin" element={<ProtectedRoute allowedRoles={["admin", "sysadmin"]}> <SysAdminPanel /> </ProtectedRoute>}/>
-        <Route path= "/register-sysadmin" element= {<RegisterSysAdmin/>}/>
+        <Route path= "/register-sysadmin" element={<ProtectedRoute allowedRoles={["sysadmin"]}> <RegisterSysAdmin /> </ProtectedRoute>}/>
+        
       </Routes>
 
       <ToastContainer />

@@ -247,7 +247,7 @@ tbody tr:hover {
   transform: translateY(-2px);
 }
 
-/* Modal */
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -289,7 +289,7 @@ tbody tr:hover {
   overflow-y: auto;
 }
 
-/* Estilos para formularios dentro del modal */
+
 .modal-form-body .movie-form,
 .modal-form-body .candy-form,
 .modal-form-body .room-form {
@@ -492,7 +492,7 @@ tbody tr:hover {
   line-height: 1.5;
 }
 
-/* Loading */
+
 .loading-container {
   display: flex;
   flex-direction: column;

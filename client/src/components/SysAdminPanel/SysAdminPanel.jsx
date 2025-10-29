@@ -305,7 +305,7 @@ export const SysAdminPanel = () => {
 
             let bodyData = { ...editForm };
             
-            // For showings, combine date and time
+            
             if (type === "showing") {
                 const datetime = new Date(`${editForm.date}T${editForm.showtime}`).toISOString();
                 bodyData = {
@@ -334,13 +334,13 @@ export const SysAdminPanel = () => {
 
             const updatedItem = await response.json();
             
-            // Update local state
+            
             if (type === "movie") {
                 setMovies(movies.map(m => m.id === item.id ? updatedItem : m));
             } else if (type === "room") {
                 setRooms(rooms.map(r => r.id === item.id ? updatedItem : r));
             } else if (type === "showing") {
-                // Manually add the movie relationship since backend doesn't include it
+                
                 const updatedShowing = {
                     ...updatedItem,
                     movieId: Number(updatedItem.movieId),
@@ -363,9 +363,9 @@ export const SysAdminPanel = () => {
     try {
         const token = localStorage.getItem("token");
         
-        // Calculate the next screen number based on highest existing ID
+        
         const maxId = rooms.length > 0 ? Math.max(...rooms.map(r => r.id)) : 0;
-        const capacity = 40; // Default capacity
+        const capacity = 40; 
         
         const response = await fetch("http://localhost:3000/api/screens", {
             method: "POST",
@@ -1023,7 +1023,7 @@ export const SysAdminPanel = () => {
                     </div>
                 )}
 
-                {/* Create Screen Confirmation Modal */}
+                
                 {showCreateScreenConfirm && (
                     <div className="modal-overlay" onClick={() => setShowCreateScreenConfirm(false)}>
                         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -1052,7 +1052,7 @@ export const SysAdminPanel = () => {
                     </div>
                 )}
 
-                {/* Edit Modal */}
+                
                 {editModal.show && (
                     <div className="modal-overlay" onClick={() => setEditModal({ show: false, item: null, type: "" })}>
                         <div className={`modal-content modal-form ${editModal.type === 'movie' ? 'modal-form-large' : ''}`} onClick={(e) => e.stopPropagation()}>
@@ -1081,7 +1081,7 @@ export const SysAdminPanel = () => {
                     </div>
                 )}
 
-                {/* Delete Confirmation Modal */}
+                
                 {deleteConfirm.show && (
                     <div className="modal-overlay" onClick={() => setDeleteConfirm({ show: false, item: null, type: "" })}>
                         <div className="modal-content" onClick={(e) => e.stopPropagation()}>

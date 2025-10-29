@@ -136,7 +136,7 @@ export const updateMovieShowings = async (req, res) =>
         const showingToUpdate = await MovieShowing.findByPk(id);
         if (!showingToUpdate) return res.status(404).json({ message: "Función no encontrada" });
 
-        // Only update fields that are provided
+        
         const updateData = {};
         if (movieId !== undefined) updateData.movieId = movieId;
         if (showtime !== undefined) updateData.showtime = showtime;

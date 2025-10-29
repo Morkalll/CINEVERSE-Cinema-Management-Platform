@@ -66,7 +66,7 @@ export const CartProvider = ({ children }) =>
                 newCart[idx] = { 
                     ...newCart[idx], 
                     quantity: Number(newCart[idx].quantity || 0) + Number(quantity),
-                    seats: item.seats || newCart[idx].seats // Preserve or update seats
+                    seats: item.seats || newCart[idx].seats 
                 };
                 return newCart;
             } 
@@ -106,7 +106,7 @@ export const CartProvider = ({ children }) =>
             return prev.map((cartItem) => {
                 if (cartItem.refId === refId && cartItem.type === type) {
                     const updated = { ...cartItem, quantity: newQuantity };
-                    // Update seats if provided
+                    
                     if (seats !== undefined) {
                         updated.seats = seats;
                     }
