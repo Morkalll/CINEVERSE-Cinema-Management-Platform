@@ -159,14 +159,16 @@ export const UserProfile = () =>
                             <div>
 
                                 <ul>
-                                    
-                                    {(order.OrderItems || order.orderItems || order.items || []).map((it) => (
-                                        <li key={it.id || `${it.type}-${it.refId}`}>
-                                            {it.name || `${it.type} #${it.refId}`} — Cant: {it.quantity} — Precio: ${Number(it.price || 0).toFixed(2)}
-                                        </li>
-                                    ))}
-
-                                </ul>
+    {(order.OrderItems || order.orderItems || order.items || []).map((it) => {
+        console.log("Item completo:", it);  
+        return (
+            <li key={it.id || `${it.type}-${it.refId}`}>
+                {it.name || `${it.type} #${it.refId}`} — Cant: {it.quantity} — Precio: ${Number(it.price || 0).toFixed(2)}
+            </li>
+        );
+    })}
+</ul>
+                                
 
                             </div>
 

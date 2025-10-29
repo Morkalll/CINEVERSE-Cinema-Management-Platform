@@ -1,7 +1,7 @@
 
 import { DataTypes } from "sequelize";
 import { sequelize } from "../db.js";
-import Order from "./Order.js";
+
 
 
 export const OrderItem = sequelize.define("orderItem", 
@@ -51,7 +51,5 @@ export const OrderItem = sequelize.define("orderItem",
     },
 });
 
-Order.hasMany(OrderItem, { foreignKey: "orderId" });
-OrderItem.belongsTo(Order, { foreignKey: "orderId" });
 
 export default OrderItem;
