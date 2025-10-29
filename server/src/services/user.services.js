@@ -3,6 +3,7 @@ import { User } from "../models/User.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../config.js";
+import Order from "../models/Order.js";
 
 
 
@@ -41,6 +42,16 @@ export const deleteUser = async (req, res) =>
         if (user.id === req.user.id) 
         {
             return res.status(400).json({ message: "No puedes eliminar tu propia cuenta" });
+        }
+
+        const orders = await Order.findAll(
+                {
+                    where: {userId : user.id, status : "created"},
+                });
+
+        for(let order in orders){
+            order.status = "cancelled"
+            order.save()
         }
 
         await user.destroy();

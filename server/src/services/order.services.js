@@ -162,7 +162,7 @@ export const getUserOrders = async (req, res) =>
 };
 
 
-// NEW: Get all orders (for sysadmin)
+
 export const getAllOrders = async (req, res) => 
 {
     try 
@@ -184,6 +184,33 @@ export const getAllOrders = async (req, res) =>
     }
 
 };
+
+export const cancelOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const order = await Order.findByPk(id);
+    
+    if (!order) {
+      return res.status(404).json({ message: "Orden no encontrada" });
+    }
+    
+    if (order.status === "cancelled") {
+      return res.status(400).json({ message: "La orden ya está cancelada" });
+    }
+    
+    order.status = "cancelled";
+    await order.save();
+    
+    return res.status(200).json({ message: "Orden cancelada exitosamente", order });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Error al cancelar orden" });
+  }
+};
+
+
+
 
 
 export const deleteOrder = async (req, res) => 

@@ -43,7 +43,7 @@ export const MovieCarousel = () =>
     }, 3000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [movies.length]);
 
   if (movies.length === 0) {
     return (
