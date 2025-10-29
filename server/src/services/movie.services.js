@@ -93,7 +93,19 @@ export const updateMovie = async (req, res) =>
         const movieToUpdate = await Movie.findByPk(id);
         if (!movieToUpdate) return res.status(404).json({ message: "Película no encontrada" });
 
-        await movieToUpdate.update({ title, genre, director, rating, duration, synopsis, poster, posterCarousel, releaseDate });
+        // Only update fields that are provided
+        const updateData = {};
+        if (title !== undefined) updateData.title = title;
+        if (genre !== undefined) updateData.genre = genre;
+        if (director !== undefined) updateData.director = director;
+        if (rating !== undefined) updateData.rating = rating;
+        if (duration !== undefined) updateData.duration = duration;
+        if (synopsis !== undefined) updateData.synopsis = synopsis;
+        if (poster !== undefined) updateData.poster = poster;
+        if (posterCarousel !== undefined) updateData.posterCarousel = posterCarousel;
+        if (releaseDate !== undefined) updateData.releaseDate = releaseDate;
+
+        await movieToUpdate.update(updateData);
         await movieToUpdate.save();
 
         return res.json(movieToUpdate);
