@@ -1,4 +1,3 @@
-
 import { Screen } from "../models/Screen.js";
 import { MovieShowing } from "../models/MovieShowing.js";
 import { Seat } from "../models/Seats.js";
@@ -73,35 +72,6 @@ export const createScreen = async (req, res) =>
 };
 
 
-export const updateScreen = async (req, res) => 
-{
-    try 
-    {
-        const { id } = req.params;
-        const { capacity } = req.body;
-
-        const screenToUpdate = await Screen.findByPk(id);
-
-        if (!screenToUpdate) 
-        {
-            return res.status(404).json({ message: "Sala no encontrada" });
-        }
-
-        await screenToUpdate.update({ capacity });
-        await screenToUpdate.save();
-
-        return res.json(screenToUpdate);
-
-    } 
-    
-    catch (error) 
-    {
-        console.error(error);
-        return res.status(500).json({ message: "Error interno" });
-    }
-};
-
-
 export const deleteScreen = async (req, res) => 
 {
     const transaction = await sequelize.transaction();
@@ -151,4 +121,3 @@ export const deleteScreen = async (req, res) =>
         return res.status(500).json({ message: error.message || "Error interno" });
     }
 };
-
