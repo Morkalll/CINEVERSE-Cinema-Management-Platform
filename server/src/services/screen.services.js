@@ -87,13 +87,13 @@ export const deleteScreen = async (req, res) =>
             return res.status(404).json({ message: "Sala no encontrada" });
         }
 
-        // Find all showings for this screen
+        
         const showings = await MovieShowing.findAll({ 
             where: { screenId: id },
             transaction 
         });
 
-        // Delete seats for each showing
+        
         for (const showing of showings) {
             await Seat.destroy({ 
                 where: { showingId: showing.id },
@@ -101,13 +101,13 @@ export const deleteScreen = async (req, res) =>
             });
         }
 
-        // Delete all showings for this screen
+        
         await MovieShowing.destroy({ 
             where: { screenId: id },
             transaction 
         });
 
-        // Finally delete the screen
+        
         await screenToDelete.destroy({ transaction });
         
         await transaction.commit();

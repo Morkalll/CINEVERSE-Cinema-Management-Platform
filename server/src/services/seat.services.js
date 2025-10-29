@@ -112,18 +112,12 @@ export const reserveSeats = async (req, res) =>
             }
         );
 
-        // Opcional: Crear una orden
-        // const order = await Order.create({
-        //     userId: userId,
-        //     total: seats.length * pricePerSeat,
-        //     status: 'pending'
-        // });
 
         res.json(
         { 
             message: "Asientos reservados exitosamente",
             reservedSeats: seats,
-            // orderId: order.id
+            
         });
 
     } 
