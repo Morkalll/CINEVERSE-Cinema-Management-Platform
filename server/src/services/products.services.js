@@ -87,7 +87,7 @@ export const updateProduct = async (req, res) =>
     const productToUpdate = await Products.findByPk(id);
     if (!productToUpdate) return res.status(404).json({ message: "Producto no encontrado" });
 
-    // Only update fields that are provided
+    
     const updateData = {};
     if (name !== undefined) updateData.name = name;
     if (price !== undefined) updateData.price = price;
@@ -122,7 +122,7 @@ export const deleteProduct = async (req, res) =>
 
     await productToDelete.destroy();
 
-    // FIXED: Return JSON instead of plain text
+    
     return res.status(200).json({ message: `Producto con id: ${id} eliminado correctamente` });
 
   } 

@@ -29,6 +29,24 @@ export const Order = sequelize.define("order",
     { 
         type: DataTypes.DATE, 
         defaultValue: DataTypes.NOW 
+    },
+
+    mpPreferenceId: 
+    { 
+        type: DataTypes.STRING, 
+        allowNull: true 
+    },
+
+    mpPaymentId: 
+    { 
+        type: DataTypes.STRING, 
+        allowNull: true 
+    },
+
+    mpStatus: 
+    { 
+        type: DataTypes.STRING, 
+        allowNull: true 
     }
 });
 

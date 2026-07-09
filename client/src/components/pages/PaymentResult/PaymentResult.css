@@ -1,0 +1,5 @@
+/* PaymentResult styles - main styling is inline to match dark theme */
+.payment-result-container {
+    min-height: 100vh;
+    background: #1a1a1a;
+}

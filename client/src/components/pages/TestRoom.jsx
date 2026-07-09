@@ -54,7 +54,6 @@ export const TestRoom = () => {
     }
 
 
-    //AGREGAR MÁS PÁGINAS A MEDIDA QUE SE CREEN
 
 
 

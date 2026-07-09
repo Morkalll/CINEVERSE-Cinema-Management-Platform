@@ -3,6 +3,7 @@ import { User } from "../models/User.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../config.js";
+import { sendWelcomeEmail, sendLoginAlertEmail, sendProfileUpdatedEmail } from './email.services.js';
 
 
 
@@ -90,6 +91,9 @@ export const updateUser = async (req, res) =>
 
         await user.save();
 
+        // Fire-and-forget email notification
+        sendProfileUpdatedEmail(user.email, user.username);
+
         return res.status(200).json({
             message: "Usuario actualizado correctamente",
             user: {
@@ -140,6 +144,9 @@ export const registerUser = async (req, res) =>
             role: "user",
         });
 
+        // Fire-and-forget email notification
+        sendWelcomeEmail(newUser.email, newUser.username);
+
         return res.status(201).json({ id: newUser.id, email: newUser.email });
 
     } 
@@ -184,6 +191,9 @@ export const loginUser = async (req, res) =>
         {
             expiresIn: "1h",
         });
+
+        // Fire-and-forget email notification
+        sendLoginAlertEmail(user.email, user.username);
 
 
         return res.json(
