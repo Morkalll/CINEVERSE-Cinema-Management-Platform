@@ -26,7 +26,7 @@ export const Candy = () =>
             <section>
 
                 <button 
-                className='confirm-button'
+                className='candy-confirm-button'
                 onClick={handleGoToCheckout}
                 >Continuar compra</button>
 
