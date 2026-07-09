@@ -16,6 +16,6 @@ router.delete("/:id", verifyToken, deleteOrder);
 
 router.get("/all", verifyToken, authorize(["admin", "sysadmin"]), getAllOrders);
 
-router.patch("/:id/cancel", verifyToken, authorize(["admin", "sysadmin"]), cancelOrder)
+router.patch("/:id/cancel", verifyToken, cancelOrder)
 
 export default router;

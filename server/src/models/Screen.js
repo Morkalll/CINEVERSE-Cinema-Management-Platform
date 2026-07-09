@@ -12,6 +12,13 @@ export const Screen = sequelize.define("Screen",
         autoIncrement: true
     },
 
+    name:
+    {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: "Sala"
+    },
+
     capacity: 
     {
         type: DataTypes.INTEGER,

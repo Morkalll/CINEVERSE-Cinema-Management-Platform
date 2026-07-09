@@ -37,7 +37,7 @@ export const MovieDetail = () =>
         
         if (movieData.movieShowings && movieData.movieShowings.length > 0) {
           setSelectedShowing(movieData.movieShowings[0]);
-          console.log("✅ Primera función seleccionada:", movieData.movieShowings[0]);
+          console.log("Primera función seleccionada:", movieData.movieShowings[0]);
         }
 
       } 

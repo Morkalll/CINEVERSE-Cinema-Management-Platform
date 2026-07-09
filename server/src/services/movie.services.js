@@ -108,7 +108,7 @@ export const updateMovie = async (req, res) =>
         const movieToUpdate = await Movie.findByPk(id);
         if (!movieToUpdate) return res.status(404).json({ message: "Película no encontrada" });
 
-        // Only update fields that are provided
+        
         const updateData = {};
         if (title !== undefined) updateData.title = title;
         if (genre !== undefined) updateData.genre = genre;
@@ -149,13 +149,13 @@ export const deleteMovie = async (req, res) =>
             return res.status(404).json({ message: "Película no encontrada" });
         }
 
-        // Find all showings for this movie
+        
         const showings = await MovieShowing.findAll({ 
             where: { movieId: id },
             transaction 
         });
 
-        // Delete seats for each showing
+        
         for (const showing of showings) {
             await Seat.destroy({ 
                 where: { showingId: showing.id },
@@ -163,13 +163,13 @@ export const deleteMovie = async (req, res) =>
             });
         }
 
-        // Delete all showings for this movie
+        
         await MovieShowing.destroy({ 
             where: { movieId: id },
             transaction 
         });
 
-        // Finally delete the movie
+        
         await movieToDelete.destroy({ transaction });
         
         await transaction.commit();

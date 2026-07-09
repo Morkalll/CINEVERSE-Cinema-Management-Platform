@@ -91,7 +91,7 @@ export const createMovieShowings = async (req, res) =>
             showtime,
             screenId,
             ticketPrice
-        });
+        }, { transaction });
 
         const seats = [];
         const rows = 5;
@@ -109,7 +109,7 @@ export const createMovieShowings = async (req, res) =>
             }
         }
         
-        await Seat.bulkCreate(seats);
+        await Seat.bulkCreate(seats, { transaction });
         await transaction.commit();
 
         return res.status(201).json(newShowing);
@@ -136,7 +136,7 @@ export const updateMovieShowings = async (req, res) =>
         const showingToUpdate = await MovieShowing.findByPk(id);
         if (!showingToUpdate) return res.status(404).json({ message: "Función no encontrada" });
 
-        // Only update fields that are provided
+        
         const updateData = {};
         if (movieId !== undefined) updateData.movieId = movieId;
         if (showtime !== undefined) updateData.showtime = showtime;
@@ -179,7 +179,8 @@ export const deleteMovieShowings = async (req, res) =>
             transaction 
         });
 
-        
+        await showingToDelete.destroy({ transaction });
+
         await transaction.commit();
         return res.status(200).json({ message: `Función con id: ${id} eliminada correctamente` });
 

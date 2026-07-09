@@ -20,6 +20,7 @@ import { CreateMovieShowingForm } from './components/Forms/CreateMovieShowingFor
 import { ProtectedRoute } from './components/ProtectedRoute/ProtectedRoute';
 import { SysAdminPanel } from './components/SysAdminPanel/SysAdminPanel';
 import { RegisterSysAdmin } from './components/pages/RegisterSysadmin/RegisterSysadmin';
+import { PaymentResult } from './components/pages/PaymentResult/PaymentResult';
 
 
 function App() 
@@ -30,22 +31,27 @@ function App()
 
       <Routes>
 
-        <Route path='/' element={<TestRoom />} />
+        <Route path='/' element={<Home/>} />
+         <Route path='testroom' element={<TestRoom/>} />
         <Route path='login' element={<Login />} />
         <Route path='register' element={<Register />} />
-        <Route path='register-admin' element={<RegisterAdmin />} />
+        <Route path='register-admin' element={<ProtectedRoute allowedRoles={["sysadmin"]}> <RegisterAdmin /> </ProtectedRoute>}/>
         <Route path='home' element={<Home />} />
         <Route path='movielistings' element={<MovieListingsPage />} />
         <Route path="/movie/:id" element={<MovieDetail />} />
         <Route path='profile' element={<Profile />} />
         <Route path='candy' element={<Candy />} />
+        <Route path='/payment/success' element={<PaymentResult status="success" />} />
+        <Route path='/payment/failure' element={<PaymentResult status="failure" />} />
+        <Route path='/payment/pending' element={<PaymentResult status="pending" />} />
         <Route path='*' element={<NotFound />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/addmovie" element= {<ProtectedRoute allowedRoles={["admin","sysadmin"]}> {<CreateMoviesForm />} </ProtectedRoute> } />
         <Route path="/addcandy" element= {<ProtectedRoute allowedRoles={["admin","sysadmin"]}> {<CreateCandyForm/>} </ProtectedRoute> } />
         <Route path="/addmovieshowing" element= { <ProtectedRoute allowedRoles={["admin","sysadmin"]}> {<CreateMovieShowingForm/>} </ProtectedRoute> } />
         <Route path= "/sysadmin" element={<ProtectedRoute allowedRoles={["admin", "sysadmin"]}> <SysAdminPanel /> </ProtectedRoute>}/>
-        <Route path= "/register-sysadmin" element= {<RegisterSysAdmin/>}/>
+        <Route path= "/register-sysadmin" element={<ProtectedRoute allowedRoles={["sysadmin"]}> <RegisterSysAdmin /> </ProtectedRoute>}/>
+        
       </Routes>
 
       <ToastContainer />

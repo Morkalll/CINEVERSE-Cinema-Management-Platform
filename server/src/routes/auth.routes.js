@@ -11,7 +11,7 @@ const router = Router();
 
 router.post("/login", loginUser);
 
-router.get("/profile", getUser);
+router.get("/profile/:id", getUser);
 
 router.post("/register", registerUser);
 
