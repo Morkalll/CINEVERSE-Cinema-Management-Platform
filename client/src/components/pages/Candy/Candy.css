@@ -1,0 +1,26 @@
+.candy-confirm-button {
+  background-color: #050505 !important;
+  color: #ff00cc !important;
+  text-shadow: 0 0 8px rgba(255, 0, 204, 0.6) !important;
+  border: 1px solid #9900ff !important;
+  box-shadow: 0 0 10px rgba(153, 0, 255, 0.6) !important;
+  padding: 10px 30px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 0 auto;
+  display: block;
+}
+
+.candy-confirm-button:hover {
+  background-color: #111 !important;
+  color: #fff !important;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 0 0 20px rgba(255, 0, 204, 0.8) !important;
+  border-color: #ff00cc !important;
+  transform: scale(1.05);
+}
