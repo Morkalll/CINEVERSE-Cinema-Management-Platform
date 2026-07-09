@@ -1,9 +1,10 @@
 
 body {
-  background-color: #000; 
+  background: radial-gradient(circle at top, #1a1a2e 0%, #050505 100%); 
   margin: 0;
   padding: 0;
   font-family: 'Bebas Neue', sans-serif;
+  min-height: 100vh;
 }
 
 
@@ -12,7 +13,7 @@ body {
   flex-direction: column;
   gap: 4rem; 
   padding: 0 2rem;
-  background-color: #0a0a0a; 
+  background-color: transparent; 
   color: #fff; 
 }
 

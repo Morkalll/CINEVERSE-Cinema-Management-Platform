@@ -74,3 +74,16 @@
     transform: scale(1.05);
     box-shadow: 0 0 20px #ff00cc99;
 }
+
+.seat-status {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.seat-status span {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}

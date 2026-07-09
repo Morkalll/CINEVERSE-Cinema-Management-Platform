@@ -35,7 +35,7 @@ export const Login = () =>
             successToast("¡Inicio de sesión exitoso!");
             const userRole = result.data.user.role;
             
-            if (userRole === "sysadmin" || "admin") {
+            if (userRole === "sysadmin" ||userRole === "admin") {
                 navigate("/sysadmin");
             } else {
                 navigate("/home");

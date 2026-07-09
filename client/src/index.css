@@ -1,12 +1,25 @@
-
 :root {
+  /* Surface Colors */
+  --bg-main: #050505;
+  --bg-surface: #121212;
+  --bg-glass: rgba(18, 18, 18, 0.6);
+
+  /* Brand Accents */
+  --accent-pink: #ff00cc;
+  --accent-purple: #9900ff;
+  --gradient-primary: linear-gradient(90deg, var(--accent-pink), var(--accent-purple));
+
+  /* Text Colors */
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: var(--text-primary);
+  background-color: var(--bg-main);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
