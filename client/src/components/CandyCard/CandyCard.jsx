@@ -69,7 +69,7 @@ export const CandyCard = ({ id, name, image, description, stock, price }) =>
                 <p className='candy-price'>Precio: ${price}</p>
                 <p className='candy-available'>Disponible: {stock}</p>
 
-                <div className='candy-bottom' style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div className='candy-bottom' style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
 
                     <button className='add-button-new' onClick={handleDeleteProduct} aria-label={`Restar ${name}`}> - </button>
 
