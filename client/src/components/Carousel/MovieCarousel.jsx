@@ -88,6 +88,9 @@ export const MovieCarousel = () =>
                 alt={movie.title}
                 className="carousel-poster"
               />
+              <div className="carousel-overlay">
+                <h2 className="carousel-movie-title">{movie.title}</h2>
+              </div>
             </div>
           ))}
         </ReactSwipe>

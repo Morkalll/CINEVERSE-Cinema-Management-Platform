@@ -1,91 +1,125 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
 
-
 .carousel-section {
-  padding: 20px;
+  padding: 0;
+  padding-top: 80px; /* Space from navbar */
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
 }
 
 .carousel-title {
-  background: linear-gradient(90deg, #ff00ff, #9900ff, #5100ff);
-  background-size: 200% auto;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 15px;
+  display: none;
 }
 
 .carousel-wrapper {
   position: relative;
-  width: 90%;
-  max-width: 1100px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 95%;
+  max-width: 1400px;
+  margin: 0 auto; /* Centering instead of flex */
 }
 
 .carousel-swipe {
   width: 100%;
-  border-radius: 16px;
+  height: 70vh;
+  min-height: 500px;
   overflow: hidden;
-  box-shadow: 0 0 15px rgba(255, 0, 255, 0.6),
-              0 0 25px rgba(0, 255, 255, 0.6);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
 }
 
 .carousel-swipe > div {
-  display: flex !important;
-  width: 100%;
+  height: 100%;
 }
 
 .carousel-slide {
-  display: flex !important;
-  justify-content: center;
-  align-items: center; 
-  margin: 0 auto;    
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 .carousel-poster {
   width: 100%;
-  height: 350px;    
+  height: 100%;    
   object-fit: cover; 
-  border-radius: 16px;
-  border: 2px solid transparent;
-  animation: neonBorder 3s infinite;
+  border-radius: 20px;
+  border: none;
+  animation: none;
 }
 
-@keyframes neonBorder {
-  100% { border-color: #ff00ff; }
+.carousel-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 80%;
+  background: linear-gradient(to top, var(--bg-main) 0%, rgba(5,5,5,0.7) 40%, transparent 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  padding: 4rem 8%;
+  pointer-events: none;
+}
+
+.carousel-movie-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 5rem;
+  color: white;
+  margin: 0;
+  text-shadow: 2px 2px 20px rgba(0,0,0,0.9);
+  letter-spacing: 2px;
 }
 
 .carousel-arrow {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: none;
-  border: none;
-  font-size: 2.5rem;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
   color: #fff;
   cursor: pointer;
-  z-index: 2;
-  padding: 0 10px;
-  transition: color 0.2s;
+  z-index: 10;
+  transition: all 0.3s ease;
   user-select: none;
+  backdrop-filter: blur(5px);
+}
+
+.carousel-arrow:hover {
+  background: var(--gradient-primary);
+  border-color: transparent;
+  box-shadow: 0 0 15px rgba(153,0,255,0.5);
 }
 
 .carousel-arrow.left {
-  left: -80px;
+  left: 3vw;
 }
 
 .carousel-arrow.right {
-  right: -80px;
+  right: 3vw;
 }
 
 @media (max-width: 768px) {
-  .carousel-poster {
-    height: 220px;
+  .carousel-swipe {
+    height: 50vh;
+    min-height: 350px;
+  }
+  .carousel-movie-title {
+    font-size: 3rem;
+  }
+  .carousel-arrow {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
   }
 }
-
