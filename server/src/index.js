@@ -16,7 +16,9 @@ import movieShowingsRoutes from "./routes/movieshowing.routes.js";
 import screenRoutes from "./routes/screen.routes.js"
 import seatRoutes from "./routes/seats.routes.js"
 import userRoutes from "./routes/user.routes.js"
-import * as fs from "node:fs"
+import paymentRoutes from "./routes/payment.routes.js"
+import { cleanupExpiredOrders } from "./services/order.services.js";
+
 
 
 const app = express();
@@ -26,10 +28,22 @@ async function main()
   try 
   {
 
-    if (!fs.existsSync("movies.db")) 
+    // Disable FK checks so SQLite's alter-table (drop + recreate) strategy doesn't fail
+    await sequelize.query("PRAGMA foreign_keys = OFF;");
+
+    // Clean up orphaned _backup tables left by previous failed sync({ alter: true }) attempts
+    const [backupTables] = await sequelize.query(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE '%_backup';"
+    );
+    for (const { name } of backupTables) 
     {
-      await sequelize.sync({ alter: true });
+      await sequelize.query(`DROP TABLE IF EXISTS \`${name}\`;`);
     }
+
+    await sequelize.sync({ alter: true });
+
+    // Re-enable FK enforcement for runtime
+    await sequelize.query("PRAGMA foreign_keys = ON;");
 
     app.use(express.json());
     app.use(cors());
@@ -42,9 +56,13 @@ async function main()
     app.use("/api", screenRoutes); 
     app.use("/api", seatRoutes);
     app.use("/api", userRoutes);
+    app.use("/api/payments", paymentRoutes);
 
     app.listen(PORT);
     console.log(`🚀 Server listening on port ${PORT}`);
+
+    // Iniciar el temporizador de limpieza (cada 1 minuto)
+    setInterval(cleanupExpiredOrders, 60 * 1000);
 
   } 
   

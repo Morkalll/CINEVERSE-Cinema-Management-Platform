@@ -27,39 +27,6 @@ export const Checkout = () =>
 
         try 
         {
-            const ticketItems = cart.filter(item => item.type === "ticket");
-            
-            if (ticketItems.length > 0) 
-            {
-                for (const ticketItem of ticketItems) 
-                {
-                    if (ticketItem.seats && ticketItem.seats.length > 0) 
-                    {
-                        const seatResponse = await fetch(
-                            `${API_URL}/seats/reserve`,
-                            {
-                                method: "POST",
-                                headers: {
-                                    "Content-Type": "application/json",
-                                    "Authorization": `Bearer ${token}`
-                                },
-                                body: JSON.stringify({
-                                    userId: user.id,
-                                    showingId: ticketItem.refId,
-                                    seats: ticketItem.seats
-                                })
-                            }
-                        );
-
-                        const seatData = await seatResponse.json();
-
-                        if (!seatResponse.ok) 
-                        {
-                            throw new Error(seatData.message || "Error al reservar asientos");
-                        }
-                    }
-                }
-            }
 
             const items = cart.map((it) => ({
                 type: it.type,
@@ -86,9 +53,40 @@ export const Checkout = () =>
 
             const data = await res.json();
 
-            successToast("¡Pedido realizado con éxito!");
+            // Create Mercado Pago preference and redirect to payment
+            const prefRes = await fetch(`${API_URL}/payments/create-preference`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ orderId: data.orderId }),
+            });
 
-            clearCart();
+            if (prefRes.ok) 
+            {
+                const prefData = await prefRes.json();
+                clearCart();
+                // Redirect to Mercado Pago checkout
+                if (prefData.initPoint) 
+                {
+                    window.location.href = prefData.initPoint;
+                } 
+                else if (prefData.sandboxInitPoint) 
+                {
+                    window.location.href = prefData.sandboxInitPoint;
+                } 
+                else 
+                {
+                    successToast("¡Pedido realizado con éxito!");
+                }
+            } 
+            else 
+            {
+                // If MP preference fails, still mark order as created
+                clearCart();
+                successToast("¡Pedido realizado! Podrás pagar después desde tu perfil.");
+            }
 
             console.log("Order created:", data);
         } 

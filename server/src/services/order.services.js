@@ -1,9 +1,12 @@
 import Order from "../models/Order.js";
 import { OrderItem } from "../models/OrderItem.js";
 import { sequelize } from "../db.js";
+import { Op } from "sequelize";
 import { MovieShowing } from "../models/MovieShowing.js";
 import { Products } from "../models/Products.js";
 import { Seat } from "../models/Seats.js";
+import { User } from "../models/User.js";
+import { sendOrderConfirmationEmail, sendOrderCancellationEmail } from './email.services.js';
 
 
 export const createOrder = async (req, res) => 
@@ -47,6 +50,40 @@ export const createOrder = async (req, res) =>
                         throw new Error("Función no encontrada");          
                     }    
 
+
+                    if (item.seats && Array.isArray(item.seats) && item.seats.length > 0) 
+                    {
+                        const seatsToReserve = await Seat.findAll(
+                        {
+                            where: 
+                            {
+                                showingId: item.refId,
+                                label: item.seats
+                            }
+                        });
+
+                        if (seatsToReserve.length !== item.seats.length) 
+                        {
+                            throw new Error("Algunos asientos no existen");
+                        }
+
+                        const alreadyReserved = seatsToReserve.filter(seat => seat.reserved);
+                        if (alreadyReserved.length > 0) 
+                        {
+                            throw new Error(`Los asientos ${alreadyReserved.map(s => s.label).join(", ")} ya están ocupados`);
+                        }
+
+                        await Seat.update(
+                            { reserved: true },
+                            { 
+                                where: 
+                                { 
+                                    showingId: item.refId,
+                                    label: item.seats 
+                                } 
+                            }
+                        );
+                    }
 
                     const price = parseFloat(show.ticketPrice);
 
@@ -113,12 +150,38 @@ export const createOrder = async (req, res) =>
 
             await createdOrder.save();
 
+            // Fire-and-forget email notification
+            const orderUser = await User.findByPk(userId);
+            if (orderUser) 
+            {
+                sendOrderConfirmationEmail(orderUser.email, orderUser.username, { id: createdOrder.id, total, items });
+            }
+
             return res.status(201).json({ orderId: createdOrder.id, total });
 
         } 
         
         catch (transactionError) 
         {
+            for (const item of items) 
+            {
+                if (item.type === "ticket" && item.seats && Array.isArray(item.seats) && item.seats.length > 0) 
+                {
+                    await Seat.update(
+                        { reserved: false },
+                        { where: { showingId: item.refId, label: item.seats } }
+                    ).catch(() => {});
+                }
+                else if (item.type === "product")
+                {
+                    const product = await Products.findByPk(item.refId).catch(() => null);
+                    if (product) 
+                    {
+                        product.stock = (product.stock || 0) + item.quantity;
+                        await product.save().catch(() => {});
+                    }
+                }
+            }
             await OrderItem.destroy({ where: { orderId: createdOrder.id } }).catch(() => { });
             await createdOrder.destroy().catch(() => { });
             return res.status(400).json({ message: transactionError.message || "Error creando pedido" });
@@ -204,15 +267,87 @@ export const cancelOrder = async (req, res) => {
     if (order.status === "cancelled") {
       return res.status(400).json({ message: "La orden ya está cancelada" });
     }
+
+    const isOwner = req.user.id === order.userId;
+    const isAdmin = req.user.role === 'admin' || req.user.role === 'sysadmin';
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ message: "No tienes permiso para cancelar esta orden" });
+    }
+
+    if (!isAdmin && order.status === "paid") {
+      return res.status(400).json({ message: "No puedes cancelar una orden pagada. Solicita un reembolso en su lugar." });
+    }
     
-    order.status = "cancelled";
-    await order.save();
+    // Restore stock and release seats
+    await processOrderCancellation(order);
     
     return res.status(200).json({ message: "Orden cancelada exitosamente", order });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Error al cancelar orden" });
   }
+};
+
+export const processOrderCancellation = async (order, isExpired = false) => {
+    const orderItems = await OrderItem.findAll({ where: { orderId: order.id } });
+
+    for (const item of orderItems) 
+    {
+        if (item.type === "product") 
+        {
+            const product = await Products.findByPk(item.refId);
+            if (product) 
+            {
+                product.stock = (product.stock || 0) + item.quantity;
+                await product.save();
+            }
+        } 
+        else if (item.type === "ticket") 
+        {
+            if (item.seats && Array.isArray(item.seats) && item.seats.length > 0) 
+            {
+                await Seat.update(
+                    { reserved: false },
+                    { where: { showingId: item.refId, label: item.seats } }
+                );
+            }
+        }
+    }
+
+    order.status = isExpired ? "expired" : "cancelled";
+    await order.save();
+
+    // Fire-and-forget email notification
+    const cancelUser = await User.findByPk(order.userId);
+    if (cancelUser) 
+    {
+        sendOrderCancellationEmail(cancelUser.email, cancelUser.username, order.id, isExpired);
+    }
+};
+
+export const cleanupExpiredOrders = async () => {
+    try {
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+        
+        const expiredOrders = await Order.findAll({
+            where: {
+                status: {
+                    [Op.in]: ["created", "pending"]
+                },
+                createdAt: {
+                    [Op.lt]: fiveMinutesAgo
+                }
+            }
+        });
+
+        for (const order of expiredOrders) {
+            await processOrderCancellation(order, true);
+            console.log(`Orden expirada cancelada automáticamente: #${order.id}`);
+        }
+    } catch (err) {
+        console.error("Error en cleanupExpiredOrders:", err);
+    }
 };
 
 
@@ -324,6 +459,14 @@ export const deleteOrder = async (req, res) =>
         await order.destroy({ transaction: transaction });
 
         await transaction.commit();
+
+        // Fire-and-forget email notification
+        const deleteUser = await User.findByPk(userId);
+        if (deleteUser) 
+        {
+            sendOrderCancellationEmail(deleteUser.email, deleteUser.username, orderId);
+        }
+
         return res.json({ success: true, message: "Orden cancelada", orderId: orderId });
 
     } 

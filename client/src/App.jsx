@@ -20,6 +20,7 @@ import { CreateMovieShowingForm } from './components/Forms/CreateMovieShowingFor
 import { ProtectedRoute } from './components/ProtectedRoute/ProtectedRoute';
 import { SysAdminPanel } from './components/SysAdminPanel/SysAdminPanel';
 import { RegisterSysAdmin } from './components/pages/RegisterSysadmin/RegisterSysadmin';
+import { PaymentResult } from './components/pages/PaymentResult/PaymentResult';
 
 
 function App() 
@@ -40,6 +41,9 @@ function App()
         <Route path="/movie/:id" element={<MovieDetail />} />
         <Route path='profile' element={<Profile />} />
         <Route path='candy' element={<Candy />} />
+        <Route path='/payment/success' element={<PaymentResult status="success" />} />
+        <Route path='/payment/failure' element={<PaymentResult status="failure" />} />
+        <Route path='/payment/pending' element={<PaymentResult status="pending" />} />
         <Route path='*' element={<NotFound />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/addmovie" element= {<ProtectedRoute allowedRoles={["admin","sysadmin"]}> {<CreateMoviesForm />} </ProtectedRoute> } />
