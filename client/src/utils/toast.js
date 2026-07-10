@@ -35,7 +35,11 @@ export const confirmToast = (message) =>
     toast.info(message, 
     {
         position: "top-right",
-        autoClose: false,
-        closeButton: false,
+        autoClose: 5000,
+        closeButton: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "colored"
     });
 };

@@ -1,4 +1,4 @@
-
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useState } from "react";
 
 
@@ -43,6 +43,32 @@ export const CartProvider = ({ children }) =>
 
     }, [cart]);
 
+    useEffect(() => {
+        const handleAuthLogout = () => {
+            setCart([]);
+            localStorage.removeItem("cart");
+        };
+
+        const handleStorageChange = (e) => {
+            if (e.key === "cart") {
+                try {
+                    setCart(e.newValue ? JSON.parse(e.newValue) : []);
+                } catch(err) {
+                    setCart([]);
+                }
+            }
+        };
+
+        window.addEventListener("auth:logout", handleAuthLogout);
+        window.addEventListener("auth:expired", handleAuthLogout);
+        window.addEventListener("storage", handleStorageChange);
+        
+        return () => {
+            window.removeEventListener("auth:logout", handleAuthLogout);
+            window.removeEventListener("auth:expired", handleAuthLogout);
+            window.removeEventListener("storage", handleStorageChange);
+        };
+    }, []);
 
     const findIndex = (refId, type) => cart.findIndex((cartItem) => cartItem.refId === refId && cartItem.type === type);
 

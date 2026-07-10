@@ -1,10 +1,10 @@
-
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useState, useEffect, useContext } from "react";
-import { API_URL } from "../services/api";
+import { API_URL, apiRequest } from "../services/api";
 import { jwtDecode } from "jwt-decode";
 
 
-const AuthContext = createContext();
+export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => 
 {
@@ -32,35 +32,72 @@ export const AuthProvider = ({ children }) =>
 
         if (storedToken) 
         {
-            setToken(storedToken);
-
-            if (!storedUser) 
-            {
-                try {
-                    const payload = jwtDecode(storedToken);
-                    const normalized = 
-                    {
-                        id: payload.id,
-                        username: payload.username,
-                        email: payload.email,
-                        role: payload.role,
-                        exp: payload.exp,
-                    };
-
-                    setUser(normalized);
-
-                } catch (error) 
-                
-                {
-                    console.warn("No se pudo decodificar el token", error);
+            try {
+                const payload = jwtDecode(storedToken);
+                if (payload.exp * 1000 > Date.now()) {
+                    setToken(storedToken);
+                    if (!storedUser) {
+                        const normalized = {
+                            id: payload.id,
+                            username: payload.username,
+                            email: payload.email,
+                            role: payload.role,
+                            exp: payload.exp,
+                        };
+                        setUser(normalized);
+                    }
+                } else {
+                    console.warn("Token expirado en inicialización.");
+                    localStorage.removeItem("user");
+                    localStorage.removeItem("token");
+                    setUser(null);
                 }
+            } catch (error) {
+                console.warn("No se pudo decodificar el token", error);
+                localStorage.removeItem("user");
+                localStorage.removeItem("token");
+                setUser(null);
             }
+        } else if (storedUser) {
+            localStorage.removeItem("user");
+            setUser(null);
         }
 
         setLoading(false);
 
     }, []);
 
+
+    useEffect(() => {
+        const handleAuthExpired = () => {
+            console.warn("Sessión expirada, cerrando sesión.");
+            setUser(null);
+            setToken(null);
+            localStorage.removeItem("user");
+            localStorage.removeItem("token");
+            window.dispatchEvent(new Event("auth:logout"));
+        };
+
+        window.addEventListener("auth:expired", handleAuthExpired);
+        return () => window.removeEventListener("auth:expired", handleAuthExpired);
+    }, []);
+
+    useEffect(() => {
+        const handleStorageChange = (e) => {
+            if (e.key === "user") {
+                try {
+                    setUser(e.newValue ? JSON.parse(e.newValue) : null);
+                } catch(err) {
+                    setUser(null);
+                }
+            }
+            if (e.key === "token") {
+                setToken(e.newValue || null);
+            }
+        };
+        window.addEventListener("storage", handleStorageChange);
+        return () => window.removeEventListener("storage", handleStorageChange);
+    }, []);
 
     useEffect(() => 
     {
@@ -92,22 +129,7 @@ export const AuthProvider = ({ children }) =>
     {
         try 
         {
-            const res = await fetch(`${API_URL}/auth/login`, 
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
-            });
-
-            if (!res.ok) 
-            {
-                const errBody = await res.json().catch(() => null);
-                throw new Error(errBody?.message || "Error al iniciar sesión");
-            }
-
-
-            const data = await res.json();
-
+            const data = await apiRequest(`/auth/login`, "POST", { email, password });
 
             if (data.user) 
             {
@@ -167,6 +189,7 @@ export const AuthProvider = ({ children }) =>
         setToken(null);
         localStorage.removeItem("user");
         localStorage.removeItem("token");
+        window.dispatchEvent(new Event("auth:logout"));
     };
 
 
@@ -175,30 +198,16 @@ export const AuthProvider = ({ children }) =>
         if (!token || !user?.id) return;
         try
         {
-            const res = await fetch(`${API_URL}/users/${user.id}`, 
-            {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const data = await apiRequest(`/users/${user.id}`, "GET", null, token);
 
-            if (res.ok) 
-            {
-                const data = await res.json();
+            const normalized = {
+                id: data.id,
+                username: data.username,
+                email: data.email,
+                role: data.role,
+            };
 
-                const normalized = {
-                    id: data.id,
-                    username: data.username,
-                    email: data.email,
-                    role: data.role,
-                };
-
-                setUser(normalized);
-
-            } 
-            
-            else 
-            {
-                console.warn("Algo ha fallado en fetchProfile", res.status);
-            }
+            setUser(normalized);
 
         } 
         

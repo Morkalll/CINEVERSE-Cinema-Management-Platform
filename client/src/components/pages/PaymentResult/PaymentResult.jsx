@@ -2,7 +2,7 @@
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { API_URL } from "../../../services/api";
-import { useAuth } from "../../../context/AuthContext";
+
 import { successToast, errorToast } from "../../../utils/toast";
 import { NavBar } from "../../NavBar/NavBar";
 import "./PaymentResult.css";
@@ -12,16 +12,13 @@ export const PaymentResult = ({ status }) =>
 {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const { token } = useAuth();
     const [orderId, setOrderId] = useState(null);
-    const [loading, setLoading] = useState(true);
 
 
     useEffect(() => 
     {
         const id = searchParams.get("orderId") || searchParams.get("external_reference");
         setOrderId(id);
-        setLoading(false);
 
         if (status === "success" && id) 
         {

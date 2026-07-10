@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { NavBar } from "../NavBar/NavBar";
+import { API_URL } from "../../services/api";
 import './CreateMovieForm.css'
 
 
@@ -173,7 +174,7 @@ export const CreateMoviesForm = () =>
     {
       try 
       {
-        const response = await fetch("http://localhost:3000/api/movielistings", 
+        const response = await fetch(`${API_URL}/movielistings`, 
         {
           method: "POST",
           headers: 
@@ -216,8 +217,7 @@ export const CreateMoviesForm = () =>
 
       } 
       
-      catch (error) 
-      {
+      catch {
         toast.error("Error al crear la película");
       }
 

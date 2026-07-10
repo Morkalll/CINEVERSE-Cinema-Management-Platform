@@ -1,14 +1,16 @@
 
+import { useState } from "react";
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
 import { successToast, errorToast } from "../../utils/toast";
-import { API_URL } from "../../services/api";
+import { apiRequest } from "../../services/api";
 
 
 export const Checkout = () => 
 {
     const { cart, total, removeFromCart, clearCart, increment, decrement } = useCart();
     const { token, user } = useAuth();
+    const [submitting, setSubmitting] = useState(false);
 
 
  const handleConfirm = async () => 
@@ -25,6 +27,9 @@ export const Checkout = () =>
             return;
         }
 
+        if (submitting) return;
+        setSubmitting(true);
+
         try 
         {
 
@@ -35,37 +40,11 @@ export const Checkout = () =>
                 seats: it.seats || undefined,
             }));
 
-            const res = await fetch(`${API_URL}/orders`, 
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ items }),
-            });
-
-            if (!res.ok) 
-            {
-                const err = await res.json().catch(() => null);
-                throw new Error(err?.message || "Error al crear pedido");
-            }
-
-            const data = await res.json();
+            const data = await apiRequest("/orders", "POST", { items }, token);
 
             // Create Mercado Pago preference and redirect to payment
-            const prefRes = await fetch(`${API_URL}/payments/create-preference`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ orderId: data.orderId }),
-            });
-
-            if (prefRes.ok) 
-            {
-                const prefData = await prefRes.json();
+            try {
+                const prefData = await apiRequest("/payments/create-preference", "POST", { orderId: data.orderId }, token);
                 clearCart();
                 // Redirect to Mercado Pago checkout
                 if (prefData.initPoint) 
@@ -80,9 +59,7 @@ export const Checkout = () =>
                 {
                     successToast("¡Pedido realizado con éxito!");
                 }
-            } 
-            else 
-            {
+            } catch (prefErr) {
                 // If MP preference fails, still mark order as created
                 clearCart();
                 successToast("¡Pedido realizado! Podrás pagar después desde tu perfil.");
@@ -95,6 +72,10 @@ export const Checkout = () =>
         {
             console.error(err);
             errorToast(err.message || "Error al procesar el pedido");
+        }
+        finally
+        {
+            setSubmitting(false);
         }
     };
 
@@ -135,12 +116,15 @@ export const Checkout = () =>
 
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                             
-                            <button onClick={() => decrement(item.refId, item.type, 1)} aria-label="Restar">-</button>
-
-                            <div style={{ minWidth: 28, textAlign: "center" }}>{item.quantity}</div>
-
-
-                            <button onClick={() => increment(item.refId, item.type, 1)} aria-label="Sumar">+</button>
+                            {item.type !== "ticket" ? (
+                                <>
+                                    <button onClick={() => decrement(item.refId, item.type, 1)} aria-label="Restar">-</button>
+                                    <div style={{ minWidth: 28, textAlign: "center" }}>{item.quantity}</div>
+                                    <button onClick={() => increment(item.refId, item.type, 1)} aria-label="Sumar">+</button>
+                                </>
+                            ) : (
+                                <div style={{ minWidth: 28, textAlign: "center" }}>{item.quantity}</div>
+                            )}
                             
 
                             <div style={{ width: 90, textAlign: "right" }}>${(item.price * item.quantity).toFixed(2)}</div>
@@ -176,9 +160,9 @@ export const Checkout = () =>
 
             <div style={{ marginTop: 16 }}>
                
-                <button onClick={handleConfirm} style={{ width: "100%", padding: "10px 14px", background: "#0a0a0a", color: "#fff", borderRadius: 6 }}>
+                <button onClick={handleConfirm} disabled={submitting} style={{ width: "100%", padding: "10px 14px", background: submitting ? "#555" : "#0a0a0a", color: "#fff", borderRadius: 6 }}>
                     
-                    Confirmar Pedido
+                    {submitting ? "Procesando..." : "Confirmar Pedido"}
                 
                 </button>
             

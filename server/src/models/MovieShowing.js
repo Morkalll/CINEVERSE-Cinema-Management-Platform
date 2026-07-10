@@ -32,7 +32,7 @@ export const MovieShowing = sequelize.define("MovieShowing",
 
     ticketPrice:
     {
-        type: DataTypes.FLOAT,
+        type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
     },
 

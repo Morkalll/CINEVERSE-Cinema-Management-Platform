@@ -1,6 +1,6 @@
 import express from 'express'
 import cors from 'cors'
-import { PORT } from './config.js'
+import { PORT, FRONTEND_URL } from './config.js'
 import { sequelize } from './db.js'
 import "./models/Movie.js"
 import "./models/MovieShowing.js"
@@ -40,13 +40,19 @@ async function main()
       await sequelize.query(`DROP TABLE IF EXISTS \`${name}\`;`);
     }
 
-    await sequelize.sync({ alter: true });
+    if (process.env.NODE_ENV === 'production') {
+        await sequelize.sync();
+    } else {
+        await sequelize.sync({ alter: true });
+    }
 
     // Re-enable FK enforcement for runtime
     await sequelize.query("PRAGMA foreign_keys = ON;");
 
-    app.use(express.json());
-    app.use(cors());
+    app.use(express.json({ limit: '10mb' }));
+    app.use(cors({ origin: FRONTEND_URL, credentials: true }));
+
+    app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
     app.use("/api/auth", authRoutes);
     app.use('/api', movieRoutes);
@@ -69,6 +75,7 @@ async function main()
   catch (error) 
   {
     console.log(" There was an error on initialization", error);
+    process.exit(1);
   }
 
 }
