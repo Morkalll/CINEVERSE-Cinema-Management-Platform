@@ -7,6 +7,7 @@ import { User } from '../models/User.js';
 import { Seat } from '../models/Seats.js';
 import { Products } from '../models/Products.js';
 import { sendRefundEmail } from './email.services.js';
+import { sequelize } from '../db.js';
 
 
 const client = MP_ACCESS_TOKEN 
@@ -105,6 +106,12 @@ export const handleWebhook = async (req, res) =>
 
         if (type === 'payment') 
         {
+            if (!client) 
+            {
+                console.error("Webhook recibido pero Mercado Pago no está configurado");
+                return res.status(503).json({ message: "Mercado Pago no está configurado" });
+            }
+
             const payment = new Payment(client);
             const paymentData = await payment.get({ id: data.id });
 
@@ -154,7 +161,7 @@ export const refundPayment = async (req, res) =>
             return res.status(404).json({ message: "Orden no encontrada" });
         }
 
-        if (order.userId !== userId && req.user.role !== 'admin' && req.user.role !== 'sysadmin') 
+        if (order.userId !== userId && req.user?.role !== 'admin' && req.user?.role !== 'sysadmin') 
         {
             return res.status(403).json({ message: "No autorizado" });
         }
@@ -184,40 +191,47 @@ export const refundPayment = async (req, res) =>
                 {
                     const err = await refundResponse.json();
                     console.error('MP refund error:', err);
+                    throw new Error("Error en Mercado Pago al procesar el reembolso");
                 }
 
             } 
             catch (mpError) 
             {
                 console.error('MP refund request error:', mpError);
+                throw mpError;
             }
         }
 
         // Restore stock and release seats
-        for (const item of order.orderItems) 
-        {
-            if (item.type === 'product') 
+        await sequelize.transaction(async (t) => {
+            for (const item of order.orderItems) 
             {
-                const product = await Products.findByPk(item.refId);
-                if (product) 
+                if (item.type === 'product') 
                 {
-                    product.stock = (product.stock || 0) + item.quantity;
-                    await product.save();
-                }
-            } 
-            else if (item.type === 'ticket') 
-            {
-                if (item.seats && Array.isArray(item.seats) && item.seats.length > 0) 
+                    const product = await Products.findByPk(item.refId, { transaction: t, lock: t.LOCK.UPDATE });
+                    if (product) 
+                    {
+                        product.stock = (product.stock || 0) + item.quantity;
+                        await product.save({ transaction: t });
+                    }
+                } 
+                else if (item.type === 'ticket') 
                 {
-                    await Seat.update(
-                        { reserved: false },
-                        { where: { showingId: item.refId, label: item.seats } }
-                    );
+                    if (item.seats && Array.isArray(item.seats) && item.seats.length > 0) 
+                    {
+                        await Seat.update(
+                            { reserved: false },
+                            { 
+                                where: { showingId: item.refId, label: item.seats },
+                                transaction: t 
+                            }
+                        );
+                    }
                 }
             }
-        }
 
-        await order.update({ status: 'refunded', mpStatus: 'refunded' });
+            await order.update({ status: 'refunded', mpStatus: 'refunded' }, { transaction: t });
+        });
 
         // Send refund email
         const refundUser = await User.findByPk(order.userId);
@@ -247,6 +261,12 @@ export const getPaymentStatus = async (req, res) =>
         if (!order) 
         {
             return res.status(404).json({ message: "Orden no encontrada" });
+        }
+
+        const requesterId = req.user?.id;
+        const requesterRole = req.user?.role;
+        if (!requesterId || (order.userId !== requesterId && requesterRole !== 'admin' && requesterRole !== 'sysadmin')) {
+            return res.status(403).json({ message: "No tienes permiso para ver esta orden" });
         }
 
         return res.json({

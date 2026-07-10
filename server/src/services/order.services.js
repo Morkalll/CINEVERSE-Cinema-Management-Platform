@@ -8,9 +8,12 @@ import { Seat } from "../models/Seats.js";
 import { User } from "../models/User.js";
 import { sendOrderConfirmationEmail, sendOrderCancellationEmail } from './email.services.js';
 
+let isCleanupRunning = false;
 
 export const createOrder = async (req, res) => 
 {
+    const transaction = await sequelize.transaction();
+
     try 
     {
         const userId = req.user?.id;
@@ -18,181 +21,166 @@ export const createOrder = async (req, res) =>
 
         if (!userId) 
         {    
+            await transaction.rollback();
             return res.status(401).json({ message: "No autenticado" });
         }
 
         if (!Array.isArray(items) || items.length === 0)
         { 
+            await transaction.rollback();
             return res.status(400).json({ message: "Carrito vacío" });
         }
         
 
         let total = 0;
+        const processedItems = [];
 
-        const createdOrder = await Order.create({ userId, total: 0 });
+        const createdOrder = await Order.create({ userId, total: 0 }, { transaction });
 
 
-        try 
+        for (const item of items) 
         {
-            for (const item of items) 
+            if (!item.type || !item.refId || !item.quantity) 
             {
-                if (!item.type || !item.refId || !item.quantity) 
-                {
-                    throw new Error("Item mal formado");
-                }
-
-                if (item.type === "ticket") 
-                {
-                    const show = await MovieShowing.findByPk(item.refId);
-
-                    if (!show) 
-                    {        
-                        throw new Error("Función no encontrada");          
-                    }    
-
-
-                    if (item.seats && Array.isArray(item.seats) && item.seats.length > 0) 
-                    {
-                        const seatsToReserve = await Seat.findAll(
-                        {
-                            where: 
-                            {
-                                showingId: item.refId,
-                                label: item.seats
-                            }
-                        });
-
-                        if (seatsToReserve.length !== item.seats.length) 
-                        {
-                            throw new Error("Algunos asientos no existen");
-                        }
-
-                        const alreadyReserved = seatsToReserve.filter(seat => seat.reserved);
-                        if (alreadyReserved.length > 0) 
-                        {
-                            throw new Error(`Los asientos ${alreadyReserved.map(s => s.label).join(", ")} ya están ocupados`);
-                        }
-
-                        await Seat.update(
-                            { reserved: true },
-                            { 
-                                where: 
-                                { 
-                                    showingId: item.refId,
-                                    label: item.seats 
-                                } 
-                            }
-                        );
-                    }
-
-                    const price = parseFloat(show.ticketPrice);
-
-                    total += price * item.quantity;
-
-
-                    await OrderItem.create(
-                    {
-                        orderId: createdOrder.id,
-                        type: "ticket",
-                        refId: item.refId,
-                        name: `Película - ID: ${show.screenId}`,
-                        price,
-                        quantity: item.quantity,
-                        seats: item.seats || null,
-                    });
-
-                } 
-                
-                else if (item.type === "product") 
-                {
-                    const product = await Products.findByPk(item.refId);
-
-                    if (!product) 
-                    {
-                        throw new Error(`Producto ${item.refId} no encontrado`);
-                    }
-
-                    if (product.stock < item.quantity) 
-                    {
-                        throw new Error(`Stock insuficiente para ${product.name}`);
-                    }
-
-
-                    const price = parseFloat(product.price);
-
-                    total += price * item.quantity;
-
-                    product.stock = product.stock - item.quantity;
-
-                    await product.save();
-
-
-                    await OrderItem.create(
-                    {
-                        orderId: createdOrder.id,
-                        type: "product",
-                        refId: item.refId,
-                        name: product.name,
-                        price,
-                        quantity: item.quantity,
-                    });
-
-                } 
-                
-                else 
-                {
-                    throw new Error("Tipo de item inválido");
-                }
-
+                throw new Error("Item mal formado");
             }
 
-            createdOrder.total = total;
-
-            await createdOrder.save();
-
-            // Fire-and-forget email notification
-            const orderUser = await User.findByPk(userId);
-            if (orderUser) 
-            {
-                sendOrderConfirmationEmail(orderUser.email, orderUser.username, { id: createdOrder.id, total, items });
+            if (!item.quantity || item.quantity <= 0 || !Number.isInteger(item.quantity)) {
+                throw new Error(`Cantidad inválida para el item: ${item.quantity}`);
             }
 
-            return res.status(201).json({ orderId: createdOrder.id, total });
-
-        } 
-        
-        catch (transactionError) 
-        {
-            for (const item of items) 
+            if (item.type === "ticket") 
             {
-                if (item.type === "ticket" && item.seats && Array.isArray(item.seats) && item.seats.length > 0) 
+                const show = await MovieShowing.findByPk(item.refId, { transaction, lock: transaction.LOCK.UPDATE });
+
+                if (!show) 
+                {        
+                    throw new Error("Función no encontrada");          
+                }    
+
+
+                if (item.seats && Array.isArray(item.seats) && item.seats.length > 0) 
                 {
+                    const seatsToReserve = await Seat.findAll(
+                    {
+                        where: 
+                        {
+                            showingId: item.refId,
+                            label: item.seats
+                        },
+                        transaction,
+                        lock: transaction.LOCK.UPDATE
+                    });
+
+                    if (seatsToReserve.length !== item.seats.length) 
+                    {
+                        throw new Error("Algunos asientos no existen");
+                    }
+
+                    const alreadyReserved = seatsToReserve.filter(seat => seat.reserved);
+                    if (alreadyReserved.length > 0) 
+                    {
+                        throw new Error(`Los asientos ${alreadyReserved.map(s => s.label).join(", ")} ya están ocupados`);
+                    }
+
                     await Seat.update(
-                        { reserved: false },
-                        { where: { showingId: item.refId, label: item.seats } }
-                    ).catch(() => {});
+                        { reserved: true },
+                        { 
+                            where: 
+                            { 
+                                showingId: item.refId,
+                                label: item.seats 
+                            },
+                            transaction
+                        }
+                    );
                 }
-                else if (item.type === "product")
+
+                const price = parseFloat(show.ticketPrice);
+
+                total += price * item.quantity;
+
+
+                const orderItemData = {
+                    orderId: createdOrder.id,
+                    type: "ticket",
+                    refId: item.refId,
+                    name: `Película - ID: ${show.screenId}`,
+                    price,
+                    quantity: item.quantity,
+                    seats: item.seats || null,
+                };
+                await OrderItem.create(orderItemData, { transaction });
+                processedItems.push(orderItemData);
+
+            } 
+            
+            else if (item.type === "product") 
+            {
+                const product = await Products.findByPk(item.refId, { transaction, lock: transaction.LOCK.UPDATE });
+
+                if (!product) 
                 {
-                    const product = await Products.findByPk(item.refId).catch(() => null);
-                    if (product) 
-                    {
-                        product.stock = (product.stock || 0) + item.quantity;
-                        await product.save().catch(() => {});
-                    }
+                    throw new Error(`Producto ${item.refId} no encontrado`);
                 }
+
+                if (product.stock < item.quantity) 
+                {
+                    throw new Error(`Stock insuficiente para ${product.name}`);
+                }
+
+
+                const price = parseFloat(product.price);
+
+                total += price * item.quantity;
+
+                product.stock = product.stock - item.quantity;
+
+                await product.save({ transaction });
+
+
+                const orderItemData = {
+                    orderId: createdOrder.id,
+                    type: "product",
+                    refId: item.refId,
+                    name: product.name,
+                    price,
+                    quantity: item.quantity,
+                };
+                await OrderItem.create(orderItemData, { transaction });
+                processedItems.push(orderItemData);
+
+            } 
+            
+            else 
+            {
+                throw new Error("Tipo de item inválido");
             }
-            await OrderItem.destroy({ where: { orderId: createdOrder.id } }).catch(() => { });
-            await createdOrder.destroy().catch(() => { });
-            return res.status(400).json({ message: transactionError.message || "Error creando pedido" });
+
         }
+
+        createdOrder.total = total;
+
+        await createdOrder.save({ transaction });
+
+        await transaction.commit();
+
+        // Fire-and-forget email notification
+        const orderUser = await User.findByPk(userId);
+        if (orderUser) 
+        {
+            sendOrderConfirmationEmail(orderUser.email, orderUser.username, { id: createdOrder.id, total, items: processedItems });
+        }
+
+        return res.status(201).json({ orderId: createdOrder.id, total });
 
     } 
     
     catch (err)
     {
+        await transaction.rollback();
         console.error("createOrder error:", err);
-        return res.status(500).json({ message: "Error interno del servidor" });
+        return res.status(400).json({ message: err.message || "Error interno del servidor" });
     }
 
 };
@@ -280,7 +268,9 @@ export const cancelOrder = async (req, res) => {
     }
     
     // Restore stock and release seats
-    await processOrderCancellation(order);
+    await sequelize.transaction(async (t) => {
+        await processOrderCancellation(order, false, t);
+    });
     
     return res.status(200).json({ message: "Orden cancelada exitosamente", order });
   } catch (error) {
@@ -289,18 +279,18 @@ export const cancelOrder = async (req, res) => {
   }
 };
 
-export const processOrderCancellation = async (order, isExpired = false) => {
-    const orderItems = await OrderItem.findAll({ where: { orderId: order.id } });
+export const processOrderCancellation = async (order, isExpired = false, t = null) => {
+    const orderItems = await OrderItem.findAll({ where: { orderId: order.id }, transaction: t });
 
     for (const item of orderItems) 
     {
         if (item.type === "product") 
         {
-            const product = await Products.findByPk(item.refId);
+            const product = await Products.findByPk(item.refId, { transaction: t, lock: t ? t.LOCK.UPDATE : undefined });
             if (product) 
             {
                 product.stock = (product.stock || 0) + item.quantity;
-                await product.save();
+                await product.save({ transaction: t });
             }
         } 
         else if (item.type === "ticket") 
@@ -309,17 +299,17 @@ export const processOrderCancellation = async (order, isExpired = false) => {
             {
                 await Seat.update(
                     { reserved: false },
-                    { where: { showingId: item.refId, label: item.seats } }
+                    { where: { showingId: item.refId, label: item.seats }, transaction: t }
                 );
             }
         }
     }
 
     order.status = isExpired ? "expired" : "cancelled";
-    await order.save();
+    await order.save({ transaction: t });
 
     // Fire-and-forget email notification
-    const cancelUser = await User.findByPk(order.userId);
+    const cancelUser = await User.findByPk(order.userId, { transaction: t });
     if (cancelUser) 
     {
         sendOrderCancellationEmail(cancelUser.email, cancelUser.username, order.id, isExpired);
@@ -327,6 +317,8 @@ export const processOrderCancellation = async (order, isExpired = false) => {
 };
 
 export const cleanupExpiredOrders = async () => {
+    if (isCleanupRunning) return;
+    isCleanupRunning = true;
     try {
         const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
         
@@ -342,11 +334,15 @@ export const cleanupExpiredOrders = async () => {
         });
 
         for (const order of expiredOrders) {
-            await processOrderCancellation(order, true);
+            await sequelize.transaction(async (t) => {
+                await processOrderCancellation(order, true, t);
+            });
             console.log(`Orden expirada cancelada automáticamente: #${order.id}`);
         }
     } catch (err) {
         console.error("Error en cleanupExpiredOrders:", err);
+    } finally {
+        isCleanupRunning = false;
     }
 };
 
@@ -385,6 +381,13 @@ export const deleteOrder = async (req, res) =>
             return res.status(404).json({ message: "Orden no encontrada" });
         }
 
+        const requesterId = req.user.id;
+        const requesterRole = req.user.role;
+        if (order.userId !== requesterId && requesterRole !== 'admin' && requesterRole !== 'sysadmin') {
+            await transaction.rollback();
+            return res.status(403).json({ message: "No tienes permiso para eliminar esta orden" });
+        }
+
         const orderItems = await OrderItem.findAll(
         {
             where: { orderId: order.id },
@@ -400,7 +403,7 @@ export const deleteOrder = async (req, res) =>
             {
                 try 
                 {
-                    const product = await Products.findByPk(item.refId, { transaction: transaction });
+                    const product = await Products.findByPk(item.refId, { transaction: transaction, lock: transaction.LOCK.UPDATE });
 
                     if (product) 
                     {
@@ -413,6 +416,7 @@ export const deleteOrder = async (req, res) =>
                 catch (e) 
                 {
                     console.warn("No se pudo restaurar stock del producto", item.refId, e);
+                    throw e;
                 }
 
             } 
@@ -421,13 +425,7 @@ export const deleteOrder = async (req, res) =>
             {
                 try 
                 {
-                    const show = await MovieShowing.findByPk(item.refId, { transaction: transaction });
-
-                    if (show && typeof show.capacity !== "undefined") 
-                    {
-                        show.capacity = (show.capacity || 0) + item.quantity;
-                        await show.save({ transaction: transaction });
-                    }
+                    // Capacity is not tracked directly in MovieShowing, it uses individual seats.
                     
                     if (item.seats && Array.isArray(item.seats) && item.seats.length > 0) 
                     {
@@ -450,7 +448,8 @@ export const deleteOrder = async (req, res) =>
                 
                 catch (e) 
                 {
-                    console.log("No se pudo restaurar la capacidad de Show o liberar asientos", item.refId, e);
+                    console.error("No se pudo restaurar la capacidad de Show o liberar asientos", item.refId, e);
+                    throw e;
                 }
             }
         }
@@ -461,7 +460,7 @@ export const deleteOrder = async (req, res) =>
         await transaction.commit();
 
         // Fire-and-forget email notification
-        const deleteUser = await User.findByPk(userId);
+        const deleteUser = await User.findByPk(order.userId);
         if (deleteUser) 
         {
             sendOrderCancellationEmail(deleteUser.email, deleteUser.username, orderId);

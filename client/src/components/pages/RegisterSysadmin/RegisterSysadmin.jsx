@@ -104,7 +104,8 @@ export const RegisterSysAdmin = () =>
         {
             try 
             {
-                await apiRequest("/auth/register-sysadmin", "POST", { username, email, password })
+                const token = localStorage.getItem("token");
+                await apiRequest("/auth/register-sysadmin", "POST", { username, email, password }, token)
                 successToast("¡SysAdmin registrado correctamente!");
                 navigate("/login");
             } 

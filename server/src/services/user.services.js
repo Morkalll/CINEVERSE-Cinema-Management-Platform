@@ -60,7 +60,8 @@ export const updateUser = async (req, res) =>
 {
     try 
     {
-        const { id, username, email, role } = req.body;
+        const id = req.params.id;
+        const { username, email, role } = req.body;
 
         if (!id) 
         {
@@ -220,19 +221,23 @@ export const loginUser = async (req, res) =>
 
 export const getUser = async (req, res) => 
 {
-    const user = await User.findByPk(req.params.id);
-
-    if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
-
-    res.json(
+    try 
     {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        role: user.role
-    });
-    
+        const user = await User.findByPk(req.params.id);
 
-    
+        if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
 
+        res.json(
+        {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            role: user.role
+        });
+    } 
+    catch (error) 
+    {
+        console.error("Error getUser:", error);
+        return res.status(500).json({ message: "Error interno" });
+    }
 };

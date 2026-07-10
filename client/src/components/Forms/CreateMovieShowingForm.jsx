@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { NavBar } from "../NavBar/NavBar";
+import { API_URL } from "../../services/api";
 import "./CreateMovieForm.css"; 
 
 
@@ -45,7 +46,7 @@ export const CreateMovieShowingForm = () =>
         {
             try 
             {
-                const response = await fetch("http://localhost:3000/api/screens", 
+                const response = await fetch(`${API_URL}/screens`, 
                 {
                     headers: 
                     {
@@ -58,7 +59,7 @@ export const CreateMovieShowingForm = () =>
 
             } 
             
-            catch (error) 
+            catch 
             {
                 toast.error("Error al cargar sala");
             }
@@ -70,7 +71,7 @@ export const CreateMovieShowingForm = () =>
         {
             try 
             {
-                const response = await fetch("http://localhost:3000/api/movielistings", 
+                const response = await fetch(`${API_URL}/movielistings`, 
                 {
                     headers: 
                     {
@@ -83,7 +84,7 @@ export const CreateMovieShowingForm = () =>
 
             } 
             
-            catch (error) 
+            catch 
             {
                 toast.error("Error al cargar películas");
             }
@@ -193,7 +194,7 @@ export const CreateMovieShowingForm = () =>
 
             try 
             {
-                const response = await fetch("http://localhost:3000/api/movieshowings", 
+                const response = await fetch(`${API_URL}/movieshowings`, 
                 {
                     method: "POST",
 
@@ -235,7 +236,7 @@ export const CreateMovieShowingForm = () =>
 
             } 
             
-            catch (error) 
+            catch 
             {
                 toast.error("Error al crear la función");
             }
@@ -348,11 +349,11 @@ export const CreateMovieShowingForm = () =>
 
                         <option value="">Seleccionar sala</option>
 
-                        {screen.map((screen) => (
+                        {screen.map((s) => (
 
-                            <option key={screen.id} value={screen.id}>
+                            <option key={s.id} value={s.id}>
 
-                                {screen.id}
+                                {s.id}
 
                             </option>
                         ))}

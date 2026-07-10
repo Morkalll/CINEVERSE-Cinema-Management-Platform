@@ -3,6 +3,8 @@ import { Router } from "express";
 import { registerUser, loginUser, getUser } from "../services/user.services.js";
 import { registerAdmin } from "../services/admin.services.js";
 import { registerSysAdmin } from "../services/sysadmin.services.js";
+import { verifyToken } from "../services/token.services.js";
+import { authorize } from "../services/auth.services.js";
 
 
 
@@ -11,13 +13,13 @@ const router = Router();
 
 router.post("/login", loginUser);
 
-router.get("/profile/:id", getUser);
+router.get("/profile/:id", verifyToken, getUser);
 
 router.post("/register", registerUser);
 
-router.post("/register-admin", registerAdmin);
+router.post("/register-admin", verifyToken, authorize(["sysadmin"]), registerAdmin);
 
-router.post("/register-sysadmin", registerSysAdmin);
+router.post("/register-sysadmin", verifyToken, authorize(["sysadmin"]), registerSysAdmin);
 
 
 

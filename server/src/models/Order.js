@@ -1,7 +1,6 @@
 
 import { DataTypes } from "sequelize";
 import { sequelize } from "../db.js";
-import { User } from "./User.js";
 
 
 export const Order = sequelize.define("order", 
@@ -15,7 +14,7 @@ export const Order = sequelize.define("order",
     
     total: 
     { 
-        type: DataTypes.FLOAT, 
+        type: DataTypes.DECIMAL(10, 2), 
         allowNull: false 
     },
 
@@ -50,7 +49,6 @@ export const Order = sequelize.define("order",
     }
 });
 
-User.hasMany(Order, { foreignKey: "userId" });
-Order.belongsTo(User, { foreignKey: "userId" });
+
 
 export default Order;

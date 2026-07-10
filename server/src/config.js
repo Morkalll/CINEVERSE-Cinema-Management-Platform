@@ -2,7 +2,13 @@
 import 'dotenv/config';
 
 export const PORT = process.env.PORT || 3000;
-export const JWT_SECRET = process.env.JWT_SECRET || "programacion3-2025";
+export const JWT_SECRET = (() => {
+    const _jwtSecret = process.env.JWT_SECRET;
+    if (!_jwtSecret || _jwtSecret === 'your_jwt_secret_here') {
+        console.warn('⚠️  WARNING: JWT_SECRET is not properly configured. Using insecure default for development only.');
+    }
+    return _jwtSecret || "dev-only-insecure-fallback-change-me";
+})();
 export const DB_PATH = process.env.DB_PATH || "movies.db";
 
 // Email configuration

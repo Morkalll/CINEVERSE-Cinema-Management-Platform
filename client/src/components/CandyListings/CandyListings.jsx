@@ -3,6 +3,7 @@ import './CandyListings.css';
 
 import { useEffect, useState } from 'react';
 import { CandyCard } from '../CandyCard/CandyCard';
+import { API_URL } from '../../services/api';
 
 
 export const CandyListings = () => 
@@ -15,7 +16,7 @@ export const CandyListings = () =>
         {
             try 
             {
-                const response = await fetch('http://localhost:3000/api/candy');
+                const response = await fetch(`${API_URL}/candy`);
 
                 if (!response.ok) 
                 {
@@ -39,16 +40,16 @@ export const CandyListings = () =>
 
         <div className='snackbar'>
 
-            {candy.map(candy => (
+            {candy.map(item => (
                 
                 <CandyCard
-                    key={candy.id}
-                    id={candy.id}
-                    name={candy.name}
-                    image={candy.image}
-                    description={candy.description}
-                    stock={candy.stock}
-                    price={candy.price}
+                    key={item.id}
+                    id={item.id}
+                    name={item.name}
+                    image={item.image}
+                    description={item.description}
+                    stock={item.stock}
+                    price={item.price}
                 />
 
             ))}
