@@ -32,7 +32,7 @@ export const Movie = sequelize.define("Movie",
 
     rating:
     {
-        type: DataTypes.INTEGER
+        type: DataTypes.FLOAT
     },
 
     duration:

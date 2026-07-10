@@ -121,7 +121,6 @@ export const updateMovie = async (req, res) =>
         if (releaseDate !== undefined) updateData.releaseDate = releaseDate;
 
         await movieToUpdate.update(updateData);
-        await movieToUpdate.save();
 
         return res.json(movieToUpdate);
     }

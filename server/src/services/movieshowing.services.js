@@ -144,7 +144,6 @@ export const updateMovieShowings = async (req, res) =>
         if (price !== undefined) updateData.ticketPrice = price;
 
         await showingToUpdate.update(updateData);
-        await showingToUpdate.save();
 
         return res.json(showingToUpdate);
 

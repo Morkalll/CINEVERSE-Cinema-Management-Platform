@@ -96,7 +96,6 @@ export const updateProduct = async (req, res) =>
     if (description !== undefined) updateData.description = description;
 
     await productToUpdate.update(updateData);
-    await productToUpdate.save();
 
     return res.json(productToUpdate);
 

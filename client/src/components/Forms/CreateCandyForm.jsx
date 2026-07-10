@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { NavBar } from "../NavBar/NavBar";
+import { API_URL } from "../../services/api";
 import './CreateCandyForm.css'
 
 
@@ -119,7 +120,7 @@ export const CreateCandyForm = () =>
     {
       try 
       {
-        const response = await fetch("http://localhost:3000/api/candy", 
+        const response = await fetch(`${API_URL}/candy`, 
         {
           method: "POST",
           headers: 
@@ -161,7 +162,7 @@ export const CreateCandyForm = () =>
 
       } 
       
-      catch (error) 
+      catch 
       {
         toast.error("Error al crear el producto");
       }

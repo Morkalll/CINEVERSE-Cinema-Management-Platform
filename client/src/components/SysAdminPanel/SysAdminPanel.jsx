@@ -4,6 +4,7 @@ import { NavBar } from "../../components/NavBar/NavBar";
 import { successToast, errorToast } from "../../utils/toast";
 import { useAuth } from "../../context/AuthContext";
 import { formatDate } from "../../utils/helper";
+import { API_URL } from "../../services/api";
 import "./SysAdminPanel.css";
 
 
@@ -31,7 +32,7 @@ export const SysAdminPanel = () => {
 
     const checkSysAdminAuth = () => 
     {
-    if (user.role !== "sysadmin") {
+    if (!user || user.role !== "sysadmin") {
         errorToast("Solo los sysadmin pueden realizar esta acción");
         return false;
     }
@@ -80,37 +81,37 @@ export const SysAdminPanel = () => {
             const requests = [];
             
             requests.push(
-                fetch("http://localhost:3000/api/users", { headers })
+                fetch(`${API_URL}/users`, { headers })
                     .then(res => res.ok ? res.json() : [])
                     .catch(() => [])
             );
             
             requests.push(
-                fetch("http://localhost:3000/api/movielistings", { headers })
+                fetch(`${API_URL}/movielistings`, { headers })
                     .then(res => res.ok ? res.json() : [])
                     .catch(() => [])
             );
             
             requests.push(
-                fetch("http://localhost:3000/api/screens", { headers })
+                fetch(`${API_URL}/screens`, { headers })
                     .then(res => res.ok ? res.json() : [])
                     .catch(() => [])
             );
             
             requests.push(
-                fetch("http://localhost:3000/api/movieshowings", { headers })
+                fetch(`${API_URL}/movieshowings`, { headers })
                     .then(res => res.ok ? res.json() : [])
                     .catch(() => [])
             );
             
             requests.push(
-                fetch("http://localhost:3000/api/candy", { headers })
+                fetch(`${API_URL}/candy`, { headers })
                     .then(res => res.ok ? res.json() : [])
                     .catch(() => [])
             );
             
             requests.push(
-                fetch("http://localhost:3000/api/orders/all", { headers })
+                fetch(`${API_URL}/orders/all`, { headers })
                     .then(res => res.ok ? res.json() : [])
                     .catch(() => [])
             );
@@ -147,7 +148,7 @@ export const SysAdminPanel = () => {
         try {
             const token = localStorage.getItem("token");
             
-            const response = await fetch(`http://localhost:3000/api/orders/${order.id}/cancel`, {
+            const response = await fetch(`${API_URL}/orders/${order.id}/cancel`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -181,15 +182,15 @@ export const SysAdminPanel = () => {
         try {
             const token = localStorage.getItem("token");
             const endpoints = {
-                user: "/api/users",
-                movie: "/api/movielistings",
-                room: "/api/screens",
-                showing: "/api/movieshowings",
-                candy: "/api/candy",
-                order: "/api/orders"
+                user: "/users",
+                movie: "/movielistings",
+                room: "/screens",
+                showing: "/movieshowings",
+                candy: "/candy",
+                order: "/orders"
             };
 
-            const url = `http://localhost:3000${endpoints[type]}/${item.id}`;
+            const url = `${API_URL}${endpoints[type]}/${item.id}`;
 
             const response = await fetch(url, {
                 method: "DELETE",
@@ -204,7 +205,7 @@ export const SysAdminPanel = () => {
 
             try {
                 responseData = JSON.parse(responseText);
-            } catch (parseError) {
+            } catch {
                 throw new Error(`Server returned invalid response: ${responseText}`);
             }
             
@@ -297,10 +298,10 @@ export const SysAdminPanel = () => {
         try {
             const token = localStorage.getItem("token");
             const endpoints = {
-                movie: "/api/movielistings",
-                room: "/api/screens",
-                showing: "/api/movieshowings",
-                candy: "/api/candy"
+                movie: "/movielistings",
+                room: "/screens",
+                showing: "/movieshowings",
+                candy: "/candy"
             };
 
             let bodyData = { ...editForm };
@@ -316,7 +317,7 @@ export const SysAdminPanel = () => {
                 };
             }
 
-            const url = `http://localhost:3000${endpoints[type]}/${item.id}`;
+            const url = `${API_URL}${endpoints[type]}/${item.id}`;
 
             const response = await fetch(url, {
                 method: "PATCH",
@@ -364,10 +365,9 @@ export const SysAdminPanel = () => {
         const token = localStorage.getItem("token");
         
         
-        const maxId = rooms.length > 0 ? Math.max(...rooms.map(r => r.id)) : 0;
         const capacity = 40; 
         
-        const response = await fetch("http://localhost:3000/api/screens", {
+        const response = await fetch(`${API_URL}/screens`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -987,7 +987,7 @@ export const SysAdminPanel = () => {
                                             <tr key={order.id}>
                                                 <td>{order.id}</td>
                                                 <td>{order.userId}</td>
-                                                <td>${order.total.toFixed(2)}</td>
+                                                <td>${Number(order.total || 0).toFixed(2)}</td>
                                                 <td>
                                                     <span className={`badge ${
                                                         order.status === 'cancelled' ? 'badge-danger' :

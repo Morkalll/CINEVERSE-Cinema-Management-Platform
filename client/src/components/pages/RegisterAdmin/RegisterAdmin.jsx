@@ -115,7 +115,8 @@ export const RegisterAdmin = () =>
         {
             try 
             {
-                await apiRequest("/auth/register-admin", "POST", { username, email, password })
+                const token = localStorage.getItem("token");
+                await apiRequest("/auth/register-admin", "POST", { username, email, password }, token)
                 successToast("¡Usuario registrado correctamente!");
                 navigate("/login");
             } 

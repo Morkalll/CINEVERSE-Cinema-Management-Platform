@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Button } from "react-bootstrap";
 import { useNavigate } from "react-router";
@@ -27,7 +27,7 @@ export const UserProfile = () =>
 
     const navigate = useNavigate();
 
-    const fetchOrders = async () => 
+    const fetchOrders = useCallback(async () => 
     {
         if (!user || !token) 
         {
@@ -38,7 +38,7 @@ export const UserProfile = () =>
 
         try 
         {
-            const endpoint = (API_URL || "http://localhost:3000/api").replace(/\/+$/, "") + "/orders/mine";
+            const endpoint = `${API_URL}/orders/mine`;
             const res = await fetch(endpoint, 
             {
                 method: "GET",
@@ -56,8 +56,7 @@ export const UserProfile = () =>
                     parsed = raw ? JSON.parse(raw) : null; 
                 } 
 
-                catch (e) 
-                { 
+                catch { 
                     parsed = null; 
                 }
 
@@ -89,12 +88,12 @@ export const UserProfile = () =>
         {
             setLoadingOrders(false);
         }
-    };
+    }, [user, token]);
 
     useEffect(() => 
     {
         fetchOrders();
-    }, [user, token]);
+    }, [fetchOrders]);
 
 
     const handleGoToLogin = () => 
@@ -305,7 +304,7 @@ export const UserProfile = () =>
                             <div>
 
                                 <ul>
-                                    {(order.orderItems).map((it) => {
+                                    {(order.orderItems || []).map((it) => {
                                         return (
                                             <li key={it.id || `${it.type}-${it.refId}`}>
                                                 {it.name || `${it.type} #${it.refId}`} — Cant: {it.quantity} — Precio: ${Number(it.price || 0).toFixed(2)}

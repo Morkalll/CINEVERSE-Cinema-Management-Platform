@@ -1,5 +1,5 @@
 
-export const API_URL = "http://localhost:3000/api"
+export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api"
 
 
 export async function apiRequest(endpoint, method = "GET", data = null, token = null)
@@ -30,7 +30,10 @@ export async function apiRequest(endpoint, method = "GET", data = null, token = 
 
     if (!response.ok)
     {
-        const error = await response.json()
+        if (response.status === 401 || response.status === 403) {
+            window.dispatchEvent(new Event("auth:expired"));
+        }
+        const error = await response.json().catch(() => ({ message: `Error ${response.status}` }))
         throw new Error(error.message || "Error en la solicitud")
     }
 

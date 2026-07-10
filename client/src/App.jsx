@@ -39,18 +39,18 @@ function App()
         <Route path='home' element={<Home />} />
         <Route path='movielistings' element={<MovieListingsPage />} />
         <Route path="/movie/:id" element={<MovieDetail />} />
-        <Route path='profile' element={<Profile />} />
+        <Route path='profile' element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path='candy' element={<Candy />} />
         <Route path='/payment/success' element={<PaymentResult status="success" />} />
         <Route path='/payment/failure' element={<PaymentResult status="failure" />} />
         <Route path='/payment/pending' element={<PaymentResult status="pending" />} />
-        <Route path='*' element={<NotFound />} />
-        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
         <Route path="/addmovie" element= {<ProtectedRoute allowedRoles={["admin","sysadmin"]}> {<CreateMoviesForm />} </ProtectedRoute> } />
         <Route path="/addcandy" element= {<ProtectedRoute allowedRoles={["admin","sysadmin"]}> {<CreateCandyForm/>} </ProtectedRoute> } />
         <Route path="/addmovieshowing" element= { <ProtectedRoute allowedRoles={["admin","sysadmin"]}> {<CreateMovieShowingForm/>} </ProtectedRoute> } />
         <Route path= "/sysadmin" element={<ProtectedRoute allowedRoles={["admin", "sysadmin"]}> <SysAdminPanel /> </ProtectedRoute>}/>
         <Route path= "/register-sysadmin" element={<ProtectedRoute allowedRoles={["sysadmin"]}> <RegisterSysAdmin /> </ProtectedRoute>}/>
+        <Route path='*' element={<NotFound />} />
         
       </Routes>
 
