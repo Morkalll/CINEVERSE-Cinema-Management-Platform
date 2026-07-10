@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { errorToast } from "../../utils/toast";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
-import { API_URL } from "../../services/api";
+import { apiRequest } from "../../services/api";
 import { useNavigate } from "react-router";
 import { formatDate } from "../../utils/helper";
 import "./SeatSelector.css";
@@ -11,33 +11,33 @@ import "./SeatSelector.css";
 
 export default function SeatSelector({ rows = 5, seatsPerRow = 8, showingId, movieTitle, showingInfo }) 
 {
-    const [selected, setSelected] = useState([]);
     const [occupied, setOccupied] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [previousShowingId, setPreviousShowingId] = useState(showingId);
+    const [, setPreviousShowingId] = useState(showingId);
     
     const { user } = useAuth();
-    const { addToCart, getItemQuantity, updateQuantity, removeFromCart } = useCart();
+    const { cart, addToCart, updateQuantity, removeFromCart } = useCart();
     const navigate = useNavigate();
 
-
-    useEffect(() => 
-    {
-        if (previousShowingId !== null && previousShowingId !== showingId) 
-        {
-            removeFromCart(previousShowingId, "ticket");
-        }
-
-        setPreviousShowingId(showingId);
-
-        setSelected([]);
-
-    }, [showingId]);
+    const cartItem = cart.find(item => item.refId === showingId && item.type === "ticket");
+    const selected = cartItem?.seats || [];
 
 
     useEffect(() => 
     {
-        const fetchOccupiedSeats = async () => 
+        setPreviousShowingId(prev => {
+            if (prev !== null && prev !== showingId) {
+                removeFromCart(prev, "ticket");
+            }
+            return showingId;
+        });
+
+    }, [showingId, removeFromCart]);
+
+
+    useEffect(() => 
+    {
+        const fetchOccupiedSeats = async (isBackground = false) => 
         {
             if (!showingId) 
             {
@@ -47,18 +47,9 @@ export default function SeatSelector({ rows = 5, seatsPerRow = 8, showingId, mov
 
             try 
             {
-                setLoading(true);
+                if (!isBackground) setLoading(true);
                 
-                const response = await fetch(
-                    `${API_URL}/seats/occupied?showingId=${showingId}`
-                );
-
-                if (!response.ok) 
-                {
-                    throw new Error("Error al obtener asientos ocupados");
-                }
-
-                const data = await response.json();
+                const data = await apiRequest(`/seats/occupied?showingId=${showingId}`);
                 setOccupied(data.occupiedSeats || []);
             } 
 
@@ -70,44 +61,36 @@ export default function SeatSelector({ rows = 5, seatsPerRow = 8, showingId, mov
 
             finally 
             {
-                setLoading(false);
+                if (!isBackground) setLoading(false);
             }
         };
 
         fetchOccupiedSeats();
+        const intervalId = setInterval(() => fetchOccupiedSeats(true), 10000);
+        return () => clearInterval(intervalId);
 
     }, [showingId]);
 
 
     useEffect(() => 
     {
-        if (!showingInfo) return;
+        if (occupied.length === 0 || selected.length === 0) return;
 
-        const selectedCount = selected.length;
-        const currentQuantity = getItemQuantity(showingId, "ticket");
-
-        if (currentQuantity !== selectedCount) 
+        const newlyOccupied = selected.filter(id => occupied.includes(id));
+        if (newlyOccupied.length > 0) 
         {
-            if (selectedCount > 0 && currentQuantity === 0) 
-            {
-                const price = Number(showingInfo.ticketPrice ?? showingInfo.price ?? 0);
-                
-                addToCart({
-                    refId: showingId,
-                    type: "ticket",
-                    name: `${movieTitle} — Sala : ${showingInfo.screenId} (${formatDate(showingInfo.showtime)})`,
-                    price,
-                    seats: selected, 
-                }, selectedCount);
+            const validSelection = selected.filter(id => !newlyOccupied.includes(id));
+            if (validSelection.length === 0) {
+                updateQuantity(showingId, "ticket", 0, []);
+            } else {
+                updateQuantity(showingId, "ticket", validSelection.length, validSelection);
             }
-
-            else 
-            {
-                updateQuantity(showingId, "ticket", selectedCount, selected); 
-            }
+            errorToast("Algunos de tus asientos seleccionados ya no están disponibles.");
         }
+    }, [occupied, selected, showingId, updateQuantity]);
 
-    }, [selected, showingId, showingInfo, getItemQuantity, updateQuantity, addToCart, movieTitle]);
+
+
 
 
     const handleGoToCandy = () =>
@@ -143,16 +126,27 @@ export default function SeatSelector({ rows = 5, seatsPerRow = 8, showingId, mov
             return;
         }
 
-        setSelected(prev => 
-        {
-            const isCurrentlySelected = prev.includes(id);
-
-            const newSelection = isCurrentlySelected 
-            ? prev.filter(seatSelected => seatSelected !== id) 
-            : [...prev, id];
-
-            return newSelection;
-        });
+        const isCurrentlySelected = selected.includes(id);
+        const newSelection = isCurrentlySelected 
+            ? selected.filter(seatSelected => seatSelected !== id) 
+            : [...selected, id];
+            
+        const selectedCount = newSelection.length;
+        
+        if (selectedCount === 0) {
+            updateQuantity(showingId, "ticket", 0, []); 
+        } else if (selected.length === 0) {
+            const price = Number(showingInfo?.ticketPrice ?? showingInfo?.price ?? 0);
+            addToCart({
+                refId: showingId,
+                type: "ticket",
+                name: `${movieTitle} — Sala : ${showingInfo?.screenId} (${formatDate(showingInfo?.showtime)})`,
+                price,
+                seats: newSelection, 
+            }, selectedCount);
+        } else {
+            updateQuantity(showingId, "ticket", selectedCount, newSelection);
+        }
     };
 
 

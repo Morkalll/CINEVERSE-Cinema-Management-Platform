@@ -17,15 +17,12 @@ export const Login = () =>
     const [password, setPassword] = useState("")
 
     const { login } = useAuth();
+    const navigate = useNavigate();
 
 
     const handleSubmit = async (e) => 
     {
         e.preventDefault();
-
-        const email = e.target.email.value;
-
-        const password = e.target.password.value;
 
         const result = await login(email, password);
 
@@ -33,9 +30,9 @@ export const Login = () =>
         if (result.success) 
         {
             successToast("¡Inicio de sesión exitoso!");
-            const userRole = result.data.user.role;
+            const userRole = result.data?.user?.role;
             
-            if (userRole === "sysadmin" ||userRole === "admin") {
+            if (userRole === "sysadmin" || userRole === "admin") {
                 navigate("/sysadmin");
             } else {
                 navigate("/home");
@@ -48,9 +45,6 @@ export const Login = () =>
         }
 
     };
-
-
-    const navigate = useNavigate()
 
 
     const goToRegisterHandler = () => 

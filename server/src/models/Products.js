@@ -20,8 +20,9 @@ export const Products = sequelize.define("Products",
     
     price:
     {
-        type: DataTypes.FLOAT,
-        allowNull: false
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+        validate: { min: 0 }
     },
 
     stock: 

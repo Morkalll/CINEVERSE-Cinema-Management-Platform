@@ -33,7 +33,7 @@ export const OrderItem = sequelize.define("orderItem",
 
     price: 
     { 
-        type: DataTypes.FLOAT, 
+        type: DataTypes.DECIMAL(10, 2), 
         allowNull: false 
     },
 

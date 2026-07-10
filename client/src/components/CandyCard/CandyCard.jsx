@@ -63,7 +63,7 @@ export const CandyCard = ({ id, name, image, description, stock, price }) =>
 
             <div className='candy-name'>{name}</div>
 
-            <div className='Candy-Details'>
+            <div className='candy-details'>
 
                 <p className='candy-description'>{description}</p>
                 <p className='candy-price'>Precio: ${price}</p>

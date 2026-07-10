@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 import { NavBar } from '../../NavBar/NavBar';
 import './MovieDetail.css';
 import SeatSelector from "../../SeatSelector/SeatSelector";
-import { useCart } from "../../../context/CartContext";
+import { API_URL } from "../../../services/api";
 import { formatDate } from "../../../utils/helper";
 
 
@@ -15,7 +15,6 @@ export const MovieDetail = () =>
   const [selectedShowing, setSelectedShowing] = useState(null); 
 
   const { id } = useParams();
-  const { getItemQuantity } = useCart();
 
 
   useEffect(() => 
@@ -24,11 +23,11 @@ export const MovieDetail = () =>
     {
       try 
       {
-        const response = await fetch('http://localhost:3000/api/movielistings/' + movieId);
+        const response = await fetch(`${API_URL}/movielistings/${movieId}`);
 
         if (!response.ok)
         {
-          console.log("No se pudo traer la película")
+          throw new Error(`Error al traer la película (status ${response.status})`);
         }
 
         const movieData = await response.json();
@@ -37,7 +36,6 @@ export const MovieDetail = () =>
         
         if (movieData.movieShowings && movieData.movieShowings.length > 0) {
           setSelectedShowing(movieData.movieShowings[0]);
-          console.log("Primera función seleccionada:", movieData.movieShowings[0]);
         }
 
       } 
@@ -125,7 +123,6 @@ export const MovieDetail = () =>
 
                   {showtimes.map((screen) => 
                   {
-                    const quantityInCart = getItemQuantity(screen.id, "ticket");
                     const available = screen.capacity ?? null;
                     const price = Number(screen.ticketPrice ?? screen.price ?? 0);
                     const isSelected = selectedShowing?.id === screen.id;

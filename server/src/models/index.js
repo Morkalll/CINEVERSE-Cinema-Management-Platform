@@ -87,6 +87,10 @@ OrderItem.belongsTo(Order,
   });
 
 
+User.hasMany(Order, { foreignKey: "userId" });
+Order.belongsTo(User, { foreignKey: "userId" });
+
+
 OrderItem.belongsTo(MovieShowing, { 
   foreignKey: 'refId', 
   constraints: false,

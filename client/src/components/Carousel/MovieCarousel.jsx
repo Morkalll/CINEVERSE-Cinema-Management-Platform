@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
 import ReactSwipe from 'react-swipe';
+import { API_URL } from '../../services/api';
 import './MovieCarousel.css';
 
 export const MovieCarousel = () => 
@@ -13,7 +14,7 @@ export const MovieCarousel = () =>
     {
       try 
       {
-        const response = await fetch('http://localhost:3000/api/movielistings');
+        const response = await fetch(`${API_URL}/movielistings`);
 
         if (!response.ok) 
         {

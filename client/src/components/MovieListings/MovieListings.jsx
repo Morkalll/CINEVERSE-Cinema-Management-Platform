@@ -2,6 +2,7 @@
 import './MovieListings.css';
 import { useEffect, useState } from 'react';
 import { MovieCard } from '../MovieCard/MovieCard';
+import { API_URL } from '../../services/api';
 
 
 export const MovieListings = () => 
@@ -14,7 +15,7 @@ export const MovieListings = () =>
     {
       try 
       {
-        const response = await fetch('http://localhost:3000/api/movielistings');
+        const response = await fetch(`${API_URL}/movielistings`);
         if (!response.ok) 
         {
           throw new Error(`HTTP error! status: ${response.status}`);
