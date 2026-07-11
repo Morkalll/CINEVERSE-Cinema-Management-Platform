@@ -18,10 +18,11 @@ export const Seat = sequelize.define("Seat",
         allowNull: false,
     },
 
-    reserved: 
+    status: 
     {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
+        type: DataTypes.ENUM('Libre', 'Reservado', 'Vendido'),
+        defaultValue: 'Libre',
+        allowNull: false
     },
 
     showingId:

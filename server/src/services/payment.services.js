@@ -116,7 +116,7 @@ export const handleWebhook = async (req, res) =>
             const paymentData = await payment.get({ id: data.id });
 
             const orderId = paymentData.external_reference;
-            const order = await Order.findByPk(orderId);
+            const order = await Order.findByPk(orderId, { include: [OrderItem] });
 
             if (order) 
             {
@@ -128,10 +128,40 @@ export const handleWebhook = async (req, res) =>
                     cancelled: 'cancelled',
                 };
 
-                await order.update({
-                    mpPaymentId: String(paymentData.id),
-                    mpStatus: paymentData.status,
-                    status: statusMap[paymentData.status] || order.status,
+                const newStatus = statusMap[paymentData.status] || order.status;
+
+                await sequelize.transaction(async (t) => {
+                    await order.update({
+                        mpPaymentId: String(paymentData.id),
+                        mpStatus: paymentData.status,
+                        status: newStatus,
+                    }, { transaction: t });
+
+                    if (newStatus === 'paid') {
+                        for (const item of order.orderItems) {
+                            if (item.type === 'ticket' && item.seats && Array.isArray(item.seats) && item.seats.length > 0) {
+                                await Seat.update(
+                                    { status: 'Vendido' },
+                                    { 
+                                        where: { showingId: item.refId, label: item.seats },
+                                        transaction: t 
+                                    }
+                                );
+                            }
+                        }
+                    } else if (newStatus === 'failed' || newStatus === 'cancelled') {
+                        for (const item of order.orderItems) {
+                            if (item.type === 'ticket' && item.seats && Array.isArray(item.seats) && item.seats.length > 0) {
+                                await Seat.update(
+                                    { status: 'Libre' },
+                                    { 
+                                        where: { showingId: item.refId, label: item.seats },
+                                        transaction: t 
+                                    }
+                                );
+                            }
+                        }
+                    }
                 });
             }
         }
@@ -220,7 +250,7 @@ export const refundPayment = async (req, res) =>
                     if (item.seats && Array.isArray(item.seats) && item.seats.length > 0) 
                     {
                         await Seat.update(
-                            { reserved: false },
+                            { status: 'Libre' },
                             { 
                                 where: { showingId: item.refId, label: item.seats },
                                 transaction: t 

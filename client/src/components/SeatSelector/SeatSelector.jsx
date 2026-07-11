@@ -13,6 +13,7 @@ export default function SeatSelector({ rows = 5, seatsPerRow = 8, showingId, mov
 {
     const [occupied, setOccupied] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [ticketQuantity, setTicketQuantity] = useState(1);
     const [, setPreviousShowingId] = useState(showingId);
     
     const { user } = useAuth();
@@ -119,33 +120,34 @@ export default function SeatSelector({ rows = 5, seatsPerRow = 8, showingId, mov
             return;
         }
 
-        const id = `${row}-${seat}`;
-
-        if (occupied.includes(id)) 
-        {
-            return;
+        const newSelection = [];
+        for (let i = 0; i < ticketQuantity; i++) {
+            const currentSeat = seat + i;
+            if (currentSeat > seatsPerRow) {
+                errorToast("No hay suficientes asientos contiguos en esta fila.");
+                return;
+            }
+            
+            const id = `${row}-${currentSeat}`;
+            if (occupied.includes(id)) {
+                errorToast("No hay suficientes asientos libres contiguos a partir del seleccionado.");
+                return;
+            }
+            newSelection.push(id);
         }
 
-        const isCurrentlySelected = selected.includes(id);
-        const newSelection = isCurrentlySelected 
-            ? selected.filter(seatSelected => seatSelected !== id) 
-            : [...selected, id];
-            
-        const selectedCount = newSelection.length;
+        const price = Number(showingInfo?.ticketPrice ?? showingInfo?.price ?? 0);
         
-        if (selectedCount === 0) {
-            updateQuantity(showingId, "ticket", 0, []); 
-        } else if (selected.length === 0) {
-            const price = Number(showingInfo?.ticketPrice ?? showingInfo?.price ?? 0);
+        if (selected.length === 0) {
             addToCart({
                 refId: showingId,
                 type: "ticket",
                 name: `${movieTitle} — Sala : ${showingInfo?.screenId} (${formatDate(showingInfo?.showtime)})`,
                 price,
                 seats: newSelection, 
-            }, selectedCount);
+            }, ticketQuantity);
         } else {
-            updateQuantity(showingId, "ticket", selectedCount, newSelection);
+            updateQuantity(showingId, "ticket", ticketQuantity, newSelection);
         }
     };
 
@@ -167,6 +169,25 @@ export default function SeatSelector({ rows = 5, seatsPerRow = 8, showingId, mov
         <div className="seat-selector-container">
 
             <h2 className="seat-selector-title">Selecciona tus asientos {selected.length > 0 && `(${selected.length})`}</h2>
+
+            <div className="ticket-quantity-selector">
+                <label htmlFor="quantity">Cantidad de Entradas:</label>
+                <select 
+                    id="quantity" 
+                    value={ticketQuantity} 
+                    onChange={(e) => setTicketQuantity(Number(e.target.value))}
+                >
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
+                        <option key={num} value={num}>{num}</option>
+                    ))}
+                </select>
+            </div>
+            
+            {ticketQuantity > 1 && (
+                <p className="seat-hint">
+                    Al elegir una butaca, se seleccionarán automáticamente {ticketQuantity - 1} más a su derecha.
+                </p>
+            )}
 
             <div className="seat-grid">
 

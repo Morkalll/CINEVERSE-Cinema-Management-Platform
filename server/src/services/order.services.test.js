@@ -138,14 +138,14 @@ describe('Order Services - createOrder', () => {
         const mockShow = { id: 5, ticketPrice: 15.0, screenId: 2 };
         MovieShowing.findByPk.mockResolvedValue(mockShow);
 
-        const mockSeat = { label: "A1", reserved: false };
+        const mockSeat = { label: "A1", status: 'Libre' };
         Seat.findAll.mockResolvedValue([mockSeat]);
 
         await createOrder(req, res);
 
         expect(Seat.findAll).toHaveBeenCalled();
         expect(Seat.update).toHaveBeenCalledWith(
-            { reserved: true },
+            { status: 'Reservado' },
             expect.objectContaining({ transaction: mockTransaction })
         );
         expect(OrderItem.create).toHaveBeenCalledWith(

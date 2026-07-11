@@ -1,6 +1,5 @@
 import { Movie } from './Movie.js';
 import { MovieShowing } from './MovieShowing.js';
-import { Ticket } from './Ticket.js';
 import { User } from './User.js';
 import { Screen } from './Screen.js';
 import { Seat } from './Seats.js';
@@ -25,29 +24,8 @@ MovieShowing.belongsTo(Movie,
 
 
 
-User.hasMany(Ticket, 
-{
-  foreignKey: 'userId',
-  onDelete: 'CASCADE'
-});
-
-Ticket.belongsTo(User, 
-{
-  foreignKey: 'userId'
-});
-
-
-
-MovieShowing.hasMany(Ticket, 
-{
-  foreignKey: 'movieShowingId',
-  onDelete: 'CASCADE'
-});
-
-Ticket.belongsTo(MovieShowing, 
-{
-  foreignKey: 'movieShowingId'
-});
+User.hasMany(Order, { foreignKey: "userId" });
+Order.belongsTo(User, { foreignKey: "userId" });
 
 
 
@@ -106,7 +84,6 @@ OrderItem.belongsTo(Products, {
 export {
   Movie,
   MovieShowing,
-  Ticket,
   User,
   Screen,
   Seat,
