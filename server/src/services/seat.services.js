@@ -41,7 +41,7 @@ export const getOccupiedSeats = async (req, res) =>
         {
             where: { 
                 showingId: showingId,
-                reserved: true 
+                status: ['Reservado', 'Vendido'] 
             },
             attributes: ['label']
         });
@@ -86,13 +86,13 @@ export const reserveSeats = async (req, res) =>
                 throw new Error("Algunos asientos no existen");
             }
 
-            const alreadyReserved = seatsToReserve.filter(seat => seat.reserved);
+            const alreadyReserved = seatsToReserve.filter(seat => seat.status !== 'Libre');
             if (alreadyReserved.length > 0) {
                 throw new Error("Algunos asientos ya fueron reservados por otro usuario");
             }
 
             await Seat.update(
-                { reserved: true },
+                { status: 'Reservado' },
                 { 
                     where: { showingId, label: seats },
                     transaction: t
@@ -142,7 +142,7 @@ export const releaseSeats = async (req, res) =>
             where: {
                 showingId: showingId,
                 label: seats,
-                reserved: true
+                status: 'Reservado'
             }
         });
 
@@ -174,7 +174,7 @@ export const releaseSeats = async (req, res) =>
         }
 
         await Seat.update(
-            { reserved: false },
+            { status: 'Libre' },
             { 
                 where: { 
                     showingId: showingId,

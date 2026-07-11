@@ -40,11 +40,6 @@ export const User = sequelize.define("user",
     type: DataTypes.STRING,
     allowNull: false,
     defaultValue: "user",
-  },
-
-  movieTickets: 
-  {
-    type: DataTypes.INTEGER,
   }
 },
 

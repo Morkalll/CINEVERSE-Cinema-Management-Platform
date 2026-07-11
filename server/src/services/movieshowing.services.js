@@ -103,7 +103,7 @@ export const createMovieShowings = async (req, res) =>
             {
                 seats.push({
                     label: `${row}-${seat}`,
-                    reserved: false,
+                    status: 'Libre',
                     showingId: newShowing.id
                 });
             }

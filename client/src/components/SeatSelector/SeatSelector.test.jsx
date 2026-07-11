@@ -37,7 +37,7 @@ describe('SeatSelector Component', () => {
     it('should render loading state initially and then seats', async () => {
         apiRequest.mockResolvedValue({ occupiedSeats: [] });
 
-        render(
+        const { container } = render(
             <AuthContext.Provider value={{ user: { id: 1 } }}>
                 <SeatSelector rows={2} seatsPerRow={2} showingId={1} />
             </AuthContext.Provider>
@@ -50,14 +50,14 @@ describe('SeatSelector Component', () => {
         });
 
         // 2 rows * 2 seats = 4 seats
-        const seats = screen.getAllByText(/^[1-2]$/);
+        const seats = container.querySelectorAll('.seat-row .seat');
         expect(seats).toHaveLength(4);
     });
 
     it('should allow user to select an available seat', async () => {
         apiRequest.mockResolvedValue({ occupiedSeats: [] });
 
-        render(
+        const { container } = render(
             <AuthContext.Provider value={{ user: { id: 1 } }}>
                 <SeatSelector rows={2} seatsPerRow={2} showingId={1} />
             </AuthContext.Provider>
@@ -67,7 +67,7 @@ describe('SeatSelector Component', () => {
             expect(screen.queryByText('Cargando asientos...')).not.toBeInTheDocument();
         });
 
-        const seats = screen.getAllByText(/^[1-2]$/);
+        const seats = container.querySelectorAll('.seat-row .seat');
         fireEvent.click(seats[0]); // Click first seat (1-1)
 
         expect(mockAddToCart).toHaveBeenCalledWith(
@@ -79,7 +79,7 @@ describe('SeatSelector Component', () => {
     it('should not allow selecting an occupied seat', async () => {
         apiRequest.mockResolvedValue({ occupiedSeats: ['1-1'] });
 
-        render(
+        const { container } = render(
             <AuthContext.Provider value={{ user: { id: 1 } }}>
                 <SeatSelector rows={2} seatsPerRow={2} showingId={1} />
             </AuthContext.Provider>
@@ -89,7 +89,7 @@ describe('SeatSelector Component', () => {
             expect(screen.queryByText('Cargando asientos...')).not.toBeInTheDocument();
         });
 
-        const seats = screen.getAllByText(/^[1-2]$/);
+        const seats = container.querySelectorAll('.seat-row .seat');
         fireEvent.click(seats[0]); // Click 1-1 which is occupied
 
         expect(mockAddToCart).not.toHaveBeenCalled();

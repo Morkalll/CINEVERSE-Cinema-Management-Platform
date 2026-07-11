@@ -77,14 +77,14 @@ export const createOrder = async (req, res) =>
                         throw new Error("Algunos asientos no existen");
                     }
 
-                    const alreadyReserved = seatsToReserve.filter(seat => seat.reserved);
+                    const alreadyReserved = seatsToReserve.filter(seat => seat.status !== 'Libre');
                     if (alreadyReserved.length > 0) 
                     {
-                        throw new Error(`Los asientos ${alreadyReserved.map(s => s.label).join(", ")} ya están ocupados`);
+                        throw new Error(`Algunos asientos para la función ${item.refId} ya están ocupados.`);
                     }
 
                     await Seat.update(
-                        { reserved: true },
+                        { status: 'Reservado' },
                         { 
                             where: 
                             { 
@@ -298,7 +298,7 @@ export const processOrderCancellation = async (order, isExpired = false, t = nul
             if (item.seats && Array.isArray(item.seats) && item.seats.length > 0) 
             {
                 await Seat.update(
-                    { reserved: false },
+                    { status: 'Libre' },
                     { where: { showingId: item.refId, label: item.seats }, transaction: t }
                 );
             }
@@ -429,9 +429,9 @@ export const deleteOrder = async (req, res) =>
                     
                     if (item.seats && Array.isArray(item.seats) && item.seats.length > 0) 
                     {
-                        
+                        // Release seats
                         await Seat.update(
-                            { reserved: false },
+                            { status: 'Libre' },
                             { 
                                 where: 
                                 { 

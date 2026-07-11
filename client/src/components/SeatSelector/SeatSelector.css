@@ -12,6 +12,33 @@
     color: #fff;
 }
 
+.ticket-quantity-selector {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.2rem;
+}
+
+.ticket-quantity-selector select {
+    background-color: #1e0032;
+    color: white;
+    border: 1px solid #9900ff;
+    border-radius: 5px;
+    padding: 5px 10px;
+    font-size: 1.1rem;
+    outline: none;
+    cursor: pointer;
+}
+
+.seat-hint {
+    font-size: 1rem;
+    color: #ff00cc;
+    margin-bottom: 1rem;
+    text-align: center;
+    max-width: 400px;
+}
+
 .seat-grid {
     display: flex;
     flex-direction: column;
