@@ -4,7 +4,7 @@ import { PORT, FRONTEND_URL } from './config.js'
 import { sequelize } from './db.js'
 import "./models/Movie.js"
 import "./models/MovieShowing.js"
-import "./models/Ticket.js"
+import "./models/User.js"
 import "./models/Products.js"
 import "./models/Screen.js"
 import "./models/index.js"

@@ -71,14 +71,15 @@ describe('Payment Services', () => {
         it('should update order status to paid on approved payment', async () => {
             req.body = { type: 'payment', data: { id: 'pay_456' } };
 
-            const mockOrder = { id: 1, update: vi.fn() };
+            const mockOrder = { id: 1, orderItems: [], update: vi.fn() };
             Order.findByPk.mockResolvedValue(mockOrder);
 
             await handleWebhook(req, res);
 
-            expect(Order.findByPk).toHaveBeenCalledWith('1');
+            expect(Order.findByPk).toHaveBeenCalledWith('1', expect.any(Object));
             expect(mockOrder.update).toHaveBeenCalledWith(
-                expect.objectContaining({ mpStatus: 'approved', status: 'paid' })
+                expect.objectContaining({ mpStatus: 'approved', status: 'paid' }),
+                expect.any(Object)
             );
             expect(res.sendStatus).toHaveBeenCalledWith(200);
         });
