@@ -3,7 +3,7 @@ import { User } from "../models/User.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../config.js";
-import { sendWelcomeEmail, sendLoginAlertEmail, sendProfileUpdatedEmail } from './email.services.js';
+import { sendWelcomeEmail, sendLoginAlertEmail, sendProfileUpdatedEmail, sendPasswordRecoveryEmail } from './email.services.js';
 
 
 
@@ -238,6 +238,64 @@ export const getUser = async (req, res) =>
     catch (error) 
     {
         console.error("Error getUser:", error);
+        return res.status(500).json({ message: "Error interno" });
+    }
+};
+
+export const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ message: "Email es requerido" });
+        }
+
+        const user = await User.findOne({ where: { email } });
+        if (!user) {
+            // Devolvemos 200 igual para no revelar qué emails existen
+            return res.status(200).json({ message: "Si el correo esta registrado, enviaremos un enlace de recuperación." });
+        }
+
+        const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: "15m" });
+        await sendPasswordRecoveryEmail(user.email, user.username, token);
+
+        return res.status(200).json({ message: "Si el correo esta registrado, enviaremos un enlace de recuperación." });
+    } catch (error) {
+        console.error("Error forgotPassword:", error);
+        return res.status(500).json({ message: "Error interno" });
+    }
+};
+
+export const resetPassword = async (req, res) => {
+    try {
+        const { token } = req.params;
+        const { newPassword } = req.body;
+
+        if (!newPassword) {
+            return res.status(400).json({ message: "Nueva contraseña es requerida" });
+        }
+
+        let payload;
+        try {
+            payload = jwt.verify(token, JWT_SECRET);
+        } catch (err) {
+            return res.status(400).json({ message: "El enlace es inválido o ha expirado" });
+        }
+
+        const user = await User.findByPk(payload.id);
+        if (!user) {
+            return res.status(404).json({ message: "Usuario no encontrado" });
+        }
+
+        const saltRounds = 10;
+        const salt = await bcrypt.genSalt(saltRounds);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        user.password = hashedPassword;
+        await user.save();
+
+        return res.status(200).json({ message: "Contraseña actualizada exitosamente" });
+    } catch (error) {
+        console.error("Error resetPassword:", error);
         return res.status(500).json({ message: "Error interno" });
     }
 };

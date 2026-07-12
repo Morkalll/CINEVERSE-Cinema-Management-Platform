@@ -20,6 +20,9 @@ import { CreateMovieShowingForm } from './components/Forms/CreateMovieShowingFor
 import { ProtectedRoute } from './components/ProtectedRoute/ProtectedRoute';
 import { SysAdminPanel } from './components/SysAdminPanel/SysAdminPanel';
 import { RegisterSysAdmin } from './components/pages/RegisterSysadmin/RegisterSysadmin';
+import { ForgotPassword } from './components/pages/ForgotPassword/ForgotPassword';
+import { ResetPassword } from './components/pages/ResetPassword/ResetPassword';
+
 import { PaymentResult } from './components/pages/PaymentResult/PaymentResult';
 
 
@@ -50,6 +53,8 @@ function App()
         <Route path="/addmovieshowing" element= { <ProtectedRoute allowedRoles={["admin","sysadmin"]}> {<CreateMovieShowingForm/>} </ProtectedRoute> } />
         <Route path= "/sysadmin" element={<ProtectedRoute allowedRoles={["admin", "sysadmin"]}> <SysAdminPanel /> </ProtectedRoute>}/>
         <Route path= "/register-sysadmin" element={<ProtectedRoute allowedRoles={["sysadmin"]}> <RegisterSysAdmin /> </ProtectedRoute>}/>
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path='*' element={<NotFound />} />
         
       </Routes>
