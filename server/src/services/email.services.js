@@ -1,6 +1,7 @@
 
 import nodemailer from 'nodemailer';
-import { EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS, EMAIL_FROM } from '../config.js';
+import { EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS, EMAIL_FROM, FRONTEND_URL } from '../config.js';
+
 
 
 // Create transporter - if no EMAIL_USER is configured, emails will be logged to console
@@ -260,5 +261,27 @@ export const sendRefundEmail = async (email, username, orderId, amount) =>
     catch (error) 
     {
         console.error('Error en sendRefundEmail:', error.message);
+    }
+};
+
+export const sendPasswordRecoveryEmail = async (email, username, token) => 
+{
+    try 
+    {
+        const resetLink = `${FRONTEND_URL}/reset-password/${token}`;
+        const html = wrapTemplate('Recuperación de Contraseña', `
+            <h2 style="color:#9933ff; margin-top:0;">Recuperación de Contraseña</h2>
+            <p>Hola ${username}, recibimos una solicitud para restablecer tu contraseña en CineVerse.</p>
+            <p>Si no realizaste esta solicitud, podés ignorar este correo.</p>
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="${resetLink}" style="background-color: #9933ff; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Restablecer Contraseña</a>
+            </div>
+            <p style="color:#999999; font-size:13px;">Este enlace expirará en 15 minutos por seguridad.</p>
+        `);
+        await sendEmail(email, '🔑 Recuperación de Contraseña — CineVerse', html);
+    } 
+    catch (error) 
+    {
+        console.error('Error en sendPasswordRecoveryEmail:', error.message);
     }
 };

@@ -131,18 +131,30 @@ export const Login = () =>
 
                                 <Col>
 
-                                    <section>
+                                    <section className="mb-2">
 
                                         ¿No tienes cuenta?
 
                                     </section>
 
 
-                                    <Button variant="secondary" onClick={goToRegisterHandler}>
+                                    <Button variant="secondary" onClick={goToRegisterHandler} className="mb-3">
 
                                         Registrarse
 
                                     </Button>
+
+                                    <div style={{ marginTop: "20px" }}>
+                                        <span 
+                                            className="text-muted" 
+                                            style={{cursor: "pointer", fontSize: "14px"}} 
+                                            onClick={() => navigate("/forgot-password")}
+                                            onMouseEnter={(e) => e.target.style.textDecoration = "underline"}
+                                            onMouseLeave={(e) => e.target.style.textDecoration = "none"}
+                                        >
+                                            ¿Olvidaste tu contraseña?
+                                        </span>
+                                    </div>
 
                                 </Col>
 
