@@ -3,14 +3,16 @@ import { errorToast } from "../../utils/toast";
 import { useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 
-export const ProtectedRoute = ({ children, allowedRoles }) => {
+export const ProtectedRoute = ({ children, allowedRoles, silentMode = false }) => {
   const { user, token, loading } = useAuth();
 
   useEffect(() => {
     if (loading) return;
 
     if (!token) {
+      if (!silentMode){
       errorToast("Debes iniciar sesión para acceder");
+      }
     } else if (allowedRoles && !allowedRoles.includes(user?.role)) {
       errorToast("No tienes permiso para acceder a esta página");
     }
