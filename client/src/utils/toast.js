@@ -6,6 +6,7 @@ export const successToast = (message) =>
 {
   toast.success(message, 
     {
+        toastId: message,
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -20,6 +21,7 @@ export const errorToast = (message) =>
 {
     toast.error(message, 
     {
+        toastId: message,
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
