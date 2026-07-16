@@ -35,14 +35,14 @@ function App()
       <Routes>
 
         <Route path='/' element={<Home/>} />
-         <Route path='testroom' element={<TestRoom/>} />
+        <Route path='testroom' element={<TestRoom/>} />
         <Route path='login' element={<Login />} />
         <Route path='register' element={<Register />} />
         <Route path='register-admin' element={<ProtectedRoute allowedRoles={["sysadmin"]}> <RegisterAdmin /> </ProtectedRoute>}/>
         <Route path='home' element={<Home />} />
         <Route path='movielistings' element={<MovieListingsPage />} />
         <Route path="/movie/:id" element={<MovieDetail />} />
-        <Route path='profile' element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path='profile' element={<ProtectedRoute silentMode={true}><Profile /></ProtectedRoute>} />
         <Route path='candy' element={<Candy />} />
         <Route path='/payment/success' element={<PaymentResult status="success" />} />
         <Route path='/payment/failure' element={<PaymentResult status="failure" />} />
