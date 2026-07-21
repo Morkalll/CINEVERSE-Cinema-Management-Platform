@@ -52,9 +52,21 @@ export const createMovie = async (req, res) =>
     {
         const { title, genre, director, rating, duration, synopsis, poster, posterCarousel, releaseDate } = req.body;
 
-        if (!title || !genre) 
+        if (!title || !genre || !director || rating == null || !duration || !synopsis || !releaseDate) 
         {
-            return res.status(400).send({ message: "Los campos de título y género son requeridos" });
+            return res.status(400).json({ message: "Los campos título, género, director, rating, duración, sinopsis y fecha de estreno son requeridos" });
+        }
+
+        const parsedRating = parseFloat(rating);
+        if (isNaN(parsedRating) || parsedRating < 0 || parsedRating > 10) 
+        {
+            return res.status(400).json({ message: "El rating debe ser un número entre 0 y 10" });
+        }
+
+        const parsedDuration = parseInt(duration, 10);
+        if (isNaN(parsedDuration) || parsedDuration <= 0) 
+        {
+            return res.status(400).json({ message: "La duración debe ser un número entero mayor a 0" });
         }
 
         const existingMovie = await Movie.findOne({
@@ -64,21 +76,20 @@ export const createMovie = async (req, res) =>
             )
         });
 
-
         if (existingMovie) 
         {
-        return res.status(409).json({ 
-        message: `La película "${title}" ya existe en la base de datos` 
-    });
-}
+            return res.status(409).json({ 
+                message: `La película "${title}" ya existe en la base de datos` 
+            });
+        }
 
         const newMovie = await Movie.create(
         {
             title,
             genre,
             director,
-            rating,
-            duration,
+            rating: parsedRating,
+            duration: parsedDuration,
             synopsis,
             poster,
             posterCarousel,
@@ -86,7 +97,6 @@ export const createMovie = async (req, res) =>
         });
 
         return res.status(201).json(newMovie);
-
     }
 
     catch (error) 
@@ -136,50 +146,26 @@ export const updateMovie = async (req, res) =>
 
 export const deleteMovie = async (req, res) => 
 {
-    const transaction = await sequelize.transaction();
-    
     try 
     {
         const { id } = req.params;
-        const movieToDelete = await Movie.findByPk(id, { transaction });
+        const movieToDelete = await Movie.findByPk(id);
 
         if (!movieToDelete) {
-            await transaction.rollback();
             return res.status(404).json({ message: "Película no encontrada" });
         }
 
-        
-        const showings = await MovieShowing.findAll({ 
-            where: { movieId: id },
-            transaction 
-        });
-
-        
-        for (const showing of showings) {
-            await Seat.destroy({ 
-                where: { showingId: showing.id },
-                transaction 
-            });
+        const showingsCount = await MovieShowing.count({ where: { movieId: id } });
+        if (showingsCount > 0) {
+            return res.status(400).json({ message: "No se puede eliminar la película porque tiene funciones programadas" });
         }
 
-        
-        await MovieShowing.destroy({ 
-            where: { movieId: id },
-            transaction 
-        });
-
-        
-        await movieToDelete.destroy({ transaction });
-        
-        await transaction.commit();
+        await movieToDelete.destroy();
         return res.status(200).json({ message: `Película con id: ${id} eliminada correctamente` });
     }
-
     catch (error) 
     {
-        await transaction.rollback();
         console.error("Error deleting movie:", error);
         return res.status(500).json({ message: error.message || "Error interno" });
     }
-
 };

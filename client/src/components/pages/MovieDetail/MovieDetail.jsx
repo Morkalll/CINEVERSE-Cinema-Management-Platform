@@ -65,9 +65,9 @@ export const MovieDetail = () =>
   if (!movie) return <div>No se encontró la película</div>;
 
 
-  const releaseFullYear = new Date(movie.releaseDate).getFullYear();
-  const releaseMonth = new Date(movie.releaseDate).getMonth() + 1;
-  const releaseDay = new Date(movie.releaseDate).getDate();
+  const releaseFullYear = new Date(movie.releaseDate).getUTCFullYear();
+  const releaseMonth = new Date(movie.releaseDate).getUTCMonth() + 1;
+  const releaseDay = new Date(movie.releaseDate).getUTCDate();
   const showtimes = movie.movieShowings
 
 
