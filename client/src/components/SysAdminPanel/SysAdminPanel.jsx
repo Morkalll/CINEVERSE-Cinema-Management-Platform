@@ -770,7 +770,7 @@ export const SysAdminPanel = () => {
                                                 <td>{movie.genre}</td>
                                                 <td>{movie.duration} min</td>
                                                 <td>{movie.rating}</td>
-                                                <td>{new Date(movie.releaseDate).toLocaleDateString()}</td>
+                                                <td>{new Date(movie.releaseDate).toLocaleDateString(undefined, { timeZone: 'UTC' })}</td>
                                                 <td>
                                                     <button
                                                         className="edit-btn"

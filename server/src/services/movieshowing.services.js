@@ -1,7 +1,9 @@
 import { MovieShowing } from "../models/MovieShowing.js";
 import { Movie } from "../models/Movie.js";
 import { Seat } from "../models/Seats.js";
-import { sequelize } from "../db.js"; 
+import { sequelize } from "../db.js";
+import { OrderItem } from "../models/OrderItem.js";
+import Order from "../models/Order.js"; 
 
 export const findAllMovieShowings = async (req, res) => 
 {
@@ -56,7 +58,6 @@ export const findOneMovieShowings = async (req, res) =>
 
 export const createMovieShowings = async (req, res) => 
 {
-    const transaction = await sequelize.transaction();
     try 
     {
         const movieId = req.body.movieId;
@@ -64,65 +65,93 @@ export const createMovieShowings = async (req, res) =>
         const screenId = req.body.screenId;
         const ticketPrice = req.body.price;
 
-        if (!movieId || !showtime) 
+        if (!movieId || !showtime || !screenId || ticketPrice == null) 
         {
-            return res.status(400).json({ message: "MovieID y Showtime son requeridos" });
+            return res.status(400).json({ message: "MovieID, Showtime, ScreenID y Price son requeridos" });
         }
 
-        const existingShowing = await MovieShowing.findOne({
-            where: {
-                movieId,
-                showtime,
-                screenId
-            },
+        const parsedPrice = parseFloat(ticketPrice);
+        if (isNaN(parsedPrice) || parsedPrice <= 0)
+        {
+            return res.status(400).json({ message: "El precio debe ser mayor a 0" });
+        }
+
+        const showtimeDate = new Date(showtime);
+        if (isNaN(showtimeDate.getTime()) || showtimeDate < new Date()) 
+        {
+            return res.status(400).json({ message: "La fecha y hora de la función no pueden estar en el pasado" });
+        }
+
+        const movie = await Movie.findByPk(movieId);
+        if (!movie)
+        {
+            return res.status(404).json({ message: "Película no encontrada" });
+        }
+
+        const newStart = showtimeDate.getTime();
+        const newEnd = newStart + movie.duration * 60000;
+
+        const screenShowings = await MovieShowing.findAll({
+            where: { screenId },
+            include: [{ model: Movie, as: "movie" }]
         });
 
-        if (existingShowing) 
+        for (const showing of screenShowings) 
         {
-            return res.status(409).json({ 
-                message: "Ya existe una función para esta película en esta sala y horario" 
-            });
-        }
+            const existingStart = new Date(showing.showtime).getTime();
+            const existingEnd = existingStart + (showing.movie ? showing.movie.duration : 0) * 60000;
 
-
-        const newShowing = await MovieShowing.create(
-        {
-            movieId,
-            showtime,
-            screenId,
-            ticketPrice
-        }, { transaction });
-
-        const seats = [];
-        const rows = 5;
-        const seatsPerRow = 8;
-    
-        for (let row = 1; row <= rows; row++) 
-        {
-            for (let seat = 1; seat <= seatsPerRow; seat++) 
+            if (newStart < existingEnd && newEnd > existingStart) 
             {
-                seats.push({
-                    label: `${row}-${seat}`,
-                    status: 'Libre',
-                    showingId: newShowing.id
+                return res.status(409).json({ 
+                    message: `Conflicto de horario: la sala ya está ocupada por la función de '${showing.movie ? showing.movie.title : 'otra película'}' desde las ${new Date(existingStart).toLocaleTimeString()} hasta las ${new Date(existingEnd).toLocaleTimeString()}`
                 });
             }
         }
-        
-        await Seat.bulkCreate(seats, { transaction });
-        await transaction.commit();
 
-        return res.status(201).json(newShowing);
-       
+        const transaction = await sequelize.transaction();
+        try 
+        {
+            const newShowing = await MovieShowing.create(
+            {
+                movieId,
+                showtime,
+                screenId,
+                ticketPrice: parsedPrice
+            }, { transaction });
+
+            const seats = [];
+            const rows = 5;
+            const seatsPerRow = 8;
+        
+            for (let row = 1; row <= rows; row++) 
+            {
+                for (let seat = 1; seat <= seatsPerRow; seat++) 
+                {
+                    seats.push({
+                        label: `${row}-${seat}`,
+                        status: 'Libre',
+                        showingId: newShowing.id
+                    });
+                }
+            }
+            
+            await Seat.bulkCreate(seats, { transaction });
+            await transaction.commit();
+
+            return res.status(201).json(newShowing);
+        }
+        catch (error)
+        {
+            await transaction.rollback();
+            throw error;
+        }
     } 
-    
     catch (error) 
     {
-        await transaction.rollback();
         console.error(error);
         return res.status(500).json({ message: "Error interno" });
     }
-
 };
 
 
@@ -160,33 +189,52 @@ export const updateMovieShowings = async (req, res) =>
 
 export const deleteMovieShowings = async (req, res) => 
 {
-    const transaction = await sequelize.transaction();
-    
     try 
     {
         const { id } = req.params;
-        const showingToDelete = await MovieShowing.findByPk(id, { transaction });
+        const showingToDelete = await MovieShowing.findByPk(id);
 
         if (!showingToDelete) {
-            await transaction.rollback();
             return res.status(404).json({ message: "MovieShowing no encontrado" });
         }
 
-        
-        await Seat.destroy({ 
-            where: { showingId: id },
-            transaction 
+        const activeOrdersCount = await OrderItem.count({
+            where: {
+                type: "ticket",
+                refId: id
+            },
+            include: [{
+                model: Order,
+                where: {
+                    status: ["created", "pending", "paid"]
+                }
+            }]
         });
 
-        await showingToDelete.destroy({ transaction });
+        if (activeOrdersCount > 0) {
+            return res.status(400).json({ message: "No se puede eliminar la función porque tiene reservas activas o pagadas" });
+        }
 
-        await transaction.commit();
-        return res.status(200).json({ message: `Función con id: ${id} eliminada correctamente` });
+        const transaction = await sequelize.transaction();
+        try 
+        {
+            await Seat.destroy({ 
+                where: { showingId: id },
+                transaction 
+            });
 
+            await showingToDelete.destroy({ transaction });
+            await transaction.commit();
+            return res.status(200).json({ message: `Función con id: ${id} eliminada correctamente` });
+        } 
+        catch (error) 
+        {
+            await transaction.rollback();
+            throw error;
+        }
     } 
     catch (error) 
     {
-        await transaction.rollback();
         console.error("Error deleting showing:", error);
         return res.status(500).json({ message: error.message || "Error interno" });
     }

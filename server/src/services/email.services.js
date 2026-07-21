@@ -143,9 +143,9 @@ export const sendOrderConfirmationEmail = async (email, username, order) =>
             `).join('');
         }
 
-        const html = wrapTemplate('Confirmación de pedido', `
-            <h2 style="color:#9933ff; margin-top:0;">¡Gracias por tu compra, ${username}! 🎉</h2>
-            <p>Tu pedido ha sido creado exitosamente.</p>
+        const html = wrapTemplate('Pedido pendiente de pago', `
+            <h2 style="color:#9933ff; margin-top:0;">¡Gracias por tu pedido, ${username}! 🎉</h2>
+            <p>Tu pedido ha sido creado exitosamente, pero falta confirmar el pago.</p>
             
             <div style="background-color:#222222; padding:15px; border-radius:8px; margin:15px 0;">
                 <p style="margin:0 0 10px; color:#ffffff;"><strong>Orden #${order.id}</strong></p>
@@ -170,7 +170,7 @@ export const sendOrderConfirmationEmail = async (email, username, order) =>
             
             <p style="color:#999999; font-size:13px;">Podés ver tus pedidos en tu perfil de CineVerse.</p>
         `);
-        await sendEmail(email, `🎟️ Confirmación de pedido #${order.id} — CineVerse`, html);
+        await sendEmail(email, `🎟️ Pedido pendiente de pago #${order.id} — CineVerse`, html);
     } 
     catch (error) 
     {
