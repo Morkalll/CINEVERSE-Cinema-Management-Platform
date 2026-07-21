@@ -63,13 +63,18 @@ describe('Products Services', () => {
 
     describe('createProduct', () => {
         it('should return 400 if required fields are missing', async () => {
-            req.body = { name: 'Popcorn' }; // missing price
+            req.body = { name: 'Popcorn' }; // missing price, stock, description
             await createProduct(req, res);
             expect(res.status).toHaveBeenCalledWith(400);
         });
 
         it('should create product successfully', async () => {
-            req.body = { name: 'Popcorn', price: 10 };
+            req.body = { 
+                name: 'Popcorn', 
+                price: 10, 
+                stock: 50, 
+                description: 'Delicious hot popcorn' 
+            };
             Products.create.mockResolvedValue({ id: 1, ...req.body });
 
             await createProduct(req, res);

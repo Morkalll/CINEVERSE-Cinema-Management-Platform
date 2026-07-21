@@ -124,31 +124,54 @@ export const CreateMovieShowingForm = () =>
 
     };
 
+    const validateDateTimeFields = (dateVal, timeVal, isDateTouched, isTimeTouched) => {
+        const today = new Date().toISOString().split('T')[0];
+        let dateErr = "";
+        let timeErr = "";
+
+        if (dateVal === "") {
+            dateErr = "La fecha es requerida";
+        } else if (dateVal < today) {
+            dateErr = "La fecha no puede ser anterior a hoy";
+        }
+
+        if (timeVal === "") {
+            timeErr = "La hora es requerida";
+        } else if (!dateErr) {
+            const now = new Date();
+            const inputDateTime = new Date(`${dateVal}T${timeVal}`);
+            if (inputDateTime < now) {
+                timeErr = "La hora no puede estar en el pasado";
+            }
+        }
+
+        setError(prev => ({
+            ...prev,
+            dateError: isDateTouched ? dateErr : prev.dateError,
+            showtimeError: isTimeTouched ? timeErr : prev.showtimeError
+        }));
+
+        return { dateErr, timeErr };
+    };
+
     const handleDateChange = (e) => 
     {
         const value = e.target.value;
-
         setForm({ ...form, date: value });
-
         if (touched.date) 
         {
-            const today = new Date().toISOString().split('T')[0];
-            setError({ ...error, dateError: value === "" ? "La fecha es requerida" : (value < today ? "La fecha no puede ser anterior a hoy" : "") });
+            validateDateTimeFields(value, form.showtime, true, touched.showtime);
         }
-
     };
 
     const handleShowtimeChange = (e) => 
     {
         const value = e.target.value;
-
         setForm({ ...form, showtime: value });
-
         if (touched.showtime) 
         {
-            setError({ ...error, showtimeError: value === "" ? "La hora es requerida" : "" });
+            validateDateTimeFields(form.date, value, touched.date, true);
         }
-
     };
 
     const handlePriceChange = (e) => 
@@ -180,8 +203,11 @@ export const CreateMovieShowingForm = () =>
 
         const movieIdError = form.movieId === "" ? "Debe seleccionar una película" : "";
         const screenIdError = form.screenId === "" ? "Debe seleccionar una sala" : "";
-        const dateError = form.date === "" ? "La fecha es requerida" : "";
-        const showtimeError = form.showtime === "" ? "La hora es requerida" : "";
+        
+        const { dateErr, timeErr } = validateDateTimeFields(form.date, form.showtime, true, true);
+        const dateError = dateErr;
+        const showtimeError = timeErr;
+        
         const numPrice = parseFloat(form.price);
         const priceError = form.price === "" ? "El precio es requerido" : (numPrice <= 0 ? "El precio debe ser mayor a 0" : "");
 
@@ -211,7 +237,11 @@ export const CreateMovieShowingForm = () =>
                     }),
                 });
 
-                if (!response.ok) throw new Error("Error al crear la función");
+                if (!response.ok) 
+                {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || "Error al crear la función");
+                }
 
 
                 toast.success("Función creada con éxito!");
@@ -236,9 +266,9 @@ export const CreateMovieShowingForm = () =>
 
             } 
             
-            catch 
+            catch (error) 
             {
-                toast.error("Error al crear la función");
+                toast.error(error.message || "Error al crear la función");
             }
 
         }
@@ -299,7 +329,7 @@ export const CreateMovieShowingForm = () =>
                         onBlur={() => 
                         {
                             setTouched({ ...touched, date: true });
-                            setError({ ...error, dateError: form.date === "" ? "La fecha es requerida" : "" });
+                            validateDateTimeFields(form.date, form.showtime, true, touched.showtime);
                         }}
                     />
 
@@ -322,7 +352,7 @@ export const CreateMovieShowingForm = () =>
                         onBlur={() => 
                         {
                             setTouched({ ...touched, showtime: true });
-                            setError({ ...error, showtimeError: form.showtime === "" ? "La hora es requerida" : "" });
+                            validateDateTimeFields(form.date, form.showtime, touched.date, true);
                         }}
                     />
 

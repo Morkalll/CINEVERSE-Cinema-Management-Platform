@@ -19,6 +19,9 @@ vi.mock('../models/OrderItem.js', () => {
 vi.mock('../models/MovieShowing.js', () => {
     return { MovieShowing: { findByPk: vi.fn() } };
 });
+vi.mock('../models/Movie.js', () => {
+    return { Movie: {} };
+});
 vi.mock('../models/Products.js', () => {
     return { Products: { findByPk: vi.fn() } };
 });
@@ -135,7 +138,12 @@ describe('Order Services - createOrder', () => {
         const mockOrder = { id: 100, total: 0, save: vi.fn() };
         Order.create.mockResolvedValue(mockOrder);
 
-        const mockShow = { id: 5, ticketPrice: 15.0, screenId: 2 };
+        const mockShow = { 
+            id: 5, 
+            ticketPrice: 15.0, 
+            screenId: 2,
+            movie: { title: "Super Mario Galaxy: The Movie" }
+        };
         MovieShowing.findByPk.mockResolvedValue(mockShow);
 
         const mockSeat = { label: "A1", status: 'Libre' };
@@ -149,7 +157,12 @@ describe('Order Services - createOrder', () => {
             expect.objectContaining({ transaction: mockTransaction })
         );
         expect(OrderItem.create).toHaveBeenCalledWith(
-            expect.objectContaining({ orderId: 100, type: "ticket", price: 15.0 }),
+            expect.objectContaining({ 
+                orderId: 100, 
+                type: "ticket", 
+                price: 15.0,
+                name: "Super Mario Galaxy: The Movie"
+            }),
             { transaction: mockTransaction }
         );
         expect(mockTransaction.commit).toHaveBeenCalled();

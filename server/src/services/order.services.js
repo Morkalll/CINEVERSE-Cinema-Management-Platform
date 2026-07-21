@@ -6,6 +6,7 @@ import { MovieShowing } from "../models/MovieShowing.js";
 import { Products } from "../models/Products.js";
 import { Seat } from "../models/Seats.js";
 import { User } from "../models/User.js";
+import { Movie } from "../models/Movie.js";
 import { sendOrderConfirmationEmail, sendOrderCancellationEmail } from './email.services.js';
 
 let isCleanupRunning = false;
@@ -51,7 +52,11 @@ export const createOrder = async (req, res) =>
 
             if (item.type === "ticket") 
             {
-                const show = await MovieShowing.findByPk(item.refId, { transaction, lock: transaction.LOCK.UPDATE });
+                const show = await MovieShowing.findByPk(item.refId, {
+                    include: [{ model: Movie, as: 'movie' }],
+                    transaction,
+                    lock: transaction.LOCK.UPDATE
+                });
 
                 if (!show) 
                 {        
@@ -105,7 +110,7 @@ export const createOrder = async (req, res) =>
                     orderId: createdOrder.id,
                     type: "ticket",
                     refId: item.refId,
-                    name: `Película - ID: ${show.screenId}`,
+                    name: show.movie ? show.movie.title : "Película",
                     price,
                     quantity: item.quantity,
                     seats: item.seats || null,

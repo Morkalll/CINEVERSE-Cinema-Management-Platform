@@ -4,6 +4,7 @@ import { MovieShowing } from '../models/MovieShowing.js';
 import { Movie } from '../models/Movie.js';
 import { Seat } from '../models/Seats.js';
 import { sequelize } from '../db.js';
+import { OrderItem } from '../models/OrderItem.js';
 
 vi.mock('../models/MovieShowing.js', () => ({
     MovieShowing: {
@@ -15,7 +16,9 @@ vi.mock('../models/MovieShowing.js', () => ({
 }));
 
 vi.mock('../models/Movie.js', () => ({
-    Movie: {}
+    Movie: {
+        findByPk: vi.fn()
+    }
 }));
 
 vi.mock('../models/Seats.js', () => ({
@@ -23,6 +26,16 @@ vi.mock('../models/Seats.js', () => ({
         bulkCreate: vi.fn(),
         destroy: vi.fn()
     }
+}));
+
+vi.mock('../models/OrderItem.js', () => ({
+    OrderItem: {
+        count: vi.fn()
+    }
+}));
+
+vi.mock('../models/Order.js', () => ({
+    default: {}
 }));
 
 const mockTransaction = {
@@ -93,17 +106,27 @@ describe('MovieShowing Services', () => {
             expect(res.status).toHaveBeenCalledWith(400);
         });
 
-        it('should return 409 if showing exists', async () => {
-            req.body = { movieId: 1, showtime: '2023-10-10', screenId: 1 };
-            MovieShowing.findOne.mockResolvedValue({ id: 1 });
+        it('should return 400 if date/time in the past', async () => {
+            req.body = { movieId: 1, showtime: '2020-01-01T12:00:00.000Z', screenId: 1, price: 10 };
+            await createMovieShowings(req, res);
+            expect(res.status).toHaveBeenCalledWith(400);
+        });
+
+        it('should return 409 if showing exists (overlap conflict)', async () => {
+            req.body = { movieId: 1, showtime: '2030-10-10T18:00:00.000Z', screenId: 1, price: 10 };
+            Movie.findByPk.mockResolvedValue({ id: 1, title: 'Alien', duration: 120 });
+            MovieShowing.findAll.mockResolvedValue([
+                { showtime: '2030-10-10T18:30:00.000Z', movie: { title: 'Dune', duration: 120 } }
+            ]);
 
             await createMovieShowings(req, res);
             expect(res.status).toHaveBeenCalledWith(409);
         });
 
         it('should create showing and seats successfully', async () => {
-            req.body = { movieId: 1, showtime: '2023-10-10', screenId: 1, price: 10 };
-            MovieShowing.findOne.mockResolvedValue(null);
+            req.body = { movieId: 1, showtime: '2030-10-10T18:00:00.000Z', screenId: 1, price: 10 };
+            Movie.findByPk.mockResolvedValue({ id: 1, title: 'Alien', duration: 120 });
+            MovieShowing.findAll.mockResolvedValue([]);
             MovieShowing.create.mockResolvedValue({ id: 1, ...req.body });
 
             await createMovieShowings(req, res);
@@ -115,8 +138,10 @@ describe('MovieShowing Services', () => {
         });
 
         it('should rollback on error', async () => {
-            req.body = { movieId: 1, showtime: '2023-10-10' };
-            MovieShowing.findOne.mockRejectedValue(new Error('DB Error'));
+            req.body = { movieId: 1, showtime: '2030-10-10T18:00:00.000Z', screenId: 1, price: 10 };
+            Movie.findByPk.mockResolvedValue({ id: 1, title: 'Alien', duration: 120 });
+            MovieShowing.findAll.mockResolvedValue([]);
+            MovieShowing.create.mockRejectedValue(new Error('DB Error'));
 
             await createMovieShowings(req, res);
 
@@ -147,19 +172,30 @@ describe('MovieShowing Services', () => {
     });
 
     describe('deleteMovieShowings', () => {
-        it('should return 404 if not found and rollback', async () => {
+        it('should return 404 if not found', async () => {
             req.params.id = 1;
             MovieShowing.findByPk.mockResolvedValue(null);
 
             await deleteMovieShowings(req, res);
-            expect(mockTransaction.rollback).toHaveBeenCalled();
             expect(res.status).toHaveBeenCalledWith(404);
         });
 
-        it('should destroy showing and seats, then commit', async () => {
+        it('should return 400 if active or paid orders exist', async () => {
+            req.params.id = 1;
+            const mockShowing = { id: 1 };
+            MovieShowing.findByPk.mockResolvedValue(mockShowing);
+            OrderItem.count.mockResolvedValue(1);
+
+            await deleteMovieShowings(req, res);
+            expect(res.status).toHaveBeenCalledWith(400);
+            expect(res.json).toHaveBeenCalledWith({ message: "No se puede eliminar la función porque tiene reservas activas o pagadas" });
+        });
+
+        it('should destroy showing and seats, then commit if no orders exist', async () => {
             req.params.id = 1;
             const mockShowing = { id: 1, destroy: vi.fn() };
             MovieShowing.findByPk.mockResolvedValue(mockShowing);
+            OrderItem.count.mockResolvedValue(0);
 
             await deleteMovieShowings(req, res);
 
@@ -171,7 +207,10 @@ describe('MovieShowing Services', () => {
 
         it('should rollback on error', async () => {
             req.params.id = 1;
-            MovieShowing.findByPk.mockRejectedValue(new Error('DB Error'));
+            const mockShowing = { id: 1, destroy: vi.fn() };
+            MovieShowing.findByPk.mockResolvedValue(mockShowing);
+            OrderItem.count.mockResolvedValue(0);
+            Seat.destroy.mockRejectedValue(new Error('DB Error'));
 
             await deleteMovieShowings(req, res);
             expect(mockTransaction.rollback).toHaveBeenCalled();

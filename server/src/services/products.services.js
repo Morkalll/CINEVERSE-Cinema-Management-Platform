@@ -49,23 +49,33 @@ export const createProduct = async (req, res) =>
   {
     const { name, price, stock, image, description } = req.body;
 
-    if (!name || price == null) 
+    if (!name || price == null || stock == null || !description) 
     {
-      return res.status(400).json({ message: "Campos requeridos" });
+      return res.status(400).json({ message: "Los campos nombre, precio, stock y descripción son requeridos" });
     }
 
-    
+    const parsedPrice = parseFloat(price);
+    if (isNaN(parsedPrice) || parsedPrice <= 0) 
+    {
+      return res.status(400).json({ message: "El precio debe ser mayor a 0" });
+    }
+
+    const parsedStock = parseInt(stock, 10);
+    if (isNaN(parsedStock) || parsedStock < 0) 
+    {
+      return res.status(400).json({ message: "El stock no puede ser negativo" });
+    }
+
     const newProduct = await Products.create(
     {
       name,
-      price,
-      stock,
+      price: parsedPrice,
+      stock: parsedStock,
       image,
       description,
     });
 
     return res.status(201).json(newProduct);
-
   } 
   
   catch (error) 
