@@ -17,7 +17,8 @@ vi.mock('../models/Movie.js', () => ({
 vi.mock('../models/MovieShowing.js', () => ({
     MovieShowing: {
         findAll: vi.fn(),
-        destroy: vi.fn()
+        destroy: vi.fn(),
+        count: vi.fn()
     }
 }));
 
@@ -94,13 +95,21 @@ describe('Movie Services', () => {
 
     describe('createMovie', () => {
         it('should return 400 if title or genre missing', async () => {
-            req.body = { title: 'Alien' }; // missing genre
+            req.body = { title: 'Alien' }; // missing required fields
             await createMovie(req, res);
             expect(res.status).toHaveBeenCalledWith(400);
         });
 
         it('should return 409 if movie exists', async () => {
-            req.body = { title: 'Alien', genre: 'Sci-Fi' };
+            req.body = { 
+                title: 'Alien', 
+                genre: 'Sci-Fi', 
+                director: 'Ridley Scott', 
+                rating: 8.5, 
+                duration: 117, 
+                synopsis: 'In space no one can hear you scream.', 
+                releaseDate: '1979-05-25' 
+            };
             Movie.findOne.mockResolvedValue({ id: 1 });
             
             await createMovie(req, res);
@@ -108,7 +117,15 @@ describe('Movie Services', () => {
         });
 
         it('should create movie successfully', async () => {
-            req.body = { title: 'Alien', genre: 'Sci-Fi' };
+            req.body = { 
+                title: 'Alien', 
+                genre: 'Sci-Fi', 
+                director: 'Ridley Scott', 
+                rating: 8.5, 
+                duration: 117, 
+                synopsis: 'In space no one can hear you scream.', 
+                releaseDate: '1979-05-25' 
+            };
             Movie.findOne.mockResolvedValue(null);
             Movie.create.mockResolvedValue({ id: 1, ...req.body });
 
@@ -140,36 +157,42 @@ describe('Movie Services', () => {
     });
 
     describe('deleteMovie', () => {
-        it('should return 404 if not found and rollback', async () => {
+        it('should return 404 if not found', async () => {
             req.params.id = 1;
             Movie.findByPk.mockResolvedValue(null);
 
             await deleteMovie(req, res);
-            expect(mockTransaction.rollback).toHaveBeenCalled();
             expect(res.status).toHaveBeenCalledWith(404);
         });
 
-        it('should destroy related data and commit', async () => {
+        it('should return 400 if scheduled showtimes exist', async () => {
+            req.params.id = 1;
+            const mockMovie = { id: 1 };
+            Movie.findByPk.mockResolvedValue(mockMovie);
+            MovieShowing.count.mockResolvedValue(1);
+
+            await deleteMovie(req, res);
+            expect(res.status).toHaveBeenCalledWith(400);
+            expect(res.json).toHaveBeenCalledWith({ message: "No se puede eliminar la película porque tiene funciones programadas" });
+        });
+
+        it('should destroy movie if no showtimes exist', async () => {
             req.params.id = 1;
             const mockMovie = { id: 1, destroy: vi.fn() };
             Movie.findByPk.mockResolvedValue(mockMovie);
-            MovieShowing.findAll.mockResolvedValue([{ id: 10 }]);
+            MovieShowing.count.mockResolvedValue(0);
 
             await deleteMovie(req, res);
 
-            expect(Seat.destroy).toHaveBeenCalledWith({ where: { showingId: 10 }, transaction: mockTransaction });
-            expect(MovieShowing.destroy).toHaveBeenCalledWith({ where: { movieId: 1 }, transaction: mockTransaction });
-            expect(mockMovie.destroy).toHaveBeenCalledWith({ transaction: mockTransaction });
-            expect(mockTransaction.commit).toHaveBeenCalled();
+            expect(mockMovie.destroy).toHaveBeenCalled();
             expect(res.status).toHaveBeenCalledWith(200);
         });
 
-        it('should rollback on error', async () => {
+        it('should return 500 on error', async () => {
             req.params.id = 1;
             Movie.findByPk.mockRejectedValue(new Error('DB Error'));
 
             await deleteMovie(req, res);
-            expect(mockTransaction.rollback).toHaveBeenCalled();
             expect(res.status).toHaveBeenCalledWith(500);
         });
     });
