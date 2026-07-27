@@ -152,6 +152,16 @@ export default function SeatSelector({ rows = 5, seatsPerRow = 8, showingId, mov
     };
 
 
+    const handleQuantityChange = (newQty) => 
+    {
+        setTicketQuantity(newQty);
+        if (selected.length > 0) 
+        {
+            removeFromCart(showingId, "ticket");
+        }
+    };
+
+
     if (loading && occupied.length === 0) 
     {
         return (
@@ -175,7 +185,7 @@ export default function SeatSelector({ rows = 5, seatsPerRow = 8, showingId, mov
                 <select 
                     id="quantity" 
                     value={ticketQuantity} 
-                    onChange={(e) => setTicketQuantity(Number(e.target.value))}
+                    onChange={(e) => handleQuantityChange(Number(e.target.value))}
                 >
                     {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
                         <option key={num} value={num}>{num}</option>
