@@ -5,7 +5,7 @@ import '../Login/Login.css';
 import cineverseLogo from '../../../assets/images/cineverse-logo-without-name.png';
 import TatinAlien1 from '../../../assets/images/Alien 3.png';
 import { successToast, errorToast } from "../../../utils/toast";
-import { NavBar } from "../../NavBar/NavBar";
+import { NavBar } from "../../navBar/NavBar";
 
 export const ResetPassword = () => {
     const [password, setPassword] = useState("");

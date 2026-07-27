@@ -5,7 +5,7 @@ import { Button, Card, Col, Form, FormGroup, Row } from "react-bootstrap"
 import { successToast, errorToast } from "../../../utils/toast";
 import { apiRequest } from "../../../services/api";
 import TatinAlien2 from '../../../assets/images/Alien 2.png'
-import { NavBar } from "../../NavBar/NavBar";
+import { NavBar } from "../../navBar/NavBar";
 
 
 export const Register = () => 

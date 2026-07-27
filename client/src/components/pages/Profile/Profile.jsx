@@ -1,6 +1,6 @@
 
 import { UserProfile } from '../../UserProfile/UserProfile'
-import { NavBar } from '../../NavBar/NavBar';
+import { NavBar } from '../../navBar/NavBar';
 
 
 export const Profile = () => 

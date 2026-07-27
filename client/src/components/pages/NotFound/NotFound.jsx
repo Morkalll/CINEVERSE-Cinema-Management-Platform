@@ -1,7 +1,7 @@
 
 import { Button } from "react-bootstrap"
 import { useNavigate } from "react-router"
-import { NavBar } from "../../NavBar/NavBar"
+import { NavBar } from "../../navBar/NavBar"
 
 
 export const NotFound = () =>

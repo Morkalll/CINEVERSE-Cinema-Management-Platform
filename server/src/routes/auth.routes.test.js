@@ -12,7 +12,9 @@ import * as authServices from '../services/auth.services.js';
 vi.mock('../services/user.services.js', () => ({
     loginUser: vi.fn((req, res) => res.status(200).json({ msg: 'loginUser called' })),
     getUser: vi.fn((req, res) => res.status(200).json({ msg: 'getUser called' })),
-    registerUser: vi.fn((req, res) => res.status(201).json({ msg: 'registerUser called' }))
+    registerUser: vi.fn((req, res) => res.status(201).json({ msg: 'registerUser called' })),
+    forgotPassword: vi.fn((req, res) => res.status(200).json({ msg: 'forgotPassword called' })),
+    resetPassword: vi.fn((req, res) => res.status(200).json({ msg: 'resetPassword called' }))
 }));
 
 vi.mock('../services/admin.services.js', () => ({

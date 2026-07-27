@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { NavBar } from "../../components/NavBar/NavBar";
+import { NavBar } from "../../components/navBar/NavBar";
 import { successToast, errorToast } from "../../utils/toast";
 import { useAuth } from "../../context/AuthContext";
 import { formatDate } from "../../utils/helper";

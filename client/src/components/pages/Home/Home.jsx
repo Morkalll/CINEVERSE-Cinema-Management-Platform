@@ -1,5 +1,5 @@
 
-import { NavBar } from '../../NavBar/NavBar';
+import { NavBar } from '../../navBar/NavBar';
 import { MovieListings } from '../../MovieListings/MovieListings';
 import { MovieCarousel } from '../../Carousel/MovieCarousel';
 import './Home.css';

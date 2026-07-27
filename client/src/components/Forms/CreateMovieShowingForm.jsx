@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { NavBar } from "../NavBar/NavBar";
+import { NavBar } from "../navBar/NavBar";
 import { API_URL } from "../../services/api";
 import "./CreateMovieForm.css"; 
 

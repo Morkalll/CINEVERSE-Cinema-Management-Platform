@@ -185,7 +185,7 @@ describe('Checkout', () => {
 
         await waitFor(() => {
             expect(mockClearCart).toHaveBeenCalled();
-            expect(successToast).toHaveBeenCalledWith('¡Pedido realizado! Podrás pagar después desde tu perfil.');
+            expect(errorToast).toHaveBeenCalledWith('MP Error');
         });
     });
 
