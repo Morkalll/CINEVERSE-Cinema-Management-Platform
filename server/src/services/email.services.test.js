@@ -56,4 +56,9 @@ describe('Email Services', () => {
     it('should send refund email without throwing', async () => {
         await expect(emailServices.sendRefundEmail('test@test.com', 'testuser', 1, 100.50)).resolves.not.toThrow();
     });
+
+    it('should send payment success email without throwing', async () => {
+        const order = { id: 1, total: 15, items: [{ name: 'Popcorn', quantity: 1, price: 5 }, { name: 'Ticket A1', quantity: 1, price: 10, seats: ['A1'] }] };
+        await expect(emailServices.sendPaymentSuccessEmail('test@test.com', 'testuser', order)).resolves.not.toThrow();
+    });
 });

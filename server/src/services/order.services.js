@@ -8,6 +8,7 @@ import { Seat } from "../models/Seats.js";
 import { User } from "../models/User.js";
 import { Movie } from "../models/Movie.js";
 import { sendOrderConfirmationEmail, sendOrderCancellationEmail } from './email.services.js';
+import { syncPendingOrderPayment } from './payment.services.js';
 
 let isCleanupRunning = false;
 
@@ -210,6 +211,15 @@ export const getUserOrders = async (req, res) =>
 
             order: [["createdAt", "DESC"]],
         });
+
+        // Automatically sync any pending orders with MercadoPago
+        for (const order of orders) 
+        {
+            if (order.status === 'created' || order.status === 'pending') 
+            {
+                await syncPendingOrderPayment(order);
+            }
+        }
 
         return res.json(orders);
 
