@@ -1,6 +1,6 @@
 
 import { MovieListings } from '../../MovieListings/MovieListings';
-import { NavBar } from '../../NavBar/NavBar';
+import { NavBar } from '../../navBar/NavBar';
 
 
 export const MovieListingsPage = () => 

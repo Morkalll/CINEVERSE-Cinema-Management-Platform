@@ -7,7 +7,7 @@ import cineverseLogo from '../../../assets/images/cineverse-logo-without-name.pn
 import TatinAlien1 from '../../../assets/images/Alien 3.png'
 import { successToast, errorToast } from "../../../utils/toast"
 import { useAuth } from "../../../context/AuthContext";
-import { NavBar } from "../../NavBar/NavBar"
+import { NavBar } from "../../navBar/NavBar"
 
 
 export const Login = () => 

@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { CreateCandyForm } from './CreateCandyForm';
 import { toast } from 'react-toastify';
 
-vi.mock('../NavBar/NavBar', () => ({
+vi.mock('../navBar/NavBar', () => ({
     NavBar: () => <div data-testid="navbar">NavBar</div>
 }));
 

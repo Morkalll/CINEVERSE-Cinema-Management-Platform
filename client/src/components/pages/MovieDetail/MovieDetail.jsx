@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { NavBar } from '../../NavBar/NavBar';
+import { NavBar } from '../../navBar/NavBar';
 import './MovieDetail.css';
 import SeatSelector from "../../SeatSelector/SeatSelector";
 import { API_URL } from "../../../services/api";

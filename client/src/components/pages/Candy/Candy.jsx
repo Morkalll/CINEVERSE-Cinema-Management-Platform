@@ -1,6 +1,6 @@
 
 import { CandyListings } from '../../CandyListings/CandyListings';
-import { NavBar } from '../../NavBar/NavBar';
+import { NavBar } from '../../navBar/NavBar';
 import { useNavigate } from 'react-router';
 import './Candy.css';
 

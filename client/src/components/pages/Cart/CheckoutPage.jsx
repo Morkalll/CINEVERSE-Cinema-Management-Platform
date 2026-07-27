@@ -1,6 +1,6 @@
 
 import { Checkout } from "../../../components/Cart/Checkout";
-import { NavBar } from "../../NavBar/NavBar";
+import { NavBar } from "../../navBar/NavBar";
 
 
 export const CheckoutPage = () => 

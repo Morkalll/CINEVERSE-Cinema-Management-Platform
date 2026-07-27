@@ -4,7 +4,7 @@ import { SysAdminPanel } from './SysAdminPanel';
 import { useAuth } from '../../context/AuthContext';
 import { MemoryRouter } from 'react-router-dom';
 
-vi.mock('../../components/NavBar/NavBar', () => ({
+vi.mock('../../components/navBar/NavBar', () => ({
     NavBar: () => <div data-testid="navbar">NavBar</div>
 }));
 

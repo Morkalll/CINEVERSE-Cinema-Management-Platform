@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { apiRequest } from "../../../services/api";
 import { useAuth } from "../../../context/AuthContext";
 import { successToast, errorToast } from "../../../utils/toast";
-import { NavBar } from "../../NavBar/NavBar";
+import { NavBar } from "../../navBar/NavBar";
 import "./PaymentResult.css";
 
 
