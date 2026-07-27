@@ -85,6 +85,12 @@ app.use("/api", seatRoutes);
 app.use("/api", userRoutes);
 app.use("/api/payments", paymentRoutes);
 
+// Global error handling middleware for serverless robustness
+app.use((err, req, res, next) => {
+  console.error("❌ Uncaught server error:", err);
+  res.status(500).json({ error: err.message || "Internal Server Error" });
+});
+
 // Start server when run directly (local / non-serverless)
 if (!process.env.VERCEL) {
   initDb().then(() => {
