@@ -179,6 +179,68 @@ export const sendOrderConfirmationEmail = async (email, username, order) =>
 };
 
 
+export const sendPaymentSuccessEmail = async (email, username, order) => 
+{
+    try 
+    {
+        const items = order.orderItems || order.items || [];
+        let itemsHtml = '';
+        if (Array.isArray(items) && items.length > 0) 
+        {
+            itemsHtml = items.map(item => {
+                const seatsInfo = item.seats && Array.isArray(item.seats) && item.seats.length > 0
+                    ? `<br/><small style="color:#9933ff;">Asientos: ${item.seats.join(', ')}</small>`
+                    : '';
+                return `
+                <tr>
+                    <td style="padding:10px 12px; border-bottom:1px solid #333; color:#cccccc;">
+                        <strong>${item.name || item.type}</strong>${seatsInfo}
+                    </td>
+                    <td style="padding:10px 12px; border-bottom:1px solid #333; color:#cccccc; text-align:center;">${item.quantity}</td>
+                    <td style="padding:10px 12px; border-bottom:1px solid #333; color:#cccccc; text-align:right;">$${Number(item.price || 0).toFixed(2)}</td>
+                    <td style="padding:10px 12px; border-bottom:1px solid #333; color:#33cc66; text-align:right; font-weight:bold;">$${(Number(item.price || 0) * Number(item.quantity || 1)).toFixed(2)}</td>
+                </tr>
+            `}).join('');
+        }
+
+        const html = wrapTemplate('¡Pago Confirmado!', `
+            <h2 style="color:#33cc66; margin-top:0;">¡Gracias por tu compra, ${username}! 🎟️🍿</h2>
+            <p>Tu pago ha sido procesado exitosamente. A continuación tenés el detalle de tu compra:</p>
+            
+            <div style="background-color:#222222; padding:15px; border-radius:8px; border-left:4px solid #33cc66; margin:15px 0;">
+                <p style="margin:0 0 10px; color:#ffffff;"><strong>Orden #${order.id}</strong></p>
+                
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr style="border-bottom:2px solid #33cc66;">
+                            <th style="padding:8px 12px; text-align:left; color:#33cc66;">Producto / Entrada</th>
+                            <th style="padding:8px 12px; text-align:center; color:#33cc66;">Cant.</th>
+                            <th style="padding:8px 12px; text-align:right; color:#33cc66;">Precio Unit.</th>
+                            <th style="padding:8px 12px; text-align:right; color:#33cc66;">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itemsHtml}
+                    </tbody>
+                </table>
+                
+                <div style="margin-top:15px; padding-top:10px; border-top:2px solid #33cc66; text-align:right;">
+                    <span style="color:#ffffff; font-size:18px; font-weight:bold;">Total Pagado: $${Number(order.total || 0).toFixed(2)}</span>
+                </div>
+            </div>
+            
+            <p style="color:#cccccc;">Podés consultar tus entradas y pedidos en cualquier momento desde la sección <strong>Mi Perfil</strong> en CineVerse.</p>
+        `);
+        await sendEmail(email, `✅ Pago confirmado — Orden #${order.id} — CineVerse`, html);
+    } 
+    catch (error) 
+    {
+        console.error('Error en sendPaymentSuccessEmail:', error.message);
+    }
+};
+
+
+
 export const sendOrderCancellationEmail = async (email, username, orderId, isAutomatic = false) => 
 {
     try 

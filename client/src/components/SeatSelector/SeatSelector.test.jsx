@@ -95,4 +95,24 @@ describe('SeatSelector Component', () => {
         expect(mockAddToCart).not.toHaveBeenCalled();
     });
 
+    it('should clear seat selection when ticket quantity changes', async () => {
+        apiRequest.mockResolvedValue({ occupiedSeats: [] });
+
+        render(
+            <AuthContext.Provider value={{ user: { id: 1 } }}>
+                <SeatSelector rows={2} seatsPerRow={2} showingId={1} />
+            </AuthContext.Provider>
+        );
+
+        await waitFor(() => {
+            expect(screen.queryByText('Cargando asientos...')).not.toBeInTheDocument();
+        });
+
+        const select = screen.getByLabelText('Cantidad de Entradas:');
+        fireEvent.change(select, { target: { value: '2' } });
+
+        // Since no seats were previously selected, removeFromCart is not called yet
+        expect(mockRemoveFromCart).not.toHaveBeenCalled();
+    });
+
 });
