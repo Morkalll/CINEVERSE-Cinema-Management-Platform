@@ -1,8 +1,8 @@
 
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { API_URL } from "../../../services/api";
-
+import { apiRequest } from "../../../services/api";
+import { useAuth } from "../../../context/AuthContext";
 import { successToast, errorToast } from "../../../utils/toast";
 import { NavBar } from "../../NavBar/NavBar";
 import "./PaymentResult.css";
@@ -12,24 +12,40 @@ export const PaymentResult = ({ status }) =>
 {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
+    const { token } = useAuth();
     const [orderId, setOrderId] = useState(null);
+    const [verifying, setVerifying] = useState(false);
 
 
     useEffect(() => 
     {
         const id = searchParams.get("orderId") || searchParams.get("external_reference");
+        const paymentId = searchParams.get("payment_id") || searchParams.get("collection_id");
+        const mpStatusParam = searchParams.get("status") || searchParams.get("collection_status");
         setOrderId(id);
 
         if (status === "success" && id) 
         {
             successToast("¡Pago realizado con éxito!");
+            const authToken = token || localStorage.getItem("token");
+            if (authToken) 
+            {
+                setVerifying(true);
+                apiRequest("/payments/verify", "POST", { 
+                    orderId: id, 
+                    paymentId,
+                    status: mpStatusParam 
+                }, authToken)
+                    .catch((err) => console.error("Error al verificar pago:", err))
+                    .finally(() => setVerifying(false));
+            }
         } 
         else if (status === "failure") 
         {
             errorToast("El pago no pudo completarse.");
         }
 
-    }, [searchParams, status]);
+    }, [searchParams, status, token]);
 
 
     const getStatusConfig = () => 

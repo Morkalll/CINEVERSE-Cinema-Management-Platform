@@ -8,6 +8,7 @@ import * as tokenServices from '../services/token.services.js';
 vi.mock('../services/payment.services.js', () => ({
     createPreference: vi.fn((req, res) => res.status(200).json({ msg: 'createPreference' })),
     handleWebhook: vi.fn((req, res) => res.status(200).json({ msg: 'handleWebhook' })),
+    verifyPayment: vi.fn((req, res) => res.status(200).json({ msg: 'verifyPayment' })),
     refundPayment: vi.fn((req, res) => res.status(200).json({ msg: 'refundPayment' })),
     getPaymentStatus: vi.fn((req, res) => res.status(200).json({ msg: 'getPaymentStatus' }))
 }));
@@ -38,6 +39,14 @@ describe('Payment Routes', () => {
         expect(res.status).toBe(200);
         expect(res.body).toEqual({ msg: 'handleWebhook' });
         expect(paymentServices.handleWebhook).toHaveBeenCalled();
+    });
+
+    it('POST /api/payments/verify should call verifyToken and verifyPayment', async () => {
+        const res = await request(app).post('/api/payments/verify').send({});
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual({ msg: 'verifyPayment' });
+        expect(tokenServices.verifyToken).toHaveBeenCalled();
+        expect(paymentServices.verifyPayment).toHaveBeenCalled();
     });
 
     it('POST /api/payments/refund/:orderId should call verifyToken and refundPayment', async () => {

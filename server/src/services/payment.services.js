@@ -6,7 +6,7 @@ import { OrderItem } from '../models/OrderItem.js';
 import { User } from '../models/User.js';
 import { Seat } from '../models/Seats.js';
 import { Products } from '../models/Products.js';
-import { sendRefundEmail } from './email.services.js';
+import { sendRefundEmail, sendPaymentSuccessEmail } from './email.services.js';
 import { sequelize } from '../db.js';
 
 
@@ -98,14 +98,129 @@ export const createPreference = async (req, res) =>
 };
 
 
+const triggerPaymentSuccessEmail = async (order) => {
+    try {
+        const orderUser = await User.findByPk(order.userId);
+        if (orderUser) {
+            const fullOrder = await Order.findByPk(order.id, { include: [OrderItem] });
+            sendPaymentSuccessEmail(orderUser.email, orderUser.username, fullOrder || order);
+        }
+    } catch (err) {
+        console.error("Error al enviar email de confirmación de pago:", err.message || err);
+    }
+};
+
+
+export const syncPendingOrderPayment = async (order) => 
+{
+    if (!order || order.status === 'paid' || order.status === 'cancelled' || order.status === 'expired' || order.status === 'refunded') 
+    {
+        return order;
+    }
+
+    try 
+    {
+        let mpPaymentStatus = null;
+        let fetchedPaymentId = order.mpPaymentId;
+
+        if (fetchedPaymentId && client) 
+        {
+            try 
+            {
+                const payment = new Payment(client);
+                const paymentData = await payment.get({ id: fetchedPaymentId });
+                mpPaymentStatus = paymentData.status;
+                fetchedPaymentId = String(paymentData.id);
+            } 
+            catch (err) 
+            {
+                console.warn(`[SyncPayment] Error al consultar MP por paymentId ${fetchedPaymentId}:`, err.message || err);
+            }
+        }
+
+        // If paymentId was not saved or get() failed, search MP payments by external_reference (orderId)
+        if (!mpPaymentStatus && client) 
+        {
+            try 
+            {
+                const payment = new Payment(client);
+                const searchResult = await payment.search({
+                    options: {
+                        external_reference: String(order.id)
+                    }
+                });
+                const results = searchResult?.results || searchResult?.body?.results || [];
+                const approvedPayment = results.find(p => p.status === 'approved');
+                if (approvedPayment) 
+                {
+                    mpPaymentStatus = 'approved';
+                    fetchedPaymentId = String(approvedPayment.id);
+                } 
+                else if (results.length > 0) 
+                {
+                    const latest = results[0];
+                    mpPaymentStatus = latest.status;
+                    fetchedPaymentId = String(latest.id);
+                }
+            } 
+            catch (searchErr) 
+            {
+                console.warn(`[SyncPayment] Error buscando pagos en MP para orden ${order.id}:`, searchErr.message || searchErr);
+            }
+        }
+
+        if (mpPaymentStatus === 'approved') 
+        {
+            await sequelize.transaction(async (t) => {
+                await order.update({
+                    mpPaymentId: fetchedPaymentId ? String(fetchedPaymentId) : order.mpPaymentId,
+                    mpStatus: 'approved',
+                    status: 'paid',
+                }, { transaction: t });
+
+                const orderItems = order.orderItems || await OrderItem.findAll({ where: { orderId: order.id }, transaction: t });
+                for (const item of orderItems) 
+                {
+                    if (item.type === 'ticket' && item.seats && Array.isArray(item.seats) && item.seats.length > 0) 
+                    {
+                        await Seat.update(
+                            { status: 'Vendido' },
+                            { 
+                                where: { showingId: item.refId, label: item.seats },
+                                transaction: t 
+                            }
+                        );
+                    }
+                }
+            });
+            order.status = 'paid';
+            order.mpStatus = 'approved';
+            triggerPaymentSuccessEmail(order);
+        }
+    } 
+    catch (error) 
+    {
+        console.error(`[SyncPayment] Error en sincronización de orden ${order.id}:`, error);
+    }
+
+    return order;
+};
+
+
 export const handleWebhook = async (req, res) => 
 {
     try 
     {
-        const { type, data } = req.body;
+        const type = req.body?.type || req.query?.topic || req.query?.type;
+        const paymentId = req.body?.data?.id || req.query?.id || req.query?.['data.id'];
 
-        if (type === 'payment') 
+        if (type === 'payment' || req.body?.action?.startsWith('payment.')) 
         {
+            if (!paymentId) 
+            {
+                return res.sendStatus(200);
+            }
+
             if (!client) 
             {
                 console.error("Webhook recibido pero Mercado Pago no está configurado");
@@ -113,12 +228,12 @@ export const handleWebhook = async (req, res) =>
             }
 
             const payment = new Payment(client);
-            const paymentData = await payment.get({ id: data.id });
+            const paymentData = await payment.get({ id: paymentId });
 
             const orderId = paymentData.external_reference;
             const order = await Order.findByPk(orderId, { include: [OrderItem] });
 
-            if (order) 
+            if (order && order.status !== 'paid' && paymentData.status === 'approved') 
             {
                 const statusMap = {
                     approved: 'paid',
@@ -163,6 +278,10 @@ export const handleWebhook = async (req, res) =>
                         }
                     }
                 });
+
+                if (newStatus === 'paid') {
+                    triggerPaymentSuccessEmail(order);
+                }
             }
         }
 
@@ -173,6 +292,89 @@ export const handleWebhook = async (req, res) =>
     {
         console.error('webhook error:', error);
         return res.sendStatus(500);
+    }
+};
+
+
+export const verifyPayment = async (req, res) => 
+{
+    try 
+    {
+        const { orderId, paymentId, status: bodyStatus, collection_status: collectionStatus } = req.body;
+        const userId = req.user?.id;
+
+        if (!orderId) 
+        {
+            return res.status(400).json({ message: "orderId es requerido" });
+        }
+
+        const order = await Order.findByPk(orderId, { include: [OrderItem] });
+
+        if (!order) 
+        {
+            return res.status(404).json({ message: "Orden no encontrada" });
+        }
+
+        if (order.userId !== userId && req.user?.role !== 'admin' && req.user?.role !== 'sysadmin') 
+        {
+            return res.status(403).json({ message: "No autorizado" });
+        }
+
+        if (order.status === 'paid') 
+        {
+            return res.json({ message: "La orden ya fue pagada", order });
+        }
+
+        if (paymentId) 
+        {
+            order.mpPaymentId = String(paymentId);
+        }
+
+        await syncPendingOrderPayment(order);
+
+        const statusMap = {
+            approved: 'paid',
+            pending: 'pending',
+            in_process: 'pending',
+            rejected: 'failed',
+            cancelled: 'cancelled',
+        };
+        const fallbackStatus = bodyStatus || collectionStatus;
+        if (order.status !== 'paid' && fallbackStatus && statusMap[fallbackStatus] === 'paid') 
+        {
+            await sequelize.transaction(async (t) => {
+                await order.update({
+                    mpPaymentId: paymentId ? String(paymentId) : order.mpPaymentId,
+                    mpStatus: fallbackStatus,
+                    status: 'paid',
+                }, { transaction: t });
+
+                for (const item of order.orderItems) 
+                {
+                    if (item.type === 'ticket' && item.seats && Array.isArray(item.seats) && item.seats.length > 0) 
+                    {
+                        await Seat.update(
+                            { status: 'Vendido' },
+                            { 
+                                where: { showingId: item.refId, label: item.seats },
+                                transaction: t 
+                            }
+                        );
+                    }
+                }
+            });
+            order.status = 'paid';
+            triggerPaymentSuccessEmail(order);
+        }
+
+        const updatedOrder = await Order.findByPk(orderId);
+        return res.json({ message: "Verificación completada", order: updatedOrder });
+
+    } 
+    catch (error) 
+    {
+        console.error('verifyPayment error:', error);
+        return res.status(500).json({ message: 'Error al verificar el pago' });
     }
 };
 

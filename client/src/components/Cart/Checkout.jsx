@@ -46,23 +46,20 @@ export const Checkout = () =>
             try {
                 const prefData = await apiRequest("/payments/create-preference", "POST", { orderId: data.orderId }, token);
                 clearCart();
-                // Redirect to Mercado Pago checkout
-                if (prefData.initPoint) 
+                const paymentUrl = prefData.initPoint || prefData.sandboxInitPoint;
+                if (paymentUrl) 
                 {
-                    window.location.href = prefData.initPoint;
-                } 
-                else if (prefData.sandboxInitPoint) 
-                {
-                    window.location.href = prefData.sandboxInitPoint;
+                    window.location.href = paymentUrl;
+                    return;
                 } 
                 else 
                 {
-                    successToast("¡Pedido realizado con éxito!");
+                    errorToast("No se obtuvo enlace de pago de Mercado Pago.");
                 }
             } catch (prefErr) {
-                // If MP preference fails, still mark order as created
                 clearCart();
-                successToast("¡Pedido realizado! Podrás pagar después desde tu perfil.");
+                console.error("Error al crear preferencia de pago:", prefErr);
+                errorToast(prefErr.message || "Error al conectar con Mercado Pago.");
             }
 
             console.log("Order created:", data);
