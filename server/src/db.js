@@ -15,6 +15,34 @@ if (isTurso) {
       constructor(filename, mode, callback) {
         super(tursoUrl, mode, callback);
       }
+
+      all(...args) {
+        const callback = args[args.length - 1];
+        if (typeof callback === "function") {
+          const rest = args.slice(0, -1);
+          return super.all(...rest, (err, rows) => {
+            if (err) return callback(err);
+            const mutableRows = Array.isArray(rows)
+              ? rows.map((r) => (r && typeof r === "object" ? { ...r } : r))
+              : rows;
+            callback(null, mutableRows);
+          });
+        }
+        return super.all(...args);
+      }
+
+      get(...args) {
+        const callback = args[args.length - 1];
+        if (typeof callback === "function") {
+          const rest = args.slice(0, -1);
+          return super.get(...rest, (err, row) => {
+            if (err) return callback(err);
+            const mutableRow = row && typeof row === "object" ? { ...row } : row;
+            callback(null, mutableRow);
+          });
+        }
+        return super.get(...args);
+      }
     },
   };
 
