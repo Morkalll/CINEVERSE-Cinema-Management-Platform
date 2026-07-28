@@ -199,37 +199,40 @@ export default function SeatSelector({ rows = 5, seatsPerRow = 8, showingId, mov
                 </p>
             )}
 
-            <div className="seat-grid">
+            <div className="seat-grid-wrapper">
+                <div className="seat-grid">
 
-                {Array.from({ length: rows }).map((_, rowIndex) => 
-                (
-                    <div className="seat-row" key={rowIndex}>
+                    {Array.from({ length: rows }).map((_, rowIndex) => 
+                    (
+                        <div className="seat-row" key={rowIndex}>
 
-                        {Array.from({ length: seatsPerRow }).map((_, seatIndex) => 
-                        {
-                            const id = `${rowIndex + 1}-${seatIndex + 1}`;
-                            const isSelected = selected.includes(id);
-                            const isOccupied = occupied.includes(id);
+                            {Array.from({ length: seatsPerRow }).map((_, seatIndex) => 
+                            {
+                                const id = `${rowIndex + 1}-${seatIndex + 1}`;
+                                const isSelected = selected.includes(id);
+                                const isOccupied = occupied.includes(id);
 
-                            return (
+                                return (
 
-                                <div 
-                                    key={id} 
-                                    className={`seat ${isSelected ? "selected" : ""} ${isOccupied ? "occupied" : ""}`}
-                                    onClick={() => toggleSeat(rowIndex + 1, seatIndex + 1)}>
+                                    <div 
+                                        key={id} 
+                                        className={`seat ${isSelected ? "selected" : ""} ${isOccupied ? "occupied" : ""}`}
+                                        onClick={() => toggleSeat(rowIndex + 1, seatIndex + 1)}>
 
-                                    {seatIndex + 1}
+                                        {seatIndex + 1}
 
-                                </div>
-                            );
+                                    </div>
+                                );
 
-                        })}
+                            })}
 
-                    </div>
+                        </div>
 
-                ))}
+                    ))}
 
+                </div>
             </div>
+
 
 
             <div className="seat-status">

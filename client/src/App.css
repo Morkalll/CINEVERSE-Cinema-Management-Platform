@@ -1,9 +1,18 @@
 #root {
+  width: 100%;
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 80px 2rem 2rem 2rem;
   text-align: center;
+  box-sizing: border-box;
 }
+
+@media (max-width: 768px) {
+  #root {
+    padding: 70px 0.8rem 1.5rem 0.8rem;
+  }
+}
+
 
 .logo {
   height: 6em;

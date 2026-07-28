@@ -11,11 +11,13 @@
     border: 1px solid rgba(255, 255, 255, 0.05); 
     border-radius: 10px; 
     overflow: hidden; 
-    width: 250px;
+    width: 100%;
+    max-width: 280px;
     text-align: center;
-    margin: 20px; 
+    margin: 0 auto; 
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); 
     transition: all 0.3s ease-in-out; 
+    box-sizing: border-box;
 }
 
 .candy-card:hover {
@@ -23,6 +25,7 @@
     box-shadow: 0 15px 30px rgba(153, 0, 255, 0.3);
     border-color: rgba(153, 0, 255, 0.5);
 }
+
 
 .candy-image-container {
     height: 150px; 
