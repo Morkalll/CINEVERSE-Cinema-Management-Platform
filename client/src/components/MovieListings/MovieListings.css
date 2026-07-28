@@ -2,8 +2,10 @@
 .showcase {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 2rem;
-  padding: 2rem;
+  gap: 1.5rem;
+  padding: 1.5rem 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .showcase-title {
@@ -13,4 +15,24 @@
   background-clip: text;
   -webkit-text-fill-color: transparent;
   display: inline-block; 
+}
+
+@media (max-width: 992px) {
+  .showcase {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.2rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .showcase {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
+    padding: 0.8rem 0;
+  }
+
+  .showcase-title {
+    text-align: center;
+    font-size: 1.8rem;
+  }
 }
