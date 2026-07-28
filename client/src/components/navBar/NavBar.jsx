@@ -24,8 +24,8 @@ export const NavBar = () => {
         >
           {isOpen ? <X size={28} color="#ff00cc" /> : <Menu size={28} color="#ff00cc" />}
         </button>
-        <Link to="/" onClick={closeMenu}>
-          <img src={logo2} alt="Logo Cineverso" className="logo" />
+        <Link to="/" onClick={closeMenu} className="navbar-logo-link">
+          <img src={logo2} alt="Logo Cineverso" className="navbar-logo" />
         </Link>
       </div>
 

@@ -40,14 +40,30 @@
   gap: 1.5rem;
 }
 
-.logo {
-  height: 50px;
+.navbar-logo-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  max-height: 100%;
+}
+
+.navbar-logo {
+  height: 42px;
+  max-height: 42px;
+  max-width: 180px;
+  width: auto;
+  object-fit: contain;
+  padding: 0;
+  margin: 0;
+  display: block;
   transition: transform 0.3s ease;
 }
 
-.logo:hover {
-  transform: scale(1.08);
+.navbar-logo:hover {
+  transform: scale(1.05);
 }
+
+
 
 .nav-link {
   background: linear-gradient(90deg, #ff00cc, #9900ff);
@@ -181,8 +197,10 @@
     letter-spacing: 1px;
   }
   
-  .logo {
-    height: 38px;
+  .navbar-logo {
+    height: 34px;
+    max-height: 34px;
+    max-width: 130px;
   }
   
   .user-icon,
