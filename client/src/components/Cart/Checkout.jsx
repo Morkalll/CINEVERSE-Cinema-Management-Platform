@@ -4,6 +4,7 @@ import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
 import { successToast, errorToast } from "../../utils/toast";
 import { apiRequest } from "../../services/api";
+import "./Checkout.css";
 
 
 export const Checkout = () => 
@@ -79,55 +80,46 @@ export const Checkout = () =>
     if (!cart || cart.length === 0) 
     {
         return (
-            <div className="p-6 text-center">
-                
-                <h2 className="text-xl font-semibold mb-2">Tu carrito está vacío</h2>
-
+            <div className="checkout-container cart-empty-container">
+                <h2>Tu carrito está vacío</h2>
                 <p>Agrega productos o entradas antes de realizar la compra.</p>
-
             </div>
         );
     }
 
 
     return (
-        <div className="p-6 bg-gray-100 rounded-lg shadow-md max-w-3xl mx-auto mt-6">
+        <div className="checkout-container">
            
-            <h2 className="text-2xl font-bold mb-4 text-center">🛒 Tu Carrito</h2>
+            <h2 className="checkout-title">🛒 Tu Carrito</h2>
 
             <div>
                 
                 {cart.map((item) => (
 
-                    <div key={`${item.type}-${item.refId}`} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #eee" }}>
+                    <div key={`${item.type}-${item.refId}`} className="cart-item-row">
                         
-                        <div style={{ flex: 1 }}>
-
-                            <div style={{ fontWeight: 600 }}>{item.name}</div>
-                            
-
-                            <div style={{ fontSize: 13, color: "#666" }}>{item.type}</div>
-                            
-
+                        <div className="cart-item-info">
+                            <div className="cart-item-name">{item.name}</div>
+                            <div className="cart-item-type">{item.type}</div>
                         </div>
 
-                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div className="cart-item-controls">
                             
                             {item.type !== "ticket" ? (
                                 <>
-                                    <button onClick={() => decrement(item.refId, item.type, 1)} aria-label="Restar">-</button>
+                                    <button className="btn-qty" onClick={() => decrement(item.refId, item.type, 1)} aria-label="Restar">-</button>
                                     <div style={{ minWidth: 28, textAlign: "center" }}>{item.quantity}</div>
-                                    <button onClick={() => increment(item.refId, item.type, 1)} aria-label="Sumar">+</button>
+                                    <button className="btn-qty" onClick={() => increment(item.refId, item.type, 1)} aria-label="Sumar">+</button>
                                 </>
                             ) : (
-                                <div style={{ minWidth: 28, textAlign: "center" }}>{item.quantity}</div>
+                                <div style={{ minWidth: 28, textAlign: "center" }}>Cant: {item.quantity}</div>
                             )}
                             
 
-                            <div style={{ width: 90, textAlign: "right" }}>${(item.price * item.quantity).toFixed(2)}</div>
+                            <div className="cart-item-price">${(item.price * item.quantity).toFixed(2)}</div>
 
-
-                            <button onClick={() => { removeFromCart(item.refId, item.type); successToast("Producto eliminado"); }} style={{ marginLeft: 12 }}>Eliminar</button>
+                            <button className="btn-remove" onClick={() => { removeFromCart(item.refId, item.type); successToast("Producto eliminado"); }}>Eliminar</button>
                         
                         </div>
 
@@ -138,18 +130,14 @@ export const Checkout = () =>
             </div>
 
 
-            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 16, alignItems: "center" }}>
+            <div className="checkout-footer">
                 
                 <div>
-
-                    <button onClick={() => { clearCart(); successToast("Carrito vaciado"); }} style={{ marginRight: 8 }}>Vaciar carrito</button>
-                
+                    <button className="btn-clear" onClick={() => { clearCart(); successToast("Carrito vaciado"); }}>Vaciar carrito</button>
                 </div>
 
-                <div style={{ fontWeight: 700, fontSize: 18 }}>
-                    
+                <div className="checkout-total">
                     Total: ${total.toFixed(2)}
-                
                 </div>
 
             </div>
@@ -157,10 +145,8 @@ export const Checkout = () =>
 
             <div style={{ marginTop: 16 }}>
                
-                <button onClick={handleConfirm} disabled={submitting} style={{ width: "100%", padding: "10px 14px", background: submitting ? "#555" : "#0a0a0a", color: "#fff", borderRadius: 6 }}>
-                    
+                <button className="btn-checkout-confirm" onClick={handleConfirm} disabled={submitting}>
                     {submitting ? "Procesando..." : "Confirmar Pedido"}
-                
                 </button>
             
             </div>
@@ -170,3 +156,4 @@ export const Checkout = () =>
     );
 
 };
+
