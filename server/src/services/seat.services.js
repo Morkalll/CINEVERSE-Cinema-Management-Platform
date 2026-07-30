@@ -79,7 +79,6 @@ export const reserveSeats = async (req, res) =>
             const seatsToReserve = await Seat.findAll({
                 where: { showingId, label: seats },
                 transaction: t,
-                lock: t.LOCK.UPDATE
             });
 
             if (seatsToReserve.length !== seats.length) {

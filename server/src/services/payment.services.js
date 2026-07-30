@@ -440,7 +440,7 @@ export const refundPayment = async (req, res) =>
             {
                 if (item.type === 'product') 
                 {
-                    const product = await Products.findByPk(item.refId, { transaction: t, lock: t.LOCK.UPDATE });
+                    const product = await Products.findByPk(item.refId, { transaction: t });
                     if (product) 
                     {
                         product.stock = (product.stock || 0) + item.quantity;
