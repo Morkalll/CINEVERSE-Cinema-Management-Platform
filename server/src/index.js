@@ -44,7 +44,7 @@ async function initDb() {
 
   initPromise = (async () => {
     try {
-      if (process.env.NODE_ENV === 'production' || TURSO_CONNECTION_URL) {
+      if (process.env.VERCEL || process.env.NODE_ENV === 'production' || TURSO_CONNECTION_URL) {
         await sequelize.sync();
       } else {
         await sequelize.query("PRAGMA foreign_keys = OFF;");
@@ -61,6 +61,8 @@ async function initDb() {
       console.log('✅ Database synchronized');
     } catch (error) {
       console.error("❌ Error on DB initialization:", error);
+      initPromise = null;
+      throw error;
     }
   })();
 
@@ -69,8 +71,12 @@ async function initDb() {
 
 // Middleware to ensure DB connection before handling API requests
 app.use(async (req, res, next) => {
-  await initDb();
-  next();
+  try {
+    await initDb();
+    next();
+  } catch (err) {
+    next(err);
+  }
 });
 
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
