@@ -53,9 +53,12 @@ if (isTurso) {
     logging: false,
   });
 } else {
+  if (process.env.VERCEL) {
+    console.warn("⚠️ Running on Vercel without Turso configuration. Using in-memory SQLite fallback.");
+  }
   sequelize = new Sequelize({
     dialect: "sqlite",
-    storage: DB_PATH,
+    storage: process.env.VERCEL ? ":memory:" : DB_PATH,
     logging: false,
   });
 }
