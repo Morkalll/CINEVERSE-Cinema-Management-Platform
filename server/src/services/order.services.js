@@ -285,9 +285,14 @@ export const cancelOrder = async (req, res) => {
     }
     
     // Restore stock and release seats
-    await sequelize.transaction(async (t) => {
-        await processOrderCancellation(order, false, t);
-    });
+    try {
+        await sequelize.transaction(async (t) => {
+            await processOrderCancellation(order, false, t);
+        });
+    } catch (txErr) {
+        console.warn("Turso/SQLite transaction fallback during cancellation:", txErr.message);
+        await processOrderCancellation(order, false, null);
+    }
     
     return res.status(200).json({ message: "Orden cancelada exitosamente", order });
   } catch (error) {
@@ -329,14 +334,17 @@ export const processOrderCancellation = async (order, isExpired = false, t = nul
     order.status = isExpired ? "expired" : "cancelled";
     await order.save({ transaction: t });
 
-    // Fire-and-forget email notification
-    const cancelUser = await User.findByPk(order.userId, { transaction: t });
-    if (cancelUser) 
-    {
-        sendOrderCancellationEmail(cancelUser.email, cancelUser.username, order.id, isExpired).catch(err => {
-            console.error("Error sending cancellation email:", err);
-        });
-    }
+    // Non-blocking email notification (prevents Vercel 10s timeout)
+    setImmediate(async () => {
+        try {
+            const cancelUser = await User.findByPk(order.userId);
+            if (cancelUser) {
+                await sendOrderCancellationEmail(cancelUser.email, cancelUser.username, order.id, isExpired);
+            }
+        } catch (emailErr) {
+            console.error("Error sending cancellation email:", emailErr);
+        }
+    });
 };
 
 export const cleanupExpiredOrders = async () => {
