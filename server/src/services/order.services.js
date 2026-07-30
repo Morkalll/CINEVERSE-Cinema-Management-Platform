@@ -47,13 +47,15 @@ export const createOrder = async (req, res) =>
                 throw new Error("Item mal formado");
             }
 
+            const refId = Number(item.refId);
+
             if (!item.quantity || item.quantity <= 0 || !Number.isInteger(item.quantity)) {
                 throw new Error(`Cantidad inválida para el item: ${item.quantity}`);
             }
 
             if (item.type === "ticket") 
             {
-                const show = await MovieShowing.findByPk(item.refId, {
+                const show = await MovieShowing.findByPk(refId, {
                     include: [{ model: Movie, as: 'movie' }],
                     transaction,
                 });
@@ -70,7 +72,7 @@ export const createOrder = async (req, res) =>
                     {
                         where: 
                         {
-                            showingId: item.refId,
+                            showingId: refId,
                             label: item.seats
                         },
                         transaction,
@@ -84,7 +86,7 @@ export const createOrder = async (req, res) =>
                     const alreadyReserved = seatsToReserve.filter(seat => seat.status !== 'Libre');
                     if (alreadyReserved.length > 0) 
                     {
-                        throw new Error(`Algunos asientos para la función ${item.refId} ya están ocupados.`);
+                        throw new Error(`Algunos asientos para la función ${refId} ya están ocupados.`);
                     }
 
                     await Seat.update(
@@ -92,7 +94,7 @@ export const createOrder = async (req, res) =>
                         { 
                             where: 
                             { 
-                                showingId: item.refId,
+                                showingId: refId,
                                 label: item.seats 
                             },
                             transaction
@@ -108,7 +110,7 @@ export const createOrder = async (req, res) =>
                 const orderItemData = {
                     orderId: createdOrder.id,
                     type: "ticket",
-                    refId: item.refId,
+                    refId: refId,
                     name: show.movie ? show.movie.title : "Película",
                     price,
                     quantity: item.quantity,
@@ -121,11 +123,11 @@ export const createOrder = async (req, res) =>
             
             else if (item.type === "product") 
             {
-                const product = await Products.findByPk(item.refId, { transaction });
+                const product = await Products.findByPk(refId, { transaction });
 
                 if (!product) 
                 {
-                    throw new Error(`Producto ${item.refId} no encontrado`);
+                    throw new Error(`Producto ${refId} no encontrado`);
                 }
 
                 if (product.stock < item.quantity) 
