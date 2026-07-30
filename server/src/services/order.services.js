@@ -56,7 +56,6 @@ export const createOrder = async (req, res) =>
                 const show = await MovieShowing.findByPk(item.refId, {
                     include: [{ model: Movie, as: 'movie' }],
                     transaction,
-                    lock: transaction.LOCK.UPDATE
                 });
 
                 if (!show) 
@@ -75,7 +74,6 @@ export const createOrder = async (req, res) =>
                             label: item.seats
                         },
                         transaction,
-                        lock: transaction.LOCK.UPDATE
                     });
 
                     if (seatsToReserve.length !== item.seats.length) 
@@ -123,7 +121,7 @@ export const createOrder = async (req, res) =>
             
             else if (item.type === "product") 
             {
-                const product = await Products.findByPk(item.refId, { transaction, lock: transaction.LOCK.UPDATE });
+                const product = await Products.findByPk(item.refId, { transaction });
 
                 if (!product) 
                 {
@@ -301,7 +299,7 @@ export const processOrderCancellation = async (order, isExpired = false, t = nul
     {
         if (item.type === "product") 
         {
-            const product = await Products.findByPk(item.refId, { transaction: t, lock: t ? t.LOCK.UPDATE : undefined });
+            const product = await Products.findByPk(item.refId, { transaction: t });
             if (product) 
             {
                 product.stock = (product.stock || 0) + item.quantity;
@@ -418,7 +416,7 @@ export const deleteOrder = async (req, res) =>
             {
                 try 
                 {
-                    const product = await Products.findByPk(item.refId, { transaction: transaction, lock: transaction.LOCK.UPDATE });
+                    const product = await Products.findByPk(item.refId, { transaction: transaction });
 
                     if (product) 
                     {
