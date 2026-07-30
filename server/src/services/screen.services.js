@@ -83,7 +83,7 @@ export const deleteScreen = async (req, res) =>
 
         if (!screenToDelete) 
         {
-            await transaction.rollback();
+            if (transaction) { try { await transaction.rollback(); } catch (e) {} }
             return res.status(404).json({ message: "Sala no encontrada" });
         }
 
@@ -116,7 +116,7 @@ export const deleteScreen = async (req, res) =>
     } 
     catch (error) 
     {
-        await transaction.rollback();
+        if (transaction) { try { await transaction.rollback(); } catch (e) {} }
         console.error("Error deleting screen:", error);
         return res.status(500).json({ message: error.message || "Error interno" });
     }

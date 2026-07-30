@@ -23,13 +23,13 @@ export const createOrder = async (req, res) =>
 
         if (!userId) 
         {    
-            await transaction.rollback();
+            if (transaction) { try { await transaction.rollback(); } catch (rollbackErr) { console.error("Rollback error:", rollbackErr.message); } }
             return res.status(401).json({ message: "No autenticado" });
         }
 
         if (!Array.isArray(items) || items.length === 0)
         { 
-            await transaction.rollback();
+            if (transaction) { try { await transaction.rollback(); } catch (rollbackErr) { console.error("Rollback error:", rollbackErr.message); } }
             return res.status(400).json({ message: "Carrito vacío" });
         }
         
@@ -186,7 +186,7 @@ export const createOrder = async (req, res) =>
     
     catch (err)
     {
-        await transaction.rollback();
+        if (transaction) { try { await transaction.rollback(); } catch (rollbackErr) { console.error("Rollback error:", rollbackErr.message); } }
         console.error("createOrder error:", err);
         return res.status(400).json({ message: err.message || "Error interno del servidor" });
     }
@@ -392,13 +392,13 @@ export const deleteOrder = async (req, res) =>
 
         if (!userId) 
         {
-            await transaction.rollback();
+            if (transaction) { try { await transaction.rollback(); } catch (rollbackErr) { console.error("Rollback error:", rollbackErr.message); } }
             return res.status(401).json({ message: "No autenticado" });
         }
 
         if (!orderId || Number.isNaN(orderId)) 
         {
-            await transaction.rollback();
+            if (transaction) { try { await transaction.rollback(); } catch (rollbackErr) { console.error("Rollback error:", rollbackErr.message); } }
             return res.status(400).json({ message: "OrderID inválido" });
         }
 
@@ -408,14 +408,14 @@ export const deleteOrder = async (req, res) =>
 
         if (!order) 
         {
-            await transaction.rollback();
+            if (transaction) { try { await transaction.rollback(); } catch (rollbackErr) { console.error("Rollback error:", rollbackErr.message); } }
             return res.status(404).json({ message: "Orden no encontrada" });
         }
 
         const requesterId = req.user.id;
         const requesterRole = req.user.role;
         if (order.userId !== requesterId && requesterRole !== 'admin' && requesterRole !== 'sysadmin') {
-            await transaction.rollback();
+            if (transaction) { try { await transaction.rollback(); } catch (rollbackErr) { console.error("Rollback error:", rollbackErr.message); } }
             return res.status(403).json({ message: "No tienes permiso para eliminar esta orden" });
         }
 
@@ -505,7 +505,7 @@ export const deleteOrder = async (req, res) =>
     
     catch (err) 
     {
-        await transaction.rollback();
+        if (transaction) { try { await transaction.rollback(); } catch (rollbackErr) { console.error("Rollback error:", rollbackErr.message); } }
         console.error("deleteOrder error:", err);
         return res.status(500).json({ message: err.message || "Error cancelando la orden" });
     }
