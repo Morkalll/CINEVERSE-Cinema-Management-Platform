@@ -173,7 +173,9 @@ export const createOrder = async (req, res) =>
         const orderUser = await User.findByPk(userId);
         if (orderUser) 
         {
-            sendOrderConfirmationEmail(orderUser.email, orderUser.username, { id: createdOrder.id, total, items: processedItems });
+            sendOrderConfirmationEmail(orderUser.email, orderUser.username, { id: createdOrder.id, total, items: processedItems }).catch(err => {
+                console.error("Error sending order confirmation email:", err);
+            });
         }
 
         return res.status(201).json({ orderId: createdOrder.id, total });
@@ -308,11 +310,15 @@ export const processOrderCancellation = async (order, isExpired = false, t = nul
         } 
         else if (item.type === "ticket") 
         {
-            if (item.seats && Array.isArray(item.seats) && item.seats.length > 0) 
+            let seatsList = item.seats;
+            if (typeof seatsList === 'string') {
+                try { seatsList = JSON.parse(seatsList); } catch { seatsList = []; }
+            }
+            if (seatsList && Array.isArray(seatsList) && seatsList.length > 0) 
             {
                 await Seat.update(
                     { status: 'Libre' },
-                    { where: { showingId: item.refId, label: item.seats }, transaction: t }
+                    { where: { showingId: item.refId, label: seatsList }, transaction: t }
                 );
             }
         }
@@ -325,7 +331,9 @@ export const processOrderCancellation = async (order, isExpired = false, t = nul
     const cancelUser = await User.findByPk(order.userId, { transaction: t });
     if (cancelUser) 
     {
-        sendOrderCancellationEmail(cancelUser.email, cancelUser.username, order.id, isExpired);
+        sendOrderCancellationEmail(cancelUser.email, cancelUser.username, order.id, isExpired).catch(err => {
+            console.error("Error sending cancellation email:", err);
+        });
     }
 };
 
@@ -476,7 +484,9 @@ export const deleteOrder = async (req, res) =>
         const deleteUser = await User.findByPk(order.userId);
         if (deleteUser) 
         {
-            sendOrderCancellationEmail(deleteUser.email, deleteUser.username, orderId);
+            sendOrderCancellationEmail(deleteUser.email, deleteUser.username, orderId).catch(err => {
+                console.error("Error sending cancellation email:", err);
+            });
         }
 
         return res.json({ success: true, message: "Orden cancelada", orderId: orderId });
