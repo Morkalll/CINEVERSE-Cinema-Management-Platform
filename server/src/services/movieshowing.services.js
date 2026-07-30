@@ -143,7 +143,7 @@ export const createMovieShowings = async (req, res) =>
         }
         catch (error)
         {
-            await transaction.rollback();
+            if (transaction) { try { await transaction.rollback(); } catch (e) {} }
             throw error;
         }
     } 
@@ -229,7 +229,7 @@ export const deleteMovieShowings = async (req, res) =>
         } 
         catch (error) 
         {
-            await transaction.rollback();
+            if (transaction) { try { await transaction.rollback(); } catch (e) {} }
             throw error;
         }
     } 
