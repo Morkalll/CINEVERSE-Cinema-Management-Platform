@@ -82,3 +82,5 @@ if (isTurso) {
 }
 
 export { sequelize };
+
+// v
