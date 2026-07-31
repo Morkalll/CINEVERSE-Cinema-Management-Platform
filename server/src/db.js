@@ -25,6 +25,7 @@ try {
           }
         } catch (_) {}
         this._db = new sqlite3.Database(this.tursoUrl, this.mode, callback);
+        this._db.uuid = "turso-conn-uuid";
       }
 
       _normalize(method, result) {
