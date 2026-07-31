@@ -39,6 +39,8 @@ try {
         } catch (_) {}
         this._db = new sqlite3.Database(this.tursoUrl, this.mode, callback);
         this._db.uuid = "turso-conn-uuid";
+        this._db.serialize = function(fn) { if (typeof fn === "function") fn(); };
+        this._db.parallelize = function(fn) { if (typeof fn === "function") fn(); };
       }
 
       _normalize(method, result) {
