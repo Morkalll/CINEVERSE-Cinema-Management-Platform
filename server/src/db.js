@@ -42,21 +42,23 @@ try {
         const callback = typeof args[args.length - 1] === "function" ? args[args.length - 1] : null;
         const restArgs = callback ? args.slice(0, -1) : args;
 
-        const handleResult = (err, result) => {
+        const self = this;
+        const handleResult = function (err, result) {
+          const cbContext = this;
           const errMsg = err ? String(err.message || err) : "";
           if (err && (errMsg.includes("ClosedError") || errMsg.includes("Client was closed") || errMsg.includes("Stream is closed"))) {
             console.warn(`🔄 Auto-healing Turso connection after error: ${errMsg}. Re-opening stream...`);
-            this.init();
-            return this._db[method](...restArgs, (retryErr, retryResult) => {
+            self.init();
+            return self._db[method](...restArgs, function (retryErr, retryResult) {
               if (callback) {
-                if (retryErr) return callback(retryErr);
-                callback(null, this._normalize(method, retryResult));
+                if (retryErr) return callback.call(this, retryErr);
+                callback.call(this, null, self._normalize(method, retryResult));
               }
             });
           }
           if (callback) {
-            if (err) return callback(err);
-            callback(null, this._normalize(method, result));
+            if (err) return callback.call(cbContext, err);
+            callback.call(cbContext, null, self._normalize(method, result));
           }
         };
 
@@ -90,10 +92,14 @@ try {
       const dummyTx = {
         id: 'dummy-tx',
         uuid: 'dummy-uuid-1234',
+        name: 'dummy-tx',
+        sequelize: sequelize,
+        connection: {},
         commit: async () => {},
         rollback: async () => {},
-        LOCK: { UPDATE: 'UPDATE' },
+        LOCK: { UPDATE: 'UPDATE', SHARE: 'SHARE' },
         finished: false,
+        afterCommit: (fn) => typeof fn === 'function' && fn(),
       };
       if (typeof callback === 'function') {
         return await callback(dummyTx);

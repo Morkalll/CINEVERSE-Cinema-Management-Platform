@@ -24,7 +24,7 @@ MovieShowing.belongsTo(Movie,
 
 
 
-User.hasMany(Order, { foreignKey: "userId" });
+User.hasMany(Order, { foreignKey: "userId", onDelete: "CASCADE" });
 Order.belongsTo(User, { foreignKey: "userId" });
 
 
@@ -57,7 +57,8 @@ Seat.belongsTo(MovieShowing,
 Order.hasMany(OrderItem, 
 {
   foreignKey: "orderId",
-  as: "orderItems"
+  as: "orderItems",
+  onDelete: "CASCADE"
 });
 
 OrderItem.belongsTo(Order, 
@@ -65,10 +66,6 @@ OrderItem.belongsTo(Order,
     foreignKey: "orderId",
     as: "order"
   });
-
-
-User.hasMany(Order, { foreignKey: "userId" });
-Order.belongsTo(User, { foreignKey: "userId" });
 
 
 OrderItem.belongsTo(MovieShowing, { 
