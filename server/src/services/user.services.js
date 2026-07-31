@@ -1,5 +1,7 @@
 
 import { User } from "../models/User.js";
+import { Order } from "../models/Order.js";
+import { OrderItem } from "../models/OrderItem.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../config.js";
@@ -44,6 +46,12 @@ export const deleteUser = async (req, res) =>
             return res.status(400).json({ message: "No puedes eliminar tu propia cuenta" });
         }
 
+        const userOrders = await Order.findAll({ where: { userId: user.id } });
+        for (const order of userOrders) {
+            await OrderItem.destroy({ where: { orderId: order.id } });
+            await order.destroy();
+        }
+
         await user.destroy();
 
         return res.status(200).json({ message: "Usuario eliminado correctamente" });
@@ -51,7 +59,7 @@ export const deleteUser = async (req, res) =>
     catch (error) 
     {
         console.error("Error deleteUser:", error);
-        return res.status(500).json({ message: "Error interno" });
+        return res.status(500).json({ message: error.message || "Error al eliminar usuario" });
     }
 };
 
