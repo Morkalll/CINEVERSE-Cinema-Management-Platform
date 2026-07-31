@@ -32,7 +32,7 @@ export const createPreference = async (req, res) =>
             return res.status(503).json({ message: "Mercado Pago no está configurado" });
         }
 
-        const order = await Order.findByPk(orderId, { include: [OrderItem] });
+        const order = await Order.findByPk(orderId, { include: [{ model: OrderItem, as: 'orderItems' }] });
 
         if (!order) 
         {
@@ -49,7 +49,8 @@ export const createPreference = async (req, res) =>
             return res.status(400).json({ message: "La orden ya fue pagada" });
         }
 
-        const items = order.orderItems.map(item => ({
+        const orderItems = order.orderItems || order.OrderItems || [];
+        const items = orderItems.map(item => ({
             title: item.name,
             unit_price: Number(item.price),
             quantity: Number(item.quantity),
@@ -102,7 +103,7 @@ const triggerPaymentSuccessEmail = async (order) => {
     try {
         const orderUser = await User.findByPk(order.userId);
         if (orderUser) {
-            const fullOrder = await Order.findByPk(order.id, { include: [OrderItem] });
+            const fullOrder = await Order.findByPk(order.id, { include: [{ model: OrderItem, as: 'orderItems' }] });
             sendPaymentSuccessEmail(orderUser.email, orderUser.username, fullOrder || order);
         }
     } catch (err) {
@@ -178,7 +179,7 @@ export const syncPendingOrderPayment = async (order) =>
                     status: 'paid',
                 }, { transaction: t });
 
-                const orderItems = order.orderItems || await OrderItem.findAll({ where: { orderId: order.id }, transaction: t });
+                const orderItems = order.orderItems || order.OrderItems || await OrderItem.findAll({ where: { orderId: order.id }, transaction: t });
                 for (const item of orderItems) 
                 {
                     if (item.type === 'ticket' && item.seats && Array.isArray(item.seats) && item.seats.length > 0) 
@@ -231,7 +232,7 @@ export const handleWebhook = async (req, res) =>
             const paymentData = await payment.get({ id: paymentId });
 
             const orderId = paymentData.external_reference;
-            const order = await Order.findByPk(orderId, { include: [OrderItem] });
+            const order = await Order.findByPk(orderId, { include: [{ model: OrderItem, as: 'orderItems' }] });
 
             if (order && order.status !== 'paid' && paymentData.status === 'approved') 
             {
@@ -252,8 +253,9 @@ export const handleWebhook = async (req, res) =>
                         status: newStatus,
                     }, { transaction: t });
 
+                    const orderItems = order.orderItems || order.OrderItems || [];
                     if (newStatus === 'paid') {
-                        for (const item of order.orderItems) {
+                        for (const item of orderItems) {
                             if (item.type === 'ticket' && item.seats && Array.isArray(item.seats) && item.seats.length > 0) {
                                 await Seat.update(
                                     { status: 'Vendido' },
@@ -265,7 +267,7 @@ export const handleWebhook = async (req, res) =>
                             }
                         }
                     } else if (newStatus === 'failed' || newStatus === 'cancelled') {
-                        for (const item of order.orderItems) {
+                        for (const item of orderItems) {
                             if (item.type === 'ticket' && item.seats && Array.isArray(item.seats) && item.seats.length > 0) {
                                 await Seat.update(
                                     { status: 'Libre' },
@@ -308,7 +310,7 @@ export const verifyPayment = async (req, res) =>
             return res.status(400).json({ message: "orderId es requerido" });
         }
 
-        const order = await Order.findByPk(orderId, { include: [OrderItem] });
+        const order = await Order.findByPk(orderId, { include: [{ model: OrderItem, as: 'orderItems' }] });
 
         if (!order) 
         {
@@ -349,7 +351,8 @@ export const verifyPayment = async (req, res) =>
                     status: 'paid',
                 }, { transaction: t });
 
-                for (const item of order.orderItems) 
+                const orderItems = order.orderItems || order.OrderItems || [];
+                for (const item of orderItems) 
                 {
                     if (item.type === 'ticket' && item.seats && Array.isArray(item.seats) && item.seats.length > 0) 
                     {
@@ -386,7 +389,7 @@ export const refundPayment = async (req, res) =>
         const { orderId } = req.params;
         const userId = req.user?.id;
 
-        const order = await Order.findByPk(orderId, { include: [OrderItem] });
+        const order = await Order.findByPk(orderId, { include: [{ model: OrderItem, as: 'orderItems' }] });
 
         if (!order) 
         {
@@ -436,7 +439,8 @@ export const refundPayment = async (req, res) =>
 
         // Restore stock and release seats
         await sequelize.transaction(async (t) => {
-            for (const item of order.orderItems) 
+            const orderItems = order.orderItems || order.OrderItems || [];
+            for (const item of orderItems) 
             {
                 if (item.type === 'product') 
                 {

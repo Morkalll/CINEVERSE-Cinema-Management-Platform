@@ -10,187 +10,173 @@ import { Movie } from "../models/Movie.js";
 import { sendOrderConfirmationEmail, sendOrderCancellationEmail } from './email.services.js';
 import { syncPendingOrderPayment } from './payment.services.js';
 
+const safeSendEmail = (fn) => {
+    Promise.resolve().then(() => fn()).catch(err => {
+        console.error("Non-blocking email error:", err?.message || err);
+    });
+};
+
 let isCleanupRunning = false;
 
-export const createOrder = async (req, res) => 
-{
-    const transaction = await sequelize.transaction();
+const runOrderCreation = async (req, res, transaction = null) => {
+    const txOpt = transaction ? { transaction } : {};
+    const userId = req.user?.id;
+    const { items } = req.body;
 
-    try 
-    {
-        const userId = req.user?.id;
-        const { items } = req.body;
+    if (!userId) {
+        if (transaction) { try { await transaction.rollback(); } catch {} }
+        return res.status(401).json({ message: "No autenticado" });
+    }
 
-        if (!userId) 
-        {    
-            if (transaction) { try { await transaction.rollback(); } catch (rollbackErr) { console.error("Rollback error:", rollbackErr.message); } }
-            return res.status(401).json({ message: "No autenticado" });
+    if (!Array.isArray(items) || items.length === 0) {
+        if (transaction) { try { await transaction.rollback(); } catch {} }
+        return res.status(400).json({ message: "Carrito vacío" });
+    }
+
+    let total = 0;
+    const processedItems = [];
+
+    const createdOrder = await Order.create({ userId, total: 0 }, txOpt);
+
+    for (const item of items) {
+        if (!item.type || !item.refId || !item.quantity) {
+            throw new Error("Item mal formado");
         }
 
-        if (!Array.isArray(items) || items.length === 0)
-        { 
-            if (transaction) { try { await transaction.rollback(); } catch (rollbackErr) { console.error("Rollback error:", rollbackErr.message); } }
-            return res.status(400).json({ message: "Carrito vacío" });
+        const refId = Number(item.refId);
+
+        if (!item.quantity || item.quantity <= 0 || !Number.isInteger(item.quantity)) {
+            throw new Error(`Cantidad inválida para el item: ${item.quantity}`);
         }
-        
 
-        let total = 0;
-        const processedItems = [];
+        if (item.type === "ticket") {
+            const show = await MovieShowing.findByPk(refId, {
+                include: [{ model: Movie, as: 'movie' }],
+                ...txOpt,
+            });
 
-        const createdOrder = await Order.create({ userId, total: 0 }, { transaction });
-
-
-        for (const item of items) 
-        {
-            if (!item.type || !item.refId || !item.quantity) 
-            {
-                throw new Error("Item mal formado");
+            if (!show) {
+                throw new Error("Función no encontrada");
             }
 
-            const refId = Number(item.refId);
-
-            if (!item.quantity || item.quantity <= 0 || !Number.isInteger(item.quantity)) {
-                throw new Error(`Cantidad inválida para el item: ${item.quantity}`);
-            }
-
-            if (item.type === "ticket") 
-            {
-                const show = await MovieShowing.findByPk(refId, {
-                    include: [{ model: Movie, as: 'movie' }],
-                    transaction,
+            if (item.seats && Array.isArray(item.seats) && item.seats.length > 0) {
+                const seatsToReserve = await Seat.findAll({
+                    where: {
+                        showingId: refId,
+                        label: item.seats
+                    },
+                    ...txOpt,
                 });
 
-                if (!show) 
-                {        
-                    throw new Error("Función no encontrada");          
-                }    
+                if (seatsToReserve.length !== item.seats.length) {
+                    throw new Error("Algunos asientos no existen");
+                }
 
+                const alreadyReserved = seatsToReserve.filter(seat => seat.status !== 'Libre');
+                if (alreadyReserved.length > 0) {
+                    throw new Error(`Algunos asientos para la función ${refId} ya están ocupados.`);
+                }
 
-                if (item.seats && Array.isArray(item.seats) && item.seats.length > 0) 
-                {
-                    const seatsToReserve = await Seat.findAll(
+                await Seat.update(
+                    { status: 'Reservado' },
                     {
-                        where: 
-                        {
+                        where: {
                             showingId: refId,
                             label: item.seats
                         },
-                        transaction,
-                    });
-
-                    if (seatsToReserve.length !== item.seats.length) 
-                    {
-                        throw new Error("Algunos asientos no existen");
+                        ...txOpt,
                     }
-
-                    const alreadyReserved = seatsToReserve.filter(seat => seat.status !== 'Libre');
-                    if (alreadyReserved.length > 0) 
-                    {
-                        throw new Error(`Algunos asientos para la función ${refId} ya están ocupados.`);
-                    }
-
-                    await Seat.update(
-                        { status: 'Reservado' },
-                        { 
-                            where: 
-                            { 
-                                showingId: refId,
-                                label: item.seats 
-                            },
-                            transaction
-                        }
-                    );
-                }
-
-                const price = parseFloat(show.ticketPrice);
-
-                total += price * item.quantity;
-
-
-                const orderItemData = {
-                    orderId: createdOrder.id,
-                    type: "ticket",
-                    refId: refId,
-                    name: show.movie ? show.movie.title : "Película",
-                    price,
-                    quantity: item.quantity,
-                    seats: item.seats || null,
-                };
-                await OrderItem.create(orderItemData, { transaction });
-                processedItems.push(orderItemData);
-
-            } 
-            
-            else if (item.type === "product") 
-            {
-                const product = await Products.findByPk(refId, { transaction });
-
-                if (!product) 
-                {
-                    throw new Error(`Producto ${refId} no encontrado`);
-                }
-
-                if (product.stock < item.quantity) 
-                {
-                    throw new Error(`Stock insuficiente para ${product.name}`);
-                }
-
-
-                const price = parseFloat(product.price);
-
-                total += price * item.quantity;
-
-                product.stock = product.stock - item.quantity;
-
-                await product.save({ transaction });
-
-
-                const orderItemData = {
-                    orderId: createdOrder.id,
-                    type: "product",
-                    refId: item.refId,
-                    name: product.name,
-                    price,
-                    quantity: item.quantity,
-                };
-                await OrderItem.create(orderItemData, { transaction });
-                processedItems.push(orderItemData);
-
-            } 
-            
-            else 
-            {
-                throw new Error("Tipo de item inválido");
+                );
             }
 
+            const price = parseFloat(show.ticketPrice);
+            total += price * item.quantity;
+
+            const orderItemData = {
+                orderId: createdOrder.id,
+                type: "ticket",
+                refId: refId,
+                name: show.movie ? show.movie.title : "Película",
+                price,
+                quantity: item.quantity,
+                seats: item.seats || null,
+            };
+            await OrderItem.create(orderItemData, txOpt);
+            processedItems.push(orderItemData);
+
+        } else if (item.type === "product") {
+            const findOpt = transaction ? { transaction, lock: 'UPDATE' } : {};
+            const product = await Products.findByPk(refId, findOpt);
+
+            if (!product) {
+                throw new Error(`Producto ${refId} no encontrado`);
+            }
+
+            if (product.stock < item.quantity) {
+                throw new Error(`Stock insuficiente para ${product.name}`);
+            }
+
+            const price = parseFloat(product.price);
+            total += price * item.quantity;
+            product.stock = product.stock - item.quantity;
+
+            await product.save(txOpt);
+
+            const orderItemData = {
+                orderId: createdOrder.id,
+                type: "product",
+                refId: item.refId,
+                name: product.name,
+                price,
+                quantity: item.quantity,
+            };
+            await OrderItem.create(orderItemData, txOpt);
+            processedItems.push(orderItemData);
+
+        } else {
+            throw new Error("Tipo de item inválido");
         }
+    }
 
-        createdOrder.total = total;
+    createdOrder.total = total;
+    await createdOrder.save(txOpt);
 
-        await createdOrder.save({ transaction });
-
+    if (transaction) {
         await transaction.commit();
+    }
 
-        // Fire-and-forget email notification
-        const orderUser = await User.findByPk(userId);
-        if (orderUser) 
-        {
-            sendOrderConfirmationEmail(orderUser.email, orderUser.username, { id: createdOrder.id, total, items: processedItems }).catch(err => {
-                console.error("Error sending order confirmation email:", err);
-            });
+    // Fire-and-forget email notification
+    const orderUser = await User.findByPk(userId);
+    if (orderUser) {
+        safeSendEmail(() => sendOrderConfirmationEmail(orderUser.email, orderUser.username, { id: createdOrder.id, total, items: processedItems }));
+    }
+
+    return res.status(201).json({ orderId: createdOrder.id, total });
+};
+
+export const createOrder = async (req, res) => {
+    let transaction = null;
+    try {
+        transaction = await sequelize.transaction();
+        return await runOrderCreation(req, res, transaction);
+    } catch (err) {
+        if (transaction) { try { await transaction.rollback(); } catch {} }
+        if (res.headersSent) return;
+        
+        const isClientClosed = err.message?.includes('ClosedError') || err.message?.includes('Client was closed') || err.message?.includes('stream is closed');
+        if (isClientClosed) {
+            console.warn("Turso transaction error, executing fallback without transaction stream:", err.message);
+            try {
+                return await runOrderCreation(req, res, null);
+            } catch (fallbackErr) {
+                console.error("createOrder fallback error:", fallbackErr);
+                return res.status(400).json({ message: fallbackErr.message || "Error interno del servidor" });
+            }
         }
 
-        return res.status(201).json({ orderId: createdOrder.id, total });
-
-    } 
-    
-    catch (err)
-    {
-        if (transaction) { try { await transaction.rollback(); } catch (rollbackErr) { console.error("Rollback error:", rollbackErr.message); } }
         console.error("createOrder error:", err);
         return res.status(400).json({ message: err.message || "Error interno del servidor" });
     }
-
 };
 
 
@@ -243,7 +229,7 @@ export const getAllOrders = async (req, res) =>
     {
         const orders = await Order.findAll(
         {
-            include: [OrderItem],
+            include: [{ model: OrderItem, as: "orderItems" }],
             order: [["createdAt", "DESC"]],
         });
 
@@ -335,14 +321,10 @@ export const processOrderCancellation = async (order, isExpired = false, t = nul
     await order.save({ transaction: t });
 
     // Non-blocking email notification (prevents Vercel 10s timeout)
-    setImmediate(async () => {
-        try {
-            const cancelUser = await User.findByPk(order.userId);
-            if (cancelUser) {
-                await sendOrderCancellationEmail(cancelUser.email, cancelUser.username, order.id, isExpired);
-            }
-        } catch (emailErr) {
-            console.error("Error sending cancellation email:", emailErr);
+    safeSendEmail(async () => {
+        const cancelUser = await User.findByPk(order.userId);
+        if (cancelUser) {
+            await sendOrderCancellationEmail(cancelUser.email, cancelUser.username, order.id, isExpired);
         }
     });
 };
@@ -365,10 +347,14 @@ export const cleanupExpiredOrders = async () => {
         });
 
         for (const order of expiredOrders) {
-            await sequelize.transaction(async (t) => {
-                await processOrderCancellation(order, true, t);
-            });
-            console.log(`Orden expirada cancelada automáticamente: #${order.id}`);
+            try {
+                await sequelize.transaction(async (t) => {
+                    await processOrderCancellation(order, true, t);
+                });
+                console.log(`Orden expirada cancelada automáticamente: #${order.id}`);
+            } catch (orderCancelErr) {
+                console.error(`Error cancelando orden expirada #${order.id}:`, orderCancelErr);
+            }
         }
     } catch (err) {
         console.error("Error en cleanupExpiredOrders:", err);
@@ -494,9 +480,7 @@ export const deleteOrder = async (req, res) =>
         const deleteUser = await User.findByPk(order.userId);
         if (deleteUser) 
         {
-            sendOrderCancellationEmail(deleteUser.email, deleteUser.username, orderId).catch(err => {
-                console.error("Error sending cancellation email:", err);
-            });
+            safeSendEmail(() => sendOrderCancellationEmail(deleteUser.email, deleteUser.username, orderId));
         }
 
         return res.json({ success: true, message: "Orden cancelada", orderId: orderId });
