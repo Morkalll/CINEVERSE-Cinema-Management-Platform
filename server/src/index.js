@@ -35,6 +35,15 @@ app.use(cors({
   credentials: true,
 }));
 
+// Global process error handlers to prevent silent crashes
+process.on('unhandledRejection', (reason) => {
+  console.error('⚠️ Unhandled Promise Rejection:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('⚠️ Uncaught Exception:', err);
+});
+
 let isInitialized = false;
 let initPromise = null;
 
@@ -47,15 +56,20 @@ async function initDb() {
       if (process.env.VERCEL || process.env.NODE_ENV === 'production' || TURSO_CONNECTION_URL) {
         await sequelize.sync();
       } else {
-        await sequelize.query("PRAGMA foreign_keys = OFF;");
-        const [backupTables] = await sequelize.query(
-          "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE '%_backup';"
-        );
-        for (const { name } of backupTables) {
-          await sequelize.query(`DROP TABLE IF EXISTS \`${name}\`;`);
+        try {
+          await sequelize.sync();
+        } catch (syncErr) {
+          console.warn("⚠️ Database sync retry with cleanup:", syncErr.message);
+          await sequelize.query("PRAGMA foreign_keys = OFF;");
+          const [backupTables] = await sequelize.query(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE '%_backup';"
+          );
+          for (const { name } of backupTables) {
+            await sequelize.query(`DROP TABLE IF EXISTS \`${name}\`;`);
+          }
+          await sequelize.sync();
+          await sequelize.query("PRAGMA foreign_keys = ON;");
         }
-        await sequelize.sync({ alter: true });
-        await sequelize.query("PRAGMA foreign_keys = ON;");
       }
       isInitialized = true;
       console.log('✅ Database synchronized');
