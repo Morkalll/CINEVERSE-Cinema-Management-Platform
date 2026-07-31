@@ -6,74 +6,108 @@ const isTurso = Boolean((process.env.VERCEL || process.env.NODE_ENV === 'product
 
 let sequelize;
 
-if (isTurso) {
-  const tursoUrl = `${TURSO_CONNECTION_URL}?authToken=${TURSO_AUTH_TOKEN}`;
+try {
+  if (isTurso) {
+    const tursoUrl = `${TURSO_CONNECTION_URL}?authToken=${TURSO_AUTH_TOKEN}`;
 
-  const customSqlite3 = {
-    ...sqlite3,
-    Database: class extends sqlite3.Database {
+    class TursoDatabase {
       constructor(filename, mode, callback) {
-        super(tursoUrl, mode, callback);
+        this.tursoUrl = tursoUrl;
+        this.mode = mode;
         this.uuid = "turso-conn-uuid";
+        this.init(callback);
       }
 
-      all(...args) {
-        const callback = args[args.length - 1];
-        if (typeof callback === "function") {
-          const rest = args.slice(0, -1);
-          return super.all(...rest, (err, rows) => {
-            if (err) return callback(err);
-            const mutableRows = Array.isArray(rows)
-              ? rows.map((r) => (r && typeof r === "object" ? { ...r } : r))
-              : rows;
-            callback(null, mutableRows);
-          });
+      init(callback) {
+        try {
+          if (this._db) {
+            try { this._db.close(); } catch (_) {}
+          }
+        } catch (_) {}
+        this._db = new sqlite3.Database(this.tursoUrl, this.mode, callback);
+      }
+
+      _normalize(method, result) {
+        if (method === "all") {
+          return Array.isArray(result) ? result.map((r) => (r && typeof r === "object" ? { ...r } : r)) : result;
         }
-        return super.all(...args);
-      }
-
-      get(...args) {
-        const callback = args[args.length - 1];
-        if (typeof callback === "function") {
-          const rest = args.slice(0, -1);
-          return super.get(...rest, (err, row) => {
-            if (err) return callback(err);
-            const mutableRow = row && typeof row === "object" ? { ...row } : row;
-            callback(null, mutableRow);
-          });
+        if (method === "get") {
+          return result && typeof result === "object" ? { ...result } : result;
         }
-        return super.get(...args);
+        return result;
       }
-    },
-  };
 
-  sequelize = new Sequelize({
-    dialect: "sqlite",
-    dialectModule: customSqlite3,
-    storage: ":memory:",
-    logging: false,
-  });
+      _execWithRetry(method, args) {
+        const callback = typeof args[args.length - 1] === "function" ? args[args.length - 1] : null;
+        const restArgs = callback ? args.slice(0, -1) : args;
 
-  // Override transaction for Turso to prevent @libsql/sqlite3 from closing connection streams on 'BEGIN TRANSACTION'
-  sequelize.transaction = async function (options, autoCallback) {
-    const callback = typeof options === 'function' ? options : autoCallback;
-    const dummyTx = {
-      id: 'dummy-tx',
-      uuid: 'dummy-uuid-1234',
-      commit: async () => {},
-      rollback: async () => {},
-      LOCK: { UPDATE: 'UPDATE' },
-      finished: false,
+        const handleResult = (err, result) => {
+          const errMsg = err ? String(err.message || err) : "";
+          if (err && (errMsg.includes("ClosedError") || errMsg.includes("Client was closed") || errMsg.includes("Stream is closed"))) {
+            console.warn(`🔄 Auto-healing Turso connection after error: ${errMsg}. Re-opening stream...`);
+            this.init();
+            return this._db[method](...restArgs, (retryErr, retryResult) => {
+              if (callback) {
+                if (retryErr) return callback(retryErr);
+                callback(null, this._normalize(method, retryResult));
+              }
+            });
+          }
+          if (callback) {
+            if (err) return callback(err);
+            callback(null, this._normalize(method, result));
+          }
+        };
+
+        return this._db[method](...restArgs, handleResult);
+      }
+
+      all(...args) { return this._execWithRetry("all", args); }
+      get(...args) { return this._execWithRetry("get", args); }
+      run(...args) { return this._execWithRetry("run", args); }
+      exec(...args) { return this._execWithRetry("exec", args); }
+      serialize(fn) { if (typeof fn === "function") fn(); }
+      parallelize(fn) { if (typeof fn === "function") fn(); }
+      close(cb) { if (typeof cb === "function") cb(null); }
     };
-    if (typeof callback === 'function') {
-      return await callback(dummyTx);
-    }
-    return dummyTx;
-  };
-} else {
-  if (process.env.VERCEL) {
-    console.warn("⚠️ Running on Vercel without Turso configuration. Using in-memory SQLite fallback.");
+
+    const customSqlite3 = {
+      ...sqlite3,
+      Database: TursoDatabase,
+    };
+
+    sequelize = new Sequelize({
+      dialect: "sqlite",
+      dialectModule: customSqlite3,
+      storage: ":memory:",
+      logging: false,
+    });
+
+    // Override transaction for Turso to prevent @libsql/sqlite3 from closing connection streams on 'BEGIN TRANSACTION'
+    sequelize.transaction = async function (options, autoCallback) {
+      const callback = typeof options === 'function' ? options : autoCallback;
+      const dummyTx = {
+        id: 'dummy-tx',
+        uuid: 'dummy-uuid-1234',
+        commit: async () => {},
+        rollback: async () => {},
+        LOCK: { UPDATE: 'UPDATE' },
+        finished: false,
+      };
+      if (typeof callback === 'function') {
+        return await callback(dummyTx);
+      }
+      return dummyTx;
+    };
+  } else {
+    sequelize = new Sequelize({
+      dialect: "sqlite",
+      storage: process.env.VERCEL ? ":memory:" : DB_PATH,
+      logging: false,
+    });
   }
+} catch (dbInitErr) {
+  console.error("⚠️ Failed to initialize Turso custom dialect, falling back to standard SQLite:", dbInitErr.message);
   sequelize = new Sequelize({
     dialect: "sqlite",
     storage: process.env.VERCEL ? ":memory:" : DB_PATH,
