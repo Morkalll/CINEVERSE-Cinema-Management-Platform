@@ -25,5 +25,11 @@ export const EMAIL_FROM = process.env.EMAIL_FROM || '"CineVerse" <noreply@cineve
 export const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN || '';
 export const MP_PUBLIC_KEY = process.env.MP_PUBLIC_KEY || '';
 export const MP_WEBHOOK_URL = process.env.MP_WEBHOOK_URL || '';
-export const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+export const FRONTEND_URL = (() => {
+    const url = (process.env.FRONTEND_URL || 'http://localhost:5173').trim();
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        return `https://${url}`;
+    }
+    return url;
+})();
 

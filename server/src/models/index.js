@@ -56,12 +56,14 @@ Seat.belongsTo(MovieShowing,
 
 Order.hasMany(OrderItem, 
 {
-  foreignKey: "orderId" 
+  foreignKey: "orderId",
+  as: "orderItems"
 });
 
 OrderItem.belongsTo(Order, 
   { 
-    foreignKey: "orderId"
+    foreignKey: "orderId",
+    as: "order"
   });
 
 
