@@ -8,6 +8,7 @@ import * as authServices from '../services/auth.services.js';
 
 vi.mock('../services/user.services.js', () => ({
     findAllUsers: vi.fn((req, res) => res.status(200).json({ msg: 'findAllUsers' })),
+    getUser: vi.fn((req, res) => res.status(200).json({ msg: 'getUser' })),
     updateUser: vi.fn((req, res) => res.status(200).json({ msg: 'updateUser' })),
     deleteUser: vi.fn((req, res) => res.status(200).json({ msg: 'deleteUser' }))
 }));
