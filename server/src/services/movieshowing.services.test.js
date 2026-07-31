@@ -187,6 +187,14 @@ describe('MovieShowing Services', () => {
             OrderItem.count.mockResolvedValue(1);
 
             await deleteMovieShowings(req, res);
+            expect(OrderItem.count).toHaveBeenCalledWith({
+                where: { type: "ticket", refId: 1 },
+                include: [{
+                    model: expect.anything(),
+                    as: "order",
+                    where: { status: ["created", "pending", "paid"] }
+                }]
+            });
             expect(res.status).toHaveBeenCalledWith(400);
             expect(res.json).toHaveBeenCalledWith({ message: "No se puede eliminar la función porque tiene reservas activas o pagadas" });
         });

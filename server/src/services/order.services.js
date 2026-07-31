@@ -256,8 +256,8 @@ export const cancelOrder = async (req, res) => {
       return res.status(404).json({ message: "Orden no encontrada" });
     }
     
-    if (order.status === "cancelled") {
-      return res.status(400).json({ message: "La orden ya está cancelada" });
+    if (order.status === "cancelled" || order.status === "expired") {
+      return res.status(200).json({ message: "La orden ya se encuentra cancelada o expirada", order });
     }
 
     const isOwner = req.user.id === order.userId;

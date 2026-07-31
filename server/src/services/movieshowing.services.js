@@ -205,6 +205,7 @@ export const deleteMovieShowings = async (req, res) =>
             },
             include: [{
                 model: Order,
+                as: "order",
                 where: {
                     status: ["created", "pending", "paid"]
                 }
