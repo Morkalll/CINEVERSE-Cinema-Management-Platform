@@ -2,6 +2,19 @@ import { Sequelize } from "sequelize";
 import sqlite3 from "@libsql/sqlite3";
 import { DB_PATH, TURSO_CONNECTION_URL, TURSO_AUTH_TOKEN } from "./config.js";
 
+if (sqlite3.Database) {
+  if (!sqlite3.Database.prototype.serialize) {
+    sqlite3.Database.prototype.serialize = function (fn) {
+      if (typeof fn === "function") fn();
+    };
+  }
+  if (!sqlite3.Database.prototype.parallelize) {
+    sqlite3.Database.prototype.parallelize = function (fn) {
+      if (typeof fn === "function") fn();
+    };
+  }
+}
+
 const isTurso = Boolean((process.env.VERCEL || process.env.NODE_ENV === 'production' || process.env.USE_TURSO === 'true') && TURSO_CONNECTION_URL && TURSO_AUTH_TOKEN);
 
 let sequelize;
