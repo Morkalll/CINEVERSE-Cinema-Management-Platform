@@ -194,6 +194,7 @@ export const getUserOrders = async (req, res) =>
             include: [
             {
                 model: OrderItem,
+                as: "orderItems",
                 attributes: ["id", "type", "refId", "name", "price", "quantity", "seats"]
             }],
 
