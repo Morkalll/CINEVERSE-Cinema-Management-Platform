@@ -6,8 +6,76 @@ import { OrderItem } from '../models/OrderItem.js';
 import { User } from '../models/User.js';
 import { Seat } from '../models/Seats.js';
 import { Products } from '../models/Products.js';
+import { MovieShowing } from '../models/MovieShowing.js';
 import { sendRefundEmail, sendPaymentSuccessEmail } from './email.services.js';
 import { sequelize } from '../db.js';
+
+
+export const parseSeats = (seats) => {
+    if (!seats) return [];
+    if (Array.isArray(seats)) return seats.map(s => String(s).trim()).filter(Boolean);
+    if (typeof seats === 'string') {
+        try {
+            const parsed = JSON.parse(seats);
+            if (Array.isArray(parsed)) return parsed.map(s => String(s).trim()).filter(Boolean);
+            if (typeof parsed === 'string') return [parsed.trim()].filter(Boolean);
+        } catch {
+            return seats.split(',').map(s => String(s).trim()).filter(Boolean);
+        }
+    }
+    return [];
+};
+
+
+export const processOrderRefund = async (orderInput, transaction) => {
+    let order = orderInput;
+    if (transaction && orderInput?.id) {
+        const freshOrder = await Order.findByPk(orderInput.id, {
+            include: [{ model: OrderItem, as: 'orderItems' }],
+            transaction,
+            lock: transaction.LOCK.UPDATE
+        });
+        if (freshOrder) {
+            order = freshOrder;
+        }
+    }
+
+    // Idempotency check: if order is already refunded, do nothing to prevent duplicate stock additions or seat releases
+    if (order.status === 'refunded') {
+        return order;
+    }
+
+    let orderItems = order.orderItems || order.OrderItems;
+    if (!orderItems || orderItems.length === 0) {
+        orderItems = await OrderItem.findAll({ where: { orderId: order.id }, transaction });
+    }
+
+    for (const item of (orderItems || [])) {
+        if (item.type === 'product') {
+            const product = await Products.findByPk(item.refId, { transaction });
+            if (product) {
+                product.stock = (product.stock || 0) + item.quantity;
+                await product.save({ transaction });
+            }
+        } else if (item.type === 'ticket') {
+            const seatLabels = parseSeats(item.seats);
+            if (seatLabels.length > 0) {
+                await Seat.update(
+                    { status: 'Libre' },
+                    { 
+                        where: { showingId: item.refId, label: seatLabels },
+                        transaction 
+                    }
+                );
+            }
+        }
+    }
+
+    await order.update({ status: 'refunded', mpStatus: 'refunded' }, { transaction });
+    order.status = 'refunded';
+    order.mpStatus = 'refunded';
+    return order;
+};
 
 
 const client = MP_ACCESS_TOKEN 
@@ -39,7 +107,7 @@ export const createPreference = async (req, res) =>
             return res.status(404).json({ message: "Orden no encontrada" });
         }
 
-        if (order.userId !== userId) 
+        if (String(order.userId) !== String(userId)) 
         {
             return res.status(403).json({ message: "No autorizado" });
         }
@@ -114,7 +182,7 @@ const triggerPaymentSuccessEmail = async (order) => {
 
 export const syncPendingOrderPayment = async (order) => 
 {
-    if (!order || order.status === 'paid' || order.status === 'cancelled' || order.status === 'expired' || order.status === 'refunded') 
+    if (!order || order.status === 'paid' || order.status === 'cancelled' || order.status === 'expired' || order.status === 'refunded' || order.status === 'refunding') 
     {
         return order;
     }
@@ -182,12 +250,13 @@ export const syncPendingOrderPayment = async (order) =>
                 const orderItems = order.orderItems || order.OrderItems || await OrderItem.findAll({ where: { orderId: order.id }, transaction: t });
                 for (const item of orderItems) 
                 {
-                    if (item.type === 'ticket' && item.seats && Array.isArray(item.seats) && item.seats.length > 0) 
+                    const seatLabels = parseSeats(item.seats);
+                    if (item.type === 'ticket' && seatLabels.length > 0) 
                     {
                         await Seat.update(
                             { status: 'Vendido' },
                             { 
-                                where: { showingId: item.refId, label: item.seats },
+                                where: { showingId: item.refId, label: seatLabels },
                                 transaction: t 
                             }
                         );
@@ -234,7 +303,7 @@ export const handleWebhook = async (req, res) =>
             const orderId = paymentData.external_reference;
             const order = await Order.findByPk(orderId, { include: [{ model: OrderItem, as: 'orderItems' }] });
 
-            if (order && order.status !== 'paid' && paymentData.status === 'approved') 
+            if (order) 
             {
                 const statusMap = {
                     approved: 'paid',
@@ -242,47 +311,97 @@ export const handleWebhook = async (req, res) =>
                     in_process: 'pending',
                     rejected: 'failed',
                     cancelled: 'cancelled',
+                    refunded: 'refunded',
+                    charged_back: 'refunded',
                 };
 
-                const newStatus = statusMap[paymentData.status] || order.status;
+                const newStatus = statusMap[paymentData.status];
 
-                await sequelize.transaction(async (t) => {
-                    await order.update({
-                        mpPaymentId: String(paymentData.id),
-                        mpStatus: paymentData.status,
-                        status: newStatus,
-                    }, { transaction: t });
+                if (newStatus) 
+                {
+                    await sequelize.transaction(async (t) => {
+                        const freshOrder = await Order.findByPk(orderId, {
+                            include: [{ model: OrderItem, as: 'orderItems' }],
+                            transaction: t,
+                            lock: t.LOCK.UPDATE
+                        });
 
-                    const orderItems = order.orderItems || order.OrderItems || [];
-                    if (newStatus === 'paid') {
-                        for (const item of orderItems) {
-                            if (item.type === 'ticket' && item.seats && Array.isArray(item.seats) && item.seats.length > 0) {
-                                await Seat.update(
-                                    { status: 'Vendido' },
-                                    { 
-                                        where: { showingId: item.refId, label: item.seats },
-                                        transaction: t 
+                        if (!freshOrder) return;
+
+                        if (newStatus === 'refunded') 
+                        {
+                            await processOrderRefund(freshOrder, t);
+                        } 
+                        else if (newStatus !== freshOrder.status && freshOrder.status !== 'refunding' && freshOrder.status !== 'refunded')
+                        {
+                            await freshOrder.update({
+                                mpPaymentId: String(paymentData.id),
+                                mpStatus: paymentData.status,
+                                status: newStatus,
+                            }, { transaction: t });
+
+                            let orderItems = freshOrder.orderItems || freshOrder.OrderItems;
+                            if (!orderItems || orderItems.length === 0) {
+                                orderItems = await OrderItem.findAll({ where: { orderId: freshOrder.id }, transaction: t });
+                            }
+
+                            if (newStatus === 'paid') 
+                            {
+                                for (const item of (orderItems || [])) 
+                                {
+                                    const seatLabels = parseSeats(item.seats);
+                                    if (item.type === 'ticket' && seatLabels.length > 0) 
+                                    {
+                                        await Seat.update(
+                                            { status: 'Vendido' },
+                                            { 
+                                                where: { showingId: item.refId, label: seatLabels },
+                                                transaction: t 
+                                            }
+                                        );
                                     }
-                                );
+                                }
+                            } 
+                            else if (newStatus === 'failed' || newStatus === 'cancelled') 
+                            {
+                                for (const item of (orderItems || [])) 
+                                {
+                                    const seatLabels = parseSeats(item.seats);
+                                    if (item.type === 'ticket' && seatLabels.length > 0) 
+                                    {
+                                        await Seat.update(
+                                            { status: 'Libre' },
+                                            { 
+                                                where: { showingId: item.refId, label: seatLabels },
+                                                transaction: t 
+                                            }
+                                        );
+                                    }
+                                }
                             }
                         }
-                    } else if (newStatus === 'failed' || newStatus === 'cancelled') {
-                        for (const item of orderItems) {
-                            if (item.type === 'ticket' && item.seats && Array.isArray(item.seats) && item.seats.length > 0) {
-                                await Seat.update(
-                                    { status: 'Libre' },
-                                    { 
-                                        where: { showingId: item.refId, label: item.seats },
-                                        transaction: t 
-                                    }
-                                );
+                    });
+
+                    if (newStatus === 'paid' && order.status !== 'paid') 
+                    {
+                        triggerPaymentSuccessEmail(order);
+                    }
+                    else if (newStatus === 'refunded' && order.status !== 'refunded')
+                    {
+                        try 
+                        {
+                            const refundUser = await User.findByPk(order.userId);
+                            if (refundUser) 
+                            {
+                                Promise.resolve(sendRefundEmail(refundUser.email, refundUser.username, order.id, order.total))
+                                    .catch(err => console.error("Non-blocking webhook refund email error:", err));
                             }
+                        } 
+                        catch (emailErr) 
+                        {
+                            console.error("Error fetching user for webhook refund email:", emailErr);
                         }
                     }
-                });
-
-                if (newStatus === 'paid') {
-                    triggerPaymentSuccessEmail(order);
                 }
             }
         }
@@ -317,14 +436,14 @@ export const verifyPayment = async (req, res) =>
             return res.status(404).json({ message: "Orden no encontrada" });
         }
 
-        if (order.userId !== userId && req.user?.role !== 'admin' && req.user?.role !== 'sysadmin') 
+        if (String(order.userId) !== String(userId) && req.user?.role !== 'admin' && req.user?.role !== 'sysadmin') 
         {
             return res.status(403).json({ message: "No autorizado" });
         }
 
-        if (order.status === 'paid') 
+        if (order.status === 'paid' || order.status === 'refunding' || order.status === 'refunded') 
         {
-            return res.json({ message: "La orden ya fue pagada", order });
+            return res.json({ message: `La orden está en estado ${order.status}`, order });
         }
 
         if (paymentId) 
@@ -354,12 +473,13 @@ export const verifyPayment = async (req, res) =>
                 const orderItems = order.orderItems || order.OrderItems || [];
                 for (const item of orderItems) 
                 {
-                    if (item.type === 'ticket' && item.seats && Array.isArray(item.seats) && item.seats.length > 0) 
+                    const seatLabels = parseSeats(item.seats);
+                    if (item.type === 'ticket' && seatLabels.length > 0) 
                     {
                         await Seat.update(
                             { status: 'Vendido' },
                             { 
-                                where: { showingId: item.refId, label: item.seats },
+                                where: { showingId: item.refId, label: seatLabels },
                                 transaction: t 
                             }
                         );
@@ -388,100 +508,240 @@ export const refundPayment = async (req, res) =>
     {
         const { orderId } = req.params;
         const userId = req.user?.id;
+        const userRole = req.user?.role;
 
-        const order = await Order.findByPk(orderId, { include: [{ model: OrderItem, as: 'orderItems' }] });
+        // Phase 1: Lock order and perform validations inside DB transaction
+        let orderToRefund = null;
 
-        if (!order) 
-        {
-            return res.status(404).json({ message: "Orden no encontrada" });
-        }
+        const validationResult = await sequelize.transaction(async (t) => {
+            const order = await Order.findByPk(orderId, { 
+                include: [{ model: OrderItem, as: 'orderItems' }],
+                transaction: t,
+                lock: t.LOCK.UPDATE 
+            });
 
-        if (order.userId !== userId && req.user?.role !== 'admin' && req.user?.role !== 'sysadmin') 
-        {
-            return res.status(403).json({ message: "No autorizado" });
-        }
-
-        if (order.status !== 'paid') 
-        {
-            return res.status(400).json({ message: "Solo se pueden reembolsar órdenes pagadas" });
-        }
-
-        // Process Mercado Pago refund if payment exists
-        if (order.mpPaymentId) 
-        {
-            try 
+            if (!order) 
             {
-                const refundResponse = await fetch(
-                    `https://api.mercadopago.com/v1/payments/${order.mpPaymentId}/refunds`,
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${MP_ACCESS_TOKEN}`,
-                        },
-                    }
-                );
-
-                if (!refundResponse.ok) 
-                {
-                    const err = await refundResponse.json();
-                    console.error('MP refund error:', err);
-                    throw new Error("Error en Mercado Pago al procesar el reembolso");
-                }
-
-            } 
-            catch (mpError) 
-            {
-                console.error('MP refund request error:', mpError);
-                throw mpError;
+                return { errorStatus: 404, message: "Orden no encontrada" };
             }
-        }
 
-        // Restore stock and release seats
-        await sequelize.transaction(async (t) => {
-            const orderItems = order.orderItems || order.OrderItems || [];
-            for (const item of orderItems) 
+            if (String(order.userId) !== String(userId) && userRole !== 'admin' && userRole !== 'sysadmin') 
             {
-                if (item.type === 'product') 
+                return { errorStatus: 403, message: "No autorizado" };
+            }
+
+            if (order.status === 'refunded')
+            {
+                return { errorStatus: 400, message: "La orden ya ha sido reembolsada anteriormente" };
+            }
+
+            if (order.status !== 'paid' && order.status !== 'refunding') 
+            {
+                return { errorStatus: 400, message: "Solo se pueden reembolsar órdenes pagadas" };
+            }
+
+            // Showtime check: non-admin users cannot refund past or missing showtimes
+            let orderItems = order.orderItems || order.OrderItems;
+            if (!orderItems || orderItems.length === 0) {
+                orderItems = await OrderItem.findAll({ where: { orderId: order.id }, transaction: t });
+            }
+
+            if (userRole !== 'admin' && userRole !== 'sysadmin') 
+            {
+                for (const item of (orderItems || [])) 
                 {
-                    const product = await Products.findByPk(item.refId, { transaction: t });
-                    if (product) 
+                    if (item.type === 'ticket') 
                     {
-                        product.stock = (product.stock || 0) + item.quantity;
-                        await product.save({ transaction: t });
-                    }
-                } 
-                else if (item.type === 'ticket') 
-                {
-                    if (item.seats && Array.isArray(item.seats) && item.seats.length > 0) 
-                    {
-                        await Seat.update(
-                            { status: 'Libre' },
-                            { 
-                                where: { showingId: item.refId, label: item.seats },
-                                transaction: t 
+                        const show = await MovieShowing.findByPk(item.refId, { transaction: t });
+                        if (show && show.showtime) 
+                        {
+                            const showDate = new Date(show.showtime);
+                            if (!isNaN(showDate.getTime()) && showDate <= new Date()) 
+                            {
+                                return { 
+                                    errorStatus: 400, 
+                                    message: "No se pueden reembolsar entradas para una función que ya ha comenzado o finalizado" 
+                                };
                             }
-                        );
+                        }
                     }
                 }
             }
 
-            await order.update({ status: 'refunded', mpStatus: 'refunded' }, { transaction: t });
+            // Temporarily set status to 'refunding' to prevent concurrent refund attempts
+            await order.update({ status: 'refunding' }, { transaction: t });
+            orderToRefund = order;
+            return { valid: true };
         });
 
-        // Send refund email
-        const refundUser = await User.findByPk(order.userId);
-        if (refundUser) 
+        if (validationResult.errorStatus) 
         {
-            sendRefundEmail(refundUser.email, refundUser.username, order.id, order.total);
+            return res.status(validationResult.errorStatus).json({ message: validationResult.message });
         }
 
-        return res.json({ message: "Reembolso procesado exitosamente", order });
+        // Phase 2: Call Mercado Pago API OUTSIDE of the DB transaction
+        let mpRefundSuccess = false;
+        let mpErrorMessage = null;
+
+        let mpPaymentIdStr = String(orderToRefund.mpPaymentId || '').trim();
+
+        // If mpPaymentId is missing but MP token is configured, try searching MP by external_reference (orderId)
+        if ((!mpPaymentIdStr || mpPaymentIdStr === 'null' || mpPaymentIdStr === 'undefined') && MP_ACCESS_TOKEN && MP_ACCESS_TOKEN.trim() !== '') 
+        {
+            try {
+                const searchRes = await fetch(
+                    `https://api.mercadopago.com/v1/payments/search?external_reference=${orderToRefund.id}`,
+                    { headers: { 'Authorization': `Bearer ${MP_ACCESS_TOKEN}` } }
+                );
+                if (searchRes.ok) {
+                    const searchData = await searchRes.json().catch(() => ({}));
+                    const matchingPayment = searchData.results?.find(p => p.status === 'approved' || p.status === 'refunded' || p.status === 'in_process');
+                    const foundId = matchingPayment?.id || searchData.results?.[0]?.id;
+                    if (foundId) {
+                        mpPaymentIdStr = String(foundId);
+                        orderToRefund.mpPaymentId = mpPaymentIdStr;
+                        await orderToRefund.update({ mpPaymentId: mpPaymentIdStr }).catch(() => {});
+                    }
+                }
+            } catch (searchErr) {
+                console.error('[Refund] Error buscando mpPaymentId en MP:', searchErr);
+            }
+        }
+
+        const hasMpToken = MP_ACCESS_TOKEN && MP_ACCESS_TOKEN.trim() !== '';
+
+        if (hasMpToken) 
+        {
+            if (!mpPaymentIdStr || mpPaymentIdStr === 'null' || mpPaymentIdStr === 'undefined') 
+            {
+                mpRefundSuccess = false;
+                mpErrorMessage = "No se pudo encontrar el ID de pago en Mercado Pago para procesar el reembolso";
+            } 
+            else 
+            {
+                try 
+                {
+                    const refundResponse = await fetch(
+                        `https://api.mercadopago.com/v1/payments/${mpPaymentIdStr}/refunds`,
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${MP_ACCESS_TOKEN}`,
+                                'X-Idempotency-Key': `refund-order-${orderId}`
+                            },
+                            body: JSON.stringify({}),
+                        }
+                    );
+
+                    if (refundResponse.ok) 
+                    {
+                        mpRefundSuccess = true;
+                    } 
+                    else 
+                    {
+                        const errPayload = await refundResponse.json().catch(() => ({}));
+                        console.error('MP refund error payload:', errPayload);
+
+                        const errorStr = JSON.stringify(errPayload).toLowerCase();
+                        // Handle idempotency / already refunded cases on MP gracefully
+                        if ([400, 409, 422].includes(refundResponse.status) && (errorStr.includes('already_refunded') || errorStr.includes('already refunded') || errorStr.includes('2061') || errorStr.includes('not_refundable'))) 
+                        {
+                            console.warn(`[Refund] MP informó que la orden ${orderId} ya estaba reembolsada o procesada:`, errPayload);
+                            mpRefundSuccess = true;
+                        } 
+                        else 
+                        {
+                            const causeMsg = Array.isArray(errPayload.cause) && errPayload.cause[0]?.description;
+                            const rawErr = causeMsg || errPayload.message || errPayload.error;
+                            mpErrorMessage = typeof rawErr === 'string' ? rawErr : (rawErr ? JSON.stringify(rawErr) : "Error en Mercado Pago al procesar el reembolso");
+                        }
+                    }
+                } 
+                catch (mpError) 
+                {
+                    console.error('MP refund request network error:', mpError);
+                    mpErrorMessage = "Error de conexión con Mercado Pago";
+                }
+            }
+        } 
+        else 
+        {
+            // Dev/Test mode without MP_ACCESS_TOKEN configured
+            mpRefundSuccess = true;
+        }
+
+        // If MP refund failed genuinely, revert order status back to 'paid' in DB
+        if (!mpRefundSuccess) 
+        {
+            await sequelize.transaction(async (t) => {
+                const order = await Order.findByPk(orderId, { transaction: t });
+                if (order && order.status === 'refunding') {
+                    await order.update({ status: 'paid' }, { transaction: t });
+                }
+            });
+            return res.status(400).json({ message: mpErrorMessage || "Error al procesar el reembolso en Mercado Pago" });
+        }
+
+        // Phase 3: Finalize refund in local DB transaction
+        await sequelize.transaction(async (t) => {
+            await processOrderRefund(orderToRefund, t);
+        });
+
+        // Non-blocking email notification
+        try 
+        {
+            const refundUser = await User.findByPk(orderToRefund.userId);
+            if (refundUser) 
+            {
+                Promise.resolve(sendRefundEmail(refundUser.email, refundUser.username, orderToRefund.id, orderToRefund.total))
+                    .catch(err => console.error("Non-blocking refund email error:", err));
+            }
+        } 
+        catch (emailErr) 
+        {
+            console.error("Error fetching user for refund email:", emailErr);
+        }
+
+        const finalOrder = await Order.findByPk(orderId);
+        return res.json({ message: "Reembolso procesado exitosamente", order: finalOrder });
 
     } 
     catch (error) 
     {
         console.error('refundPayment error:', error);
+
+        if (orderToRefund && mpRefundSuccess) 
+        {
+            try 
+            {
+                await sequelize.transaction(async (t) => {
+                    await processOrderRefund(orderToRefund, t);
+                });
+            } 
+            catch (finalizeErr) 
+            {
+                console.error('[Refund] Error intentando finalizar el reembolso tras éxito en MP:', finalizeErr);
+                await Order.update({ status: 'refunded', mpStatus: 'refunded' }, { where: { id: orderId } }).catch(() => {});
+            }
+        }
+        else if (orderToRefund && !mpRefundSuccess) 
+        {
+            try 
+            {
+                await sequelize.transaction(async (t) => {
+                    const order = await Order.findByPk(orderId, { transaction: t, lock: t.LOCK.UPDATE });
+                    if (order && order.status === 'refunding') {
+                        await order.update({ status: 'paid' }, { transaction: t });
+                    }
+                });
+            } 
+            catch (revertErr) 
+            {
+                console.error('Error reverting refunding status on failure:', revertErr);
+            }
+        }
+
         return res.status(500).json({ message: 'Error al procesar el reembolso' });
     }
 };
@@ -501,7 +761,7 @@ export const getPaymentStatus = async (req, res) =>
 
         const requesterId = req.user?.id;
         const requesterRole = req.user?.role;
-        if (!requesterId || (order.userId !== requesterId && requesterRole !== 'admin' && requesterRole !== 'sysadmin')) {
+        if (!requesterId || (String(order.userId) !== String(requesterId) && requesterRole !== 'admin' && requesterRole !== 'sysadmin')) {
             return res.status(403).json({ message: "No tienes permiso para ver esta orden" });
         }
 

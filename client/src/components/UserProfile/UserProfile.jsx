@@ -13,6 +13,7 @@ const statusConfig = {
     pending:   { label: "Pendiente",  color: "#ffaa00", bg: "#3d3a1a" },
     cancelled: { label: "Cancelado (Manual)",  color: "#ff4444", bg: "#3d1a1a" },
     expired:   { label: "Cancelado (Auto)", color: "#ff8844", bg: "#3d221a" },
+    refunding: { label: "Procesando Reembolso", color: "#ffbb33", bg: "#3d301a" },
     refunded:  { label: "Reembolsado", color: "#4488ff", bg: "#1a2a3d" },
     failed:    { label: "Fallido",    color: "#ff4444", bg: "#3d1a1a" },
 };
@@ -23,6 +24,7 @@ export const UserProfile = () =>
     const { user, loading: authLoading, logout, token } = useAuth();
     const [orders, setOrders] = useState([]);
     const [loadingOrders, setLoadingOrders] = useState(false);
+    const [refundingOrderId, setRefundingOrderId] = useState(null);
 
 
     const navigate = useNavigate();
@@ -111,10 +113,14 @@ export const UserProfile = () =>
 
     const handleRefund = async (orderId) => 
     {
+        if (refundingOrderId === orderId) return;
+
         if (!window.confirm("¿Estás seguro de solicitar un reembolso para esta orden?")) 
         {
             return;
         }
+
+        setRefundingOrderId(orderId);
 
         try 
         {
@@ -140,6 +146,10 @@ export const UserProfile = () =>
         {
             console.error("Error refund:", err);
             errorToast(err.message || "Error al solicitar reembolso");
+        }
+        finally
+        {
+            setRefundingOrderId(null);
         }
     };
 
@@ -316,24 +326,26 @@ export const UserProfile = () =>
 
                             </div>
 
-                            {order.status === "paid" && (
+                            {(order.status === "paid" || order.status === "refunding") && (
                                 <div style={{ marginTop: 6 }}>
                                     <button 
                                         onClick={() => handleRefund(order.id)}
+                                        disabled={refundingOrderId === order.id}
                                         style={{
                                             padding: "5px 14px",
-                                            backgroundColor: "#2a1a1a",
-                                            color: "#ff6666",
+                                            backgroundColor: refundingOrderId === order.id ? "#1f1414" : "#2a1a1a",
+                                            color: refundingOrderId === order.id ? "#888888" : "#ff6666",
                                             border: "1px solid #ff4444",
                                             borderRadius: "6px",
-                                            cursor: "pointer",
+                                            cursor: refundingOrderId === order.id ? "not-allowed" : "pointer",
                                             fontSize: "13px",
                                             transition: "all 0.2s ease",
+                                            opacity: refundingOrderId === order.id ? 0.6 : 1,
                                         }}
-                                        onMouseOver={(e) => { e.target.style.backgroundColor = "#3d1a1a"; }}
-                                        onMouseOut={(e) => { e.target.style.backgroundColor = "#2a1a1a"; }}
+                                        onMouseOver={(e) => { if (refundingOrderId !== order.id) e.target.style.backgroundColor = "#3d1a1a"; }}
+                                        onMouseOut={(e) => { if (refundingOrderId !== order.id) e.target.style.backgroundColor = "#2a1a1a"; }}
                                     >
-                                        💰 Solicitar Reembolso
+                                        {refundingOrderId === order.id ? "⏳ Procesando..." : "💰 Solicitar Reembolso"}
                                     </button>
                                 </div>
                             )}

@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { PORT, FRONTEND_URL, TURSO_CONNECTION_URL } from './config.js';
+import { PORT, FRONTEND_URL } from './config.js';
 import { sequelize } from './db.js';
 import "./models/Movie.js";
 import "./models/MovieShowing.js";
@@ -23,13 +23,13 @@ const app = express();
 
 app.use(express.json({ limit: '10mb' }));
 
-// CORS configuration allowing production frontend and localhost
+// CORS configuration allowing frontend and localhost
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin || origin === FRONTEND_URL || process.env.NODE_ENV !== 'production') {
       callback(null, true);
     } else {
-      callback(null, true); // Allow configured origins in serverless
+      callback(null, true);
     }
   },
   credentials: true,
@@ -53,24 +53,7 @@ async function initDb() {
 
   initPromise = (async () => {
     try {
-      if (process.env.VERCEL || process.env.NODE_ENV === 'production' || TURSO_CONNECTION_URL) {
-        await sequelize.sync();
-      } else {
-        try {
-          await sequelize.sync();
-        } catch (syncErr) {
-          console.warn("⚠️ Database sync retry with cleanup:", syncErr.message);
-          await sequelize.query("PRAGMA foreign_keys = OFF;");
-          const [backupTables] = await sequelize.query(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE '%_backup';"
-          );
-          for (const { name } of backupTables) {
-            await sequelize.query(`DROP TABLE IF EXISTS \`${name}\`;`);
-          }
-          await sequelize.sync();
-          await sequelize.query("PRAGMA foreign_keys = ON;");
-        }
-      }
+      await sequelize.sync();
       isInitialized = true;
       console.log('✅ Database synchronized');
     } catch (error) {
@@ -105,22 +88,18 @@ app.use("/api", seatRoutes);
 app.use("/api", userRoutes);
 app.use("/api/payments", paymentRoutes);
 
-// Global error handling middleware for serverless robustness
+// Global error handling middleware
 app.use((err, req, res, next) => {
   console.error("❌ Uncaught server error:", err);
   res.status(500).json({ error: err.message || "Internal Server Error" });
 });
 
-// Start server when run directly (local / non-serverless)
-if (!process.env.VERCEL) {
-  initDb().then(() => {
-    app.listen(PORT, () => {
-      console.log(`🚀 Server listening on port ${PORT}`);
-    });
-    setInterval(cleanupExpiredOrders, 60 * 1000);
+// Start server
+initDb().then(() => {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server listening on port ${PORT}`);
   });
-}
+  setInterval(cleanupExpiredOrders, 60 * 1000);
+});
 
 export default app;
-
-// v
