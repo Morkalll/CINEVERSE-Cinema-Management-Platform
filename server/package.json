@@ -6,7 +6,6 @@
   "scripts": {
     "build": "echo 'No build step required'",
     "seed": "node src/seed.js",
-    "db:push": "node src/push-turso.js",
     "start": "node src/index.js",
     "dev": "node --watch --watch-path=src src/index.js",
     "test": "vitest"
@@ -16,8 +15,6 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@libsql/client": "^0.17.4",
-    "@libsql/sqlite3": "^0.3.1",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",

@@ -8,7 +8,7 @@ import { Seat } from "../models/Seats.js";
 import { User } from "../models/User.js";
 import { Movie } from "../models/Movie.js";
 import { sendOrderConfirmationEmail, sendOrderCancellationEmail } from './email.services.js';
-import { syncPendingOrderPayment } from './payment.services.js';
+import { syncPendingOrderPayment, parseSeats } from './payment.services.js';
 
 const safeSendEmail = (fn) => {
     Promise.resolve().then(() => fn()).catch(err => {
@@ -162,17 +162,6 @@ export const createOrder = async (req, res) => {
     } catch (err) {
         if (transaction) { try { await transaction.rollback(); } catch {} }
         if (res.headersSent) return;
-        
-        const isClientClosed = err.message?.includes('ClosedError') || err.message?.includes('Client was closed') || err.message?.includes('stream is closed');
-        if (isClientClosed) {
-            console.warn("Turso transaction error, executing fallback without transaction stream:", err.message);
-            try {
-                return await runOrderCreation(req, res, null);
-            } catch (fallbackErr) {
-                console.error("createOrder fallback error:", fallbackErr);
-                return res.status(400).json({ message: fallbackErr.message || "Error interno del servidor" });
-            }
-        }
 
         console.error("createOrder error:", err);
         return res.status(400).json({ message: err.message || "Error interno del servidor" });
@@ -260,26 +249,21 @@ export const cancelOrder = async (req, res) => {
       return res.status(200).json({ message: "La orden ya se encuentra cancelada o expirada", order });
     }
 
-    const isOwner = req.user.id === order.userId;
+    const isOwner = String(req.user.id) === String(order.userId);
     const isAdmin = req.user.role === 'admin' || req.user.role === 'sysadmin';
 
     if (!isOwner && !isAdmin) {
       return res.status(403).json({ message: "No tienes permiso para cancelar esta orden" });
     }
 
-    if (!isAdmin && order.status === "paid") {
-      return res.status(400).json({ message: "No puedes cancelar una orden pagada. Solicita un reembolso en su lugar." });
+    if (order.status === "paid" || order.status === "refunding" || order.status === "refunded") {
+      return res.status(400).json({ message: "No se pueden cancelar órdenes pagadas o en proceso de reembolso. Solicita un reembolso en su lugar." });
     }
     
     // Restore stock and release seats
-    try {
-        await sequelize.transaction(async (t) => {
-            await processOrderCancellation(order, false, t);
-        });
-    } catch (txErr) {
-        console.warn("Turso/SQLite transaction fallback during cancellation:", txErr.message);
-        await processOrderCancellation(order, false, null);
-    }
+    await sequelize.transaction(async (t) => {
+        await processOrderCancellation(order, false, t);
+    });
     
     return res.status(200).json({ message: "Orden cancelada exitosamente", order });
   } catch (error) {
@@ -304,15 +288,11 @@ export const processOrderCancellation = async (order, isExpired = false, t = nul
         } 
         else if (item.type === "ticket") 
         {
-            let seatsList = item.seats;
-            if (typeof seatsList === 'string') {
-                try { seatsList = JSON.parse(seatsList); } catch { seatsList = []; }
-            }
-            if (seatsList && Array.isArray(seatsList) && seatsList.length > 0) 
-            {
+            const seatLabels = parseSeats(item.seats);
+            if (seatLabels.length > 0) {
                 await Seat.update(
                     { status: 'Libre' },
-                    { where: { showingId: item.refId, label: seatsList }, transaction: t }
+                    { where: { showingId: item.refId, label: seatLabels }, transaction: t }
                 );
             }
         }
@@ -321,7 +301,7 @@ export const processOrderCancellation = async (order, isExpired = false, t = nul
     order.status = isExpired ? "expired" : "cancelled";
     await order.save({ transaction: t });
 
-    // Non-blocking email notification (prevents Vercel 10s timeout)
+    // Non-blocking email notification
     safeSendEmail(async () => {
         const cancelUser = await User.findByPk(order.userId);
         if (cancelUser) {
@@ -406,68 +386,73 @@ export const deleteOrder = async (req, res) =>
             return res.status(403).json({ message: "No tienes permiso para eliminar esta orden" });
         }
 
+        if (order.status === "paid" || order.status === "refunding") 
+        {
+            if (transaction) { try { await transaction.rollback(); } catch {} }
+            return res.status(400).json({ message: "No se puede eliminar una orden pagada o en proceso de reembolso. Procesa un reembolso primero." });
+        }
+
         const orderItems = await OrderItem.findAll(
         {
             where: { orderId: order.id },
             transaction: transaction
         });
 
-        for (const item of orderItems) 
+        // Only restore stock and release seats if the order was not already cancelled or refunded
+        if (order.status !== "cancelled" && order.status !== "refunded") 
         {
-            console.log("🔄 Processing item:", item.id, "Type:", item.type);
-            
-          
-            if (item.type === "product") 
+            for (const item of orderItems) 
             {
-                try 
+                console.log("🔄 Processing item:", item.id, "Type:", item.type);
+                
+                if (item.type === "product") 
                 {
-                    const product = await Products.findByPk(item.refId, { transaction: transaction });
-
-                    if (product) 
+                    try 
                     {
-                        product.stock = (product.stock || 0) + item.quantity;
-                        await product.save({ transaction: transaction });
+                        const product = await Products.findByPk(item.refId, { transaction: transaction });
+
+                        if (product) 
+                        {
+                            product.stock = (product.stock || 0) + item.quantity;
+                            await product.save({ transaction: transaction });
+                        }
+
+                    } 
+                    catch (e) 
+                    {
+                        console.warn("No se pudo restaurar stock del producto", item.refId, e);
+                        throw e;
                     }
 
                 } 
-
-                catch (e) 
+                else if (item.type === "ticket") 
                 {
-                    console.warn("No se pudo restaurar stock del producto", item.refId, e);
-                    throw e;
-                }
-
-            } 
-            
-            else if (item.type === "ticket") 
-            {
-                try 
-                {
-                    // Capacity is not tracked directly in MovieShowing, it uses individual seats.
-                    
-                    if (item.seats && Array.isArray(item.seats) && item.seats.length > 0) 
+                    try 
                     {
-                        // Release seats
-                        await Seat.update(
-                            { status: 'Libre' },
-                            { 
-                                where: 
+                        const seatLabels = parseSeats(item.seats);
+                        if (seatLabels.length > 0) 
+                        {
+                            // Release seats
+                            await Seat.update(
+                                { status: 'Libre' },
                                 { 
-                                    showingId: item.refId,
-                                    label: item.seats 
-                                },
-                                transaction: transaction
-                            }
-                        );
-            
-                    } 
-                    
-                } 
+                                    where: 
+                                    { 
+                                        showingId: item.refId,
+                                        label: seatLabels 
+                                    },
+                                    transaction: transaction
+                                }
+                            );
                 
-                catch (e) 
-                {
-                    console.error("No se pudo restaurar la capacidad de Show o liberar asientos", item.refId, e);
-                    throw e;
+                        } 
+                        
+                    } 
+                    catch (e) 
+                    {
+                        console.error("No se pudo restaurar la capacidad de Show o liberar asientos", item.refId, e);
+                        throw e;
+                    }
                 }
             }
         }

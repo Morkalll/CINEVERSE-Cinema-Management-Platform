@@ -20,6 +20,7 @@ export const SysAdminPanel = () => {
     const [candy, setCandy] = useState([]);
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [refundingOrderId, setRefundingOrderId] = useState(null);
     
     const [deleteConfirm, setDeleteConfirm] = useState({ show: false, item: null, type: "" });
     const [showCreateScreenConfirm, setShowCreateScreenConfirm] = useState(false);
@@ -170,14 +171,44 @@ export const SysAdminPanel = () => {
         }
     };
 
+    const handleRefundOrder = async (order) => {
+        if (refundingOrderId === order.id) return;
+        if (!window.confirm(`¿Estás seguro de procesar el reembolso de la Orden #${order.id}?`)) return;
+
+        setRefundingOrderId(order.id);
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${API_URL}/payments/refund/${order.id}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(data.message || "Error al procesar el reembolso");
+            }
+
+            setOrders(orders.map(o => o.id === order.id ? { ...o, status: "refunded" } : o));
+            successToast(data.message || "Reembolso procesado exitosamente");
+        } catch (err) {
+            console.error("Error refunding order:", err);
+            errorToast(err.message || "Error al procesar el reembolso");
+        } finally {
+            setRefundingOrderId(null);
+        }
+    };
+
     const handleConfirmDelete = async () => {
         const { item, type } = deleteConfirm;
 
-        if (type === "order" && item.status !== "cancelled") {
-            errorToast("Solo se pueden eliminar órdenes canceladas");
+        if (type === "order" && item.status !== "cancelled" && item.status !== "refunded") {
+            errorToast("Solo se pueden eliminar órdenes canceladas o reembolsadas");
             setDeleteConfirm({ show: false, item: null, type: "" });
-        return;
-    }
+            return;
+        }
         
         try {
             const token = localStorage.getItem("token");
@@ -999,11 +1030,21 @@ export const SysAdminPanel = () => {
                                                 <td>{order.orderItems?.length || 0} items</td>
                                                 <td>{new Date(order.createdAt).toLocaleString()}</td>
                                                 <td>
+                                                    {(order.status === 'paid' || order.status === 'refunding') && (
+                                                        <button
+                                                            className="refund-btn"
+                                                            onClick={() => handleRefundOrder(order)}
+                                                            disabled={refundingOrderId === order.id}
+                                                            style={{ marginRight: '8px', backgroundColor: '#33aa55', color: '#fff', border: 'none', borderRadius: '4px', padding: '4px 8px', cursor: refundingOrderId === order.id ? 'not-allowed' : 'pointer', fontSize: '12px', opacity: refundingOrderId === order.id ? 0.6 : 1 }}
+                                                        >
+                                                            {refundingOrderId === order.id ? "⏳ Procesando..." : "💰 Reembolsar"}
+                                                        </button>
+                                                    )}
                                                     <button
                                                         className="cancel-btn"
                                                         onClick={() => handleCancelClick(order)}
                                                         style={{ marginRight: '8px' }}
-                                                        disabled={order.status === 'cancelled'}
+                                                        disabled={order.status === 'cancelled' || order.status === 'paid' || order.status === 'refunding' || order.status === 'refunded'}
                                                     >
                                                         Cancelar
                                                     </button>

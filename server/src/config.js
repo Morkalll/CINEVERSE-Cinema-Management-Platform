@@ -10,9 +10,6 @@ export const JWT_SECRET = (() => {
     return _jwtSecret || "dev-only-insecure-fallback-change-me";
 })();
 export const DB_PATH = process.env.DB_PATH || "movies.db";
-export const TURSO_CONNECTION_URL = process.env.TURSO_CONNECTION_URL || '';
-export const TURSO_AUTH_TOKEN = process.env.TURSO_AUTH_TOKEN || '';
-
 
 // Email configuration
 export const EMAIL_HOST = process.env.EMAIL_HOST || 'smtp.gmail.com';
