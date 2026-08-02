@@ -6,6 +6,7 @@ import cineverseLogo from '../../../assets/images/cineverse-logo-without-name.pn
 import TatinAlien1 from '../../../assets/images/Alien 3.png';
 import { successToast, errorToast } from "../../../utils/toast";
 import { NavBar } from "../../navBar/NavBar";
+import { API_URL } from "../../../services/api";
 
 export const ResetPassword = () => {
     const [password, setPassword] = useState("");
@@ -18,8 +19,18 @@ export const ResetPassword = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         
+        if (!token) {
+            errorToast("Enlace de recuperación inválido");
+            return;
+        }
+
         if (!password || !confirmPassword) {
             errorToast("Por favor, completa todos los campos");
+            return;
+        }
+
+        if (password.trim().length < 8) {
+            errorToast("La contraseña debe tener mínimo 8 caracteres");
             return;
         }
 
@@ -31,7 +42,7 @@ export const ResetPassword = () => {
         setIsLoading(true);
 
         try {
-            const response = await fetch(`http://localhost:3000/api/auth/reset-password/${token}`, {
+            const response = await fetch(`${API_URL}/auth/reset-password/${token}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ newPassword: password }),

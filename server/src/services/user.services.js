@@ -5,7 +5,7 @@ import { OrderItem } from "../models/OrderItem.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../config.js";
-import { sendWelcomeEmail, sendLoginAlertEmail, sendProfileUpdatedEmail, sendPasswordRecoveryEmail } from './email.services.js';
+import { sendWelcomeEmail, sendLoginAlertEmail, sendProfileUpdatedEmail, sendPasswordRecoveryEmail, sendPasswordChangedEmail } from './email.services.js';
 
 
 
@@ -263,7 +263,8 @@ export const forgotPassword = async (req, res) => {
             return res.status(200).json({ message: "Si el correo esta registrado, enviaremos un enlace de recuperación." });
         }
 
-        const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: "15m" });
+        const pwdSig = user.password ? user.password.slice(-10) : "";
+        const token = jwt.sign({ id: user.id, email: user.email, sig: pwdSig }, JWT_SECRET, { expiresIn: "15m" });
         await sendPasswordRecoveryEmail(user.email, user.username, token);
 
         return res.status(200).json({ message: "Si el correo esta registrado, enviaremos un enlace de recuperación." });
@@ -278,8 +279,8 @@ export const resetPassword = async (req, res) => {
         const { token } = req.params;
         const { newPassword } = req.body;
 
-        if (!newPassword) {
-            return res.status(400).json({ message: "Nueva contraseña es requerida" });
+        if (!newPassword || newPassword.trim().length < 8) {
+            return res.status(400).json({ message: "La nueva contraseña debe tener al menos 8 caracteres" });
         }
 
         let payload;
@@ -294,6 +295,11 @@ export const resetPassword = async (req, res) => {
             return res.status(404).json({ message: "Usuario no encontrado" });
         }
 
+        const pwdSig = user.password ? user.password.slice(-10) : "";
+        if (payload.sig && payload.sig !== pwdSig) {
+            return res.status(400).json({ message: "El enlace es inválido o ya ha sido utilizado" });
+        }
+
         const saltRounds = 10;
         const salt = await bcrypt.genSalt(saltRounds);
         const hashedPassword = await bcrypt.hash(newPassword, salt);
@@ -301,9 +307,51 @@ export const resetPassword = async (req, res) => {
         user.password = hashedPassword;
         await user.save();
 
+        sendPasswordChangedEmail(user.email, user.username);
+
         return res.status(200).json({ message: "Contraseña actualizada exitosamente" });
     } catch (error) {
         console.error("Error resetPassword:", error);
         return res.status(500).json({ message: "Error interno" });
     }
 };
+
+export const changePassword = async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const userId = req.user?.id;
+
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ message: "La contraseña actual y la nueva contraseña son requeridas" });
+        }
+
+        if (newPassword.trim().length < 8) {
+            return res.status(400).json({ message: "La nueva contraseña debe tener al menos 8 caracteres" });
+        }
+
+        const user = await User.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ message: "Usuario no encontrado" });
+        }
+
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: "La contraseña actual es incorrecta" });
+        }
+
+        const saltRounds = 10;
+        const salt = await bcrypt.genSalt(saltRounds);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        user.password = hashedPassword;
+        await user.save();
+
+        sendPasswordChangedEmail(user.email, user.username);
+
+        return res.status(200).json({ message: "Contraseña actualizada exitosamente" });
+    } catch (error) {
+        console.error("Error changePassword:", error);
+        return res.status(500).json({ message: "Error interno" });
+    }
+};
+

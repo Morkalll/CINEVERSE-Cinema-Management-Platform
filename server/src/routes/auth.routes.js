@@ -1,6 +1,6 @@
 
 import { Router } from "express";
-import { registerUser, loginUser, getUser, forgotPassword, resetPassword } from "../services/user.services.js";
+import { registerUser, loginUser, getUser, forgotPassword, resetPassword, changePassword } from "../services/user.services.js";
 import { registerAdmin } from "../services/admin.services.js";
 import { registerSysAdmin } from "../services/sysadmin.services.js";
 import { verifyToken } from "../services/token.services.js";
@@ -24,6 +24,9 @@ router.post("/register-sysadmin", verifyToken, authorize(["sysadmin"]), register
 router.post("/forgot-password", forgotPassword);
 
 router.post("/reset-password/:token", resetPassword);
+
+router.post("/change-password", verifyToken, changePassword);
+
 
 
 export default router;

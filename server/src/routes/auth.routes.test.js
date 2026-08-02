@@ -14,7 +14,8 @@ vi.mock('../services/user.services.js', () => ({
     getUser: vi.fn((req, res) => res.status(200).json({ msg: 'getUser called' })),
     registerUser: vi.fn((req, res) => res.status(201).json({ msg: 'registerUser called' })),
     forgotPassword: vi.fn((req, res) => res.status(200).json({ msg: 'forgotPassword called' })),
-    resetPassword: vi.fn((req, res) => res.status(200).json({ msg: 'resetPassword called' }))
+    resetPassword: vi.fn((req, res) => res.status(200).json({ msg: 'resetPassword called' })),
+    changePassword: vi.fn((req, res) => res.status(200).json({ msg: 'changePassword called' }))
 }));
 
 vi.mock('../services/admin.services.js', () => ({
@@ -79,5 +80,13 @@ describe('Auth Routes', () => {
         expect(res.body).toEqual({ msg: 'registerSysAdmin called' });
         expect(tokenServices.verifyToken).toHaveBeenCalled();
         expect(sysadminServices.registerSysAdmin).toHaveBeenCalled();
+    });
+
+    it('POST /api/auth/change-password should call verifyToken and changePassword', async () => {
+        const res = await request(app).post('/api/auth/change-password').send({ currentPassword: 'old', newPassword: 'new' });
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual({ msg: 'changePassword called' });
+        expect(tokenServices.verifyToken).toHaveBeenCalled();
+        expect(userServices.changePassword).toHaveBeenCalled();
     });
 });

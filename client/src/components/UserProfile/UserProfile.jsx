@@ -8,19 +8,18 @@ import { errorToast, successToast } from "../../utils/toast";
 
 
 const statusConfig = {
-    paid:      { label: "Pagado",     color: "#33cc66", bg: "#1a3d2a" },
-    created:   { label: "Creado",     color: "#ffaa00", bg: "#3d3a1a" },
-    pending:   { label: "Pendiente",  color: "#ffaa00", bg: "#3d3a1a" },
-    cancelled: { label: "Cancelado (Manual)",  color: "#ff4444", bg: "#3d1a1a" },
-    expired:   { label: "Cancelado (Auto)", color: "#ff8844", bg: "#3d221a" },
+    paid: { label: "Pagado", color: "#33cc66", bg: "#1a3d2a" },
+    created: { label: "Creado", color: "#ffaa00", bg: "#3d3a1a" },
+    pending: { label: "Pendiente", color: "#ffaa00", bg: "#3d3a1a" },
+    cancelled: { label: "Cancelado (Manual)", color: "#ff4444", bg: "#3d1a1a" },
+    expired: { label: "Cancelado (Auto)", color: "#ff8844", bg: "#3d221a" },
     refunding: { label: "Procesando Reembolso", color: "#ffbb33", bg: "#3d301a" },
-    refunded:  { label: "Reembolsado", color: "#4488ff", bg: "#1a2a3d" },
-    failed:    { label: "Fallido",    color: "#ff4444", bg: "#3d1a1a" },
+    refunded: { label: "Reembolsado", color: "#4488ff", bg: "#1a2a3d" },
+    failed: { label: "Fallido", color: "#ff4444", bg: "#3d1a1a" },
 };
 
 
-export const UserProfile = () => 
-{
+export const UserProfile = () => {
     const { user, loading: authLoading, logout, token } = useAuth();
     const [orders, setOrders] = useState([]);
     const [loadingOrders, setLoadingOrders] = useState(false);
@@ -29,37 +28,32 @@ export const UserProfile = () =>
 
     const navigate = useNavigate();
 
-    const fetchOrders = useCallback(async () => 
-    {
-        if (!user || !token) 
-        {
+    const fetchOrders = useCallback(async () => {
+        if (!user || !token) {
             return;
         }
 
         setLoadingOrders(true);
 
-        try 
-        {
+        try {
             const endpoint = `${API_URL}/orders/mine`;
-            const res = await fetch(endpoint, 
-            {
-                method: "GET",
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const res = await fetch(endpoint,
+                {
+                    method: "GET",
+                    headers: { Authorization: `Bearer ${token}` },
+                });
 
-            if (!res.ok) 
-            {
+            if (!res.ok) {
                 const raw = await res.text().catch(() => "");
 
                 let parsed = null;
 
-                try 
-                { 
-                    parsed = raw ? JSON.parse(raw) : null; 
-                } 
+                try {
+                    parsed = raw ? JSON.parse(raw) : null;
+                }
 
-                catch { 
-                    parsed = null; 
+                catch {
+                    parsed = null;
                 }
 
                 const msg = parsed?.message || raw || `Error (status ${res.status})`;
@@ -75,175 +69,151 @@ export const UserProfile = () =>
 
             setOrders(Array.isArray(data) ? data : []);
 
-        } 
-        
-        catch (err) 
-        {
+        }
+
+        catch (err) {
             console.error("Error al obtener órdenes", err);
 
             errorToast(err.message || "Error al obtener órdenes");
 
             setOrders([]);
-        } 
-        
-        finally 
-        {
+        }
+
+        finally {
             setLoadingOrders(false);
         }
     }, [user, token]);
 
-    useEffect(() => 
-    {
+    useEffect(() => {
         fetchOrders();
     }, [fetchOrders]);
 
 
-    const handleGoToLogin = () => 
-    {
+    const handleGoToLogin = () => {
         navigate("/login");
     }
 
 
-    const handleLogOut = () => 
-    {
+    const handleLogOut = () => {
         logout();
         navigate("/login");
     };
 
 
-    const handleRefund = async (orderId) => 
-    {
+    const handleRefund = async (orderId) => {
         if (refundingOrderId === orderId) return;
 
-        if (!window.confirm("¿Estás seguro de solicitar un reembolso para esta orden?")) 
-        {
+        if (!window.confirm("¿Estás seguro de solicitar un reembolso para esta orden?")) {
             return;
         }
 
         setRefundingOrderId(orderId);
 
-        try 
-        {
-            const res = await fetch(`${API_URL}/payments/refund/${orderId}`, 
-            {
-                method: "POST",
-                headers: { 
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}` 
-                },
-            });
+        try {
+            const res = await fetch(`${API_URL}/payments/refund/${orderId}`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    },
+                });
 
-            if (!res.ok) 
-            {
+            if (!res.ok) {
                 const err = await res.json().catch(() => null);
                 throw new Error(err?.message || "Error al solicitar reembolso");
             }
 
+            setOrders(prevOrders => prevOrders.map(o => o.id === orderId ? { ...o, status: "refunded" } : o));
             successToast("Reembolso procesado exitosamente");
             fetchOrders(); // Refresh orders list
-        } 
-        catch (err) 
-        {
+        }
+        catch (err) {
             console.error("Error refund:", err);
             errorToast(err.message || "Error al solicitar reembolso");
         }
-        finally
-        {
+        finally {
             setRefundingOrderId(null);
         }
     };
 
 
-    const handlePay = async (orderId) => 
-    {
-        try 
-        {
-            const res = await fetch(`${API_URL}/payments/create-preference`, 
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ orderId }),
-            });
+    const handlePay = async (orderId) => {
+        try {
+            const res = await fetch(`${API_URL}/payments/create-preference`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ orderId }),
+                });
 
-            if (!res.ok) 
-            {
+            if (!res.ok) {
                 const err = await res.json().catch(() => null);
                 throw new Error(err?.message || "Error al iniciar pago");
             }
 
             const data = await res.json();
-            
-            if (data.initPoint) 
-            {
+
+            if (data.initPoint) {
                 window.location.href = data.initPoint;
-            } 
-            else if (data.sandboxInitPoint) 
-            {
+            }
+            else if (data.sandboxInitPoint) {
                 window.location.href = data.sandboxInitPoint;
-            } 
-            else 
-            {
+            }
+            else {
                 errorToast("No se pudo obtener el enlace de pago");
             }
-        } 
-        catch (err) 
-        {
+        }
+        catch (err) {
             console.error("Error pay:", err);
             errorToast(err.message || "Error al procesar el pago");
         }
     };
 
 
-    const handleCancelUser = async (orderId) => 
-    {
-        if (!window.confirm("¿Estás seguro de que deseas cancelar este pedido?")) 
-        {
+    const handleCancelUser = async (orderId) => {
+        if (!window.confirm("¿Estás seguro de que deseas cancelar este pedido?")) {
             return;
         }
 
-        try 
-        {
-            const res = await fetch(`${API_URL}/orders/${orderId}/cancel`, 
-            {
-                method: "PATCH",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+        try {
+            const res = await fetch(`${API_URL}/orders/${orderId}/cancel`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
 
-            if (!res.ok) 
-            {
+            if (!res.ok) {
                 const err = await res.json().catch(() => null);
                 throw new Error(err?.message || "Error al cancelar orden");
             }
 
             successToast("Pedido cancelado exitosamente");
             fetchOrders();
-        } 
-        catch (err) 
-        {
+        }
+        catch (err) {
             console.error("Error cancel:", err);
             errorToast(err.message || "Error al cancelar el pedido");
         }
     };
 
 
-    if (authLoading) 
-    {
+    if (authLoading) {
         return <div>Cargando perfil...</div>;
     }
 
 
-    if (!user) 
-    {
+    if (!user) {
         return (
             <div>
 
                 <h1>No has iniciado sesión.</h1>
-                
+
                 <Button variant="secondary" onClick={handleGoToLogin}>Iniciar sesión</Button>
 
             </div>
@@ -251,8 +221,7 @@ export const UserProfile = () =>
     }
 
 
-    const getStatusBadge = (status) => 
-    {
+    const getStatusBadge = (status) => {
         const config = statusConfig[status] || statusConfig.created;
         return (
             <span style={{
@@ -272,134 +241,243 @@ export const UserProfile = () =>
     };
 
 
+    const [showChangePassword, setShowChangePassword] = useState(false);
+    const [currentPassword, setCurrentPassword] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmNewPassword, setConfirmNewPassword] = useState("");
+    const [changingPassword, setChangingPassword] = useState(false);
+
+    const handleChangePasswordSubmit = async (e) => {
+        e.preventDefault();
+        if (!currentPassword || !newPassword || !confirmNewPassword) {
+            errorToast("Por favor, completa todos los campos de contraseña");
+            return;
+        }
+        if (newPassword.trim().length < 8) {
+            errorToast("La nueva contraseña debe tener al menos 8 caracteres");
+            return;
+        }
+        if (newPassword !== confirmNewPassword) {
+            errorToast("Las nuevas contraseñas no coinciden");
+            return;
+        }
+
+        setChangingPassword(true);
+        try {
+            const res = await fetch(`${API_URL}/auth/change-password`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ currentPassword, newPassword }),
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                successToast(data.message || "Contraseña actualizada exitosamente");
+                setCurrentPassword("");
+                setNewPassword("");
+                setConfirmNewPassword("");
+                setShowChangePassword(false);
+            } else {
+                errorToast(data.message || "Error al cambiar la contraseña");
+            }
+        } catch (err) {
+            errorToast("Error de conexión con el servidor");
+        } finally {
+            setChangingPassword(false);
+        }
+    };
+
     return (
 
         <div>
-            
+
             <h1>¡Bienvenido, {user.username}!</h1>
+
+            <div style={{ marginTop: "15px", marginBottom: "25px" }}>
+                <Button
+                    variant="outline-secondary"
+                    onClick={() => setShowChangePassword(!showChangePassword)}
+                    style={{ marginBottom: "10px" }}
+                >
+                    {showChangePassword ? "🔒 Cancelar cambio de contraseña" : "🔑 Cambiar Contraseña"}
+                </Button>
+
+                {showChangePassword && (
+                    <form
+                        onSubmit={handleChangePasswordSubmit}
+                        style={{
+                            maxWidth: "400px",
+                            padding: "15px",
+                            backgroundColor: "#1e1e24",
+                            borderRadius: "8px",
+                            border: "1px solid #333",
+                            marginTop: "10px"
+                        }}
+                    >
+                        <h5 style={{ color: "#fff", marginBottom: "15px" }}>Cambiar Contraseña</h5>
+                        <div style={{ marginBottom: "10px" }}>
+                            <input
+                                type="password"
+                                placeholder="Contraseña actual"
+                                value={currentPassword}
+                                onChange={(e) => setCurrentPassword(e.target.value)}
+                                disabled={changingPassword}
+                                style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #444", backgroundColor: "#111", color: "#fff" }}
+                            />
+                        </div>
+                        <div style={{ marginBottom: "10px" }}>
+                            <input
+                                type="password"
+                                placeholder="Nueva contraseña (mínimo 8 caracteres)"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                disabled={changingPassword}
+                                style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #444", backgroundColor: "#111", color: "#fff" }}
+                            />
+                        </div>
+                        <div style={{ marginBottom: "15px" }}>
+                            <input
+                                type="password"
+                                placeholder="Confirmar nueva contraseña"
+                                value={confirmNewPassword}
+                                onChange={(e) => setConfirmNewPassword(e.target.value)}
+                                disabled={changingPassword}
+                                style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #444", backgroundColor: "#111", color: "#fff" }}
+                            />
+                        </div>
+                        <Button type="submit" variant="secondary" disabled={changingPassword} className="w-100">
+                            {changingPassword ? "Actualizando..." : "Guardar Nueva Contraseña"}
+                        </Button>
+                    </form>
+                )}
+            </div>
 
             <h1>Tus compras recientes:</h1>
 
 
-            {loadingOrders ? 
-            (
-                <div>Cargando compras...</div>
 
-            ) 
-            
-            : orders.length === 0 ? 
-            (
+            {loadingOrders ?
+                (
+                    <div>Cargando compras...</div>
 
-                <div>No tenés compras aún.</div>
+                )
 
-            ) 
-            
-            : (
+                : orders.length === 0 ?
+                    (
 
-                <ul>
+                        <div>No tenés compras aún.</div>
 
-                    {orders.map((order) => (
-                        
-                        <li key={order.id} style={{ marginBottom: 12 }}>
-                            
-                            <div>
-                                
-                                <strong>Orden #{order.id}</strong> 
-                                {getStatusBadge(order.status)}
-                                {" — "}
-                                Total: ${Number(order.total || 0).toFixed(2)} — {order.createdAt ? new Date(order.createdAt).toLocaleString() : ""}
-                            
-                            </div>
+                    )
 
-                            <div>
+                    : (
 
-                                <ul>
-                                    {(order.orderItems || []).map((it) => {
-                                        return (
-                                            <li key={it.id || `${it.type}-${it.refId}`}>
-                                                {it.name || `${it.type} #${it.refId}`} — Cant: {it.quantity} — Precio: ${Number(it.price || 0).toFixed(2)}
-                                            </li>
-                                        );
-                                    })}
-                                </ul>
-                                
+                        <ul style={{ listStyle: "none", padding: 0 }}>
 
-                            </div>
+                            {orders.map((order) => (
 
-                            {(order.status === "paid" || order.status === "refunding") && (
-                                <div style={{ marginTop: 6 }}>
-                                    <button 
-                                        onClick={() => handleRefund(order.id)}
-                                        disabled={refundingOrderId === order.id}
-                                        style={{
-                                            padding: "5px 14px",
-                                            backgroundColor: refundingOrderId === order.id ? "#1f1414" : "#2a1a1a",
-                                            color: refundingOrderId === order.id ? "#888888" : "#ff6666",
-                                            border: "1px solid #ff4444",
-                                            borderRadius: "6px",
-                                            cursor: refundingOrderId === order.id ? "not-allowed" : "pointer",
-                                            fontSize: "13px",
-                                            transition: "all 0.2s ease",
-                                            opacity: refundingOrderId === order.id ? 0.6 : 1,
-                                        }}
-                                        onMouseOver={(e) => { if (refundingOrderId !== order.id) e.target.style.backgroundColor = "#3d1a1a"; }}
-                                        onMouseOut={(e) => { if (refundingOrderId !== order.id) e.target.style.backgroundColor = "#2a1a1a"; }}
-                                    >
-                                        {refundingOrderId === order.id ? "⏳ Procesando..." : "💰 Solicitar Reembolso"}
-                                    </button>
-                                </div>
-                            )}
+                                <li key={order.id} style={{ marginBottom: 12 }}>
 
-                            {(order.status === "created" || order.status === "pending") && (
-                                <div style={{ marginTop: 6 }}>
-                                    <p style={{ color: "#ffaa00", fontSize: "12px", marginBottom: "8px", fontWeight: "bold" }}>
-                                        ⏱️ Tienes 5 minutos desde la creación para pagar esta orden antes de que sea cancelada automáticamente.
-                                    </p>
-                                    <div style={{ display: 'flex', gap: '8px' }}>
-                                        <button 
-                                            onClick={() => handlePay(order.id)}
-                                            style={{
-                                                padding: "5px 14px",
-                                                backgroundColor: "#1a2a1a",
-                                                color: "#66ff66",
-                                                border: "1px solid #44ff44",
-                                                borderRadius: "6px",
-                                                cursor: "pointer",
-                                                fontSize: "13px",
-                                                transition: "all 0.2s ease",
-                                            }}
-                                            onMouseOver={(e) => { e.target.style.backgroundColor = "#1a3d1a"; }}
-                                            onMouseOut={(e) => { e.target.style.backgroundColor = "#1a2a1a"; }}
-                                        >
-                                            💳 Pagar Pedido
-                                        </button>
-                                        <button 
-                                            onClick={() => handleCancelUser(order.id)}
-                                            style={{
-                                                padding: "5px 14px",
-                                                backgroundColor: "#2a1a1a",
-                                                color: "#ff6666",
-                                                border: "1px solid #ff4444",
-                                                borderRadius: "6px",
-                                                cursor: "pointer",
-                                                fontSize: "13px",
-                                                transition: "all 0.2s ease",
-                                            }}
-                                            onMouseOver={(e) => { e.target.style.backgroundColor = "#3d1a1a"; }}
-                                            onMouseOut={(e) => { e.target.style.backgroundColor = "#2a1a1a"; }}
-                                        >
-                                            ❌ Cancelar Pedido
-                                        </button>
+                                    <div>
+
+                                        <strong>Orden #{order.id}</strong>
+                                        {getStatusBadge(order.status)}
+                                        {" — "}
+                                        Total: ${Number(order.total || 0).toFixed(2)} — {order.createdAt ? new Date(order.createdAt).toLocaleString() : ""}
+
                                     </div>
-                                </div>
-                            )}
 
-                        </li>
+                                    <div>
 
-                    ))}
+                                        <ul style={{ listStyle: "none", padding: 0 }}>
+                                            {(order.orderItems || []).map((it) => {
+                                                return (
+                                                    <li key={it.id || `${it.type}-${it.refId}`}>
+                                                        {it.name || `${it.type} #${it.refId}`} — Cant: {it.quantity} — Precio: ${Number(it.price || 0).toFixed(2)}
+                                                    </li>
+                                                );
+                                            })}
+                                        </ul>
 
-                </ul>
-            )}
+
+                                    </div>
+
+                                    {(order.status === "paid" || order.status === "refunding") && (
+                                        <div style={{ marginTop: 6 }}>
+                                            <button
+                                                onClick={() => handleRefund(order.id)}
+                                                disabled={refundingOrderId === order.id}
+                                                style={{
+                                                    padding: "5px 14px",
+                                                    backgroundColor: refundingOrderId === order.id ? "#1f1414" : "#2a1a1a",
+                                                    color: refundingOrderId === order.id ? "#888888" : "#ff6666",
+                                                    border: "1px solid #ff4444",
+                                                    borderRadius: "6px",
+                                                    cursor: refundingOrderId === order.id ? "not-allowed" : "pointer",
+                                                    fontSize: "13px",
+                                                    transition: "all 0.2s ease",
+                                                    opacity: refundingOrderId === order.id ? 0.6 : 1,
+                                                }}
+                                                onMouseOver={(e) => { if (refundingOrderId !== order.id) e.target.style.backgroundColor = "#3d1a1a"; }}
+                                                onMouseOut={(e) => { if (refundingOrderId !== order.id) e.target.style.backgroundColor = "#2a1a1a"; }}
+                                            >
+                                                {refundingOrderId === order.id ? "⏳ Procesando..." : "💰 Solicitar Reembolso"}
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {(order.status === "created" || order.status === "pending") && (
+                                        <div style={{ marginTop: 6 }}>
+                                            <p style={{ color: "#ffaa00", fontSize: "12px", marginBottom: "8px", fontWeight: "bold" }}>
+                                                ⏱️ Tienes 5 minutos desde la creación para pagar esta orden antes de que sea cancelada automáticamente.
+                                            </p>
+                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                                <button
+                                                    onClick={() => handlePay(order.id)}
+                                                    style={{
+                                                        padding: "5px 14px",
+                                                        backgroundColor: "#1a2a1a",
+                                                        color: "#66ff66",
+                                                        border: "1px solid #44ff44",
+                                                        borderRadius: "6px",
+                                                        cursor: "pointer",
+                                                        fontSize: "13px",
+                                                        transition: "all 0.2s ease",
+                                                    }}
+                                                    onMouseOver={(e) => { e.target.style.backgroundColor = "#1a3d1a"; }}
+                                                    onMouseOut={(e) => { e.target.style.backgroundColor = "#1a2a1a"; }}
+                                                >
+                                                    💳 Pagar Pedido
+                                                </button>
+                                                <button
+                                                    onClick={() => handleCancelUser(order.id)}
+                                                    style={{
+                                                        padding: "5px 14px",
+                                                        backgroundColor: "#2a1a1a",
+                                                        color: "#ff6666",
+                                                        border: "1px solid #ff4444",
+                                                        borderRadius: "6px",
+                                                        cursor: "pointer",
+                                                        fontSize: "13px",
+                                                        transition: "all 0.2s ease",
+                                                    }}
+                                                    onMouseOver={(e) => { e.target.style.backgroundColor = "#3d1a1a"; }}
+                                                    onMouseOut={(e) => { e.target.style.backgroundColor = "#2a1a1a"; }}
+                                                >
+                                                    ❌ Cancelar Pedido
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                </li>
+
+                            ))}
+
+                        </ul>
+                    )}
 
 
             <div style={{ marginTop: 16 }}>

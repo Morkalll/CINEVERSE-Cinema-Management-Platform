@@ -6,6 +6,7 @@ import cineverseLogo from '../../../assets/images/cineverse-logo-without-name.pn
 import TatinAlien1 from '../../../assets/images/Alien 3.png';
 import { successToast, errorToast } from "../../../utils/toast";
 import { NavBar } from "../../navBar/NavBar";
+import { API_URL } from "../../../services/api";
 
 export const ForgotPassword = () => {
     const [email, setEmail] = useState("");
@@ -23,7 +24,7 @@ export const ForgotPassword = () => {
         setIsLoading(true);
 
         try {
-            const response = await fetch("http://localhost:3000/api/auth/forgot-password", {
+            const response = await fetch(`${API_URL}/auth/forgot-password`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email }),
