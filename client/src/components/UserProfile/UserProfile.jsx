@@ -294,11 +294,11 @@ export const UserProfile = () => {
 
         <div>
 
-            <h1>¡Bienvenido, {user.username}!</h1>
+            <h1 style={{ textAlign: "center" }}>¡Bienvenido, {user.username}!</h1>
 
-            <div style={{ marginTop: "15px", marginBottom: "25px" }}>
-                <Button
-                    variant="outline-secondary"
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", marginTop: "15px", marginBottom: "30px" }}>
+                <Button 
+                    variant="outline-secondary" 
                     onClick={() => setShowChangePassword(!showChangePassword)}
                     style={{ marginBottom: "10px" }}
                 >
@@ -306,46 +306,48 @@ export const UserProfile = () => {
                 </Button>
 
                 {showChangePassword && (
-                    <form
-                        onSubmit={handleChangePasswordSubmit}
-                        style={{
-                            maxWidth: "400px",
-                            padding: "15px",
-                            backgroundColor: "#1e1e24",
-                            borderRadius: "8px",
+                    <form 
+                        onSubmit={handleChangePasswordSubmit} 
+                        style={{ 
+                            width: "100%", 
+                            maxWidth: "420px", 
+                            padding: "20px", 
+                            backgroundColor: "#1c1c24", 
+                            borderRadius: "12px", 
                             border: "1px solid #333",
-                            marginTop: "10px"
+                            marginTop: "10px",
+                            boxShadow: "0 8px 24px rgba(0,0,0,0.4)"
                         }}
                     >
-                        <h5 style={{ color: "#fff", marginBottom: "15px" }}>Cambiar Contraseña</h5>
-                        <div style={{ marginBottom: "10px" }}>
-                            <input
-                                type="password"
+                        <h5 style={{ color: "#fff", marginBottom: "15px", textAlign: "center" }}>Cambiar Contraseña</h5>
+                        <div style={{ marginBottom: "12px" }}>
+                            <input 
+                                type="password" 
                                 placeholder="Contraseña actual"
                                 value={currentPassword}
                                 onChange={(e) => setCurrentPassword(e.target.value)}
                                 disabled={changingPassword}
-                                style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #444", backgroundColor: "#111", color: "#fff" }}
+                                style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #444", backgroundColor: "#111", color: "#fff" }}
                             />
                         </div>
-                        <div style={{ marginBottom: "10px" }}>
-                            <input
-                                type="password"
+                        <div style={{ marginBottom: "12px" }}>
+                            <input 
+                                type="password" 
                                 placeholder="Nueva contraseña (mínimo 8 caracteres)"
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
                                 disabled={changingPassword}
-                                style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #444", backgroundColor: "#111", color: "#fff" }}
+                                style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #444", backgroundColor: "#111", color: "#fff" }}
                             />
                         </div>
-                        <div style={{ marginBottom: "15px" }}>
-                            <input
-                                type="password"
+                        <div style={{ marginBottom: "16px" }}>
+                            <input 
+                                type="password" 
                                 placeholder="Confirmar nueva contraseña"
                                 value={confirmNewPassword}
                                 onChange={(e) => setConfirmNewPassword(e.target.value)}
                                 disabled={changingPassword}
-                                style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #444", backgroundColor: "#111", color: "#fff" }}
+                                style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #444", backgroundColor: "#111", color: "#fff" }}
                             />
                         </div>
                         <Button type="submit" variant="secondary" disabled={changingPassword} className="w-100">
@@ -355,32 +357,34 @@ export const UserProfile = () => {
                 )}
             </div>
 
-            <h1>Tus compras recientes:</h1>
+            <h1 style={{ textAlign: "center", marginBottom: "20px" }}>Tus compras recientes:</h1>
 
-
-
-            {loadingOrders ?
+            {loadingOrders ? 
                 (
-                    <div>Cargando compras...</div>
-
-                )
-
-                : orders.length === 0 ?
+                    <div style={{ textAlign: "center" }}>Cargando compras...</div>
+                ) 
+                
+                : orders.length === 0 ? 
                     (
-
-                        <div>No tenés compras aún.</div>
-
-                    )
-
+                        <div style={{ textAlign: "center" }}>No tenés compras aún.</div>
+                    ) 
+                    
                     : (
-
-                        <ul style={{ listStyle: "none", padding: 0 }}>
+                        <ul style={{ listStyle: "none", padding: 0, margin: "0 auto", maxWidth: "700px" }}>
 
                             {orders.map((order) => (
 
-                                <li key={order.id} style={{ marginBottom: 12 }}>
+                                <li key={order.id} style={{ 
+                                    marginBottom: "28px", 
+                                    padding: "20px 24px", 
+                                    backgroundColor: "rgba(255, 255, 255, 0.04)", 
+                                    borderRadius: "14px", 
+                                    border: "1px solid rgba(255, 255, 255, 0.1)",
+                                    boxShadow: "0 6px 20px rgba(0,0,0,0.3)",
+                                    textAlign: "center"
+                                }}>
 
-                                    <div>
+                                    <div style={{ fontSize: "16px", fontWeight: "500", marginBottom: "10px" }}>
 
                                         <strong>Orden #{order.id}</strong>
                                         {getStatusBadge(order.status)}
@@ -389,28 +393,27 @@ export const UserProfile = () => {
 
                                     </div>
 
-                                    <div>
+                                    <div style={{ margin: "12px 0" }}>
 
-                                        <ul style={{ listStyle: "none", padding: 0 }}>
+                                        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
                                             {(order.orderItems || []).map((it) => {
                                                 return (
-                                                    <li key={it.id || `${it.type}-${it.refId}`}>
+                                                    <li key={it.id || `${it.type}-${it.refId}`} style={{ color: "#ccc", margin: "4px 0", fontSize: "14px" }}>
                                                         {it.name || `${it.type} #${it.refId}`} — Cant: {it.quantity} — Precio: ${Number(it.price || 0).toFixed(2)}
                                                     </li>
                                                 );
                                             })}
                                         </ul>
 
-
                                     </div>
 
                                     {(order.status === "paid" || order.status === "refunding") && (
-                                        <div style={{ marginTop: 6 }}>
-                                            <button
+                                        <div style={{ marginTop: 14, display: "flex", justifyContent: "center" }}>
+                                            <button 
                                                 onClick={() => handleRefund(order.id)}
                                                 disabled={refundingOrderId === order.id}
                                                 style={{
-                                                    padding: "5px 14px",
+                                                    padding: "6px 18px",
                                                     backgroundColor: refundingOrderId === order.id ? "#1f1414" : "#2a1a1a",
                                                     color: refundingOrderId === order.id ? "#888888" : "#ff6666",
                                                     border: "1px solid #ff4444",
@@ -429,15 +432,15 @@ export const UserProfile = () => {
                                     )}
 
                                     {(order.status === "created" || order.status === "pending") && (
-                                        <div style={{ marginTop: 6 }}>
-                                            <p style={{ color: "#ffaa00", fontSize: "12px", marginBottom: "8px", fontWeight: "bold" }}>
+                                        <div style={{ marginTop: 14 }}>
+                                            <p style={{ color: "#ffaa00", fontSize: "12px", marginBottom: "10px", fontWeight: "bold" }}>
                                                 ⏱️ Tienes 5 minutos desde la creación para pagar esta orden antes de que sea cancelada automáticamente.
                                             </p>
-                                            <div style={{ display: 'flex', gap: '8px' }}>
-                                                <button
+                                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px' }}>
+                                                <button 
                                                     onClick={() => handlePay(order.id)}
                                                     style={{
-                                                        padding: "5px 14px",
+                                                        padding: "6px 18px",
                                                         backgroundColor: "#1a2a1a",
                                                         color: "#66ff66",
                                                         border: "1px solid #44ff44",
@@ -451,10 +454,10 @@ export const UserProfile = () => {
                                                 >
                                                     💳 Pagar Pedido
                                                 </button>
-                                                <button
+                                                <button 
                                                     onClick={() => handleCancelUser(order.id)}
                                                     style={{
-                                                        padding: "5px 14px",
+                                                        padding: "6px 18px",
                                                         backgroundColor: "#2a1a1a",
                                                         color: "#ff6666",
                                                         border: "1px solid #ff4444",
@@ -480,7 +483,7 @@ export const UserProfile = () => {
                     )}
 
 
-            <div style={{ marginTop: 16 }}>
+            <div style={{ marginTop: 24, textAlign: "center" }}>
 
                 <Button variant="secondary" onClick={handleLogOut}>Cerrar sesión</Button>
 
