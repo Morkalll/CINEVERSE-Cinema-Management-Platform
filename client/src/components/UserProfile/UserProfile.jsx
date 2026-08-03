@@ -290,6 +290,14 @@ export const UserProfile = () => {
         }
     };
 
+    const handleCopySupportEmail = () => {
+        const email = "ADMINISTRACION@CINEVERSE.COM".toLowerCase();
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(email);
+        }
+        successToast("Email de soporte copiado al portapapeles");
+    };
+
     return (
 
         <div>
@@ -297,8 +305,8 @@ export const UserProfile = () => {
             <h1 style={{ textAlign: "center" }}>¡Bienvenido, {user.username}!</h1>
 
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", marginTop: "15px", marginBottom: "30px" }}>
-                <Button 
-                    variant="outline-secondary" 
+                <Button
+                    variant="outline-secondary"
                     onClick={() => setShowChangePassword(!showChangePassword)}
                     style={{ marginBottom: "10px" }}
                 >
@@ -306,14 +314,14 @@ export const UserProfile = () => {
                 </Button>
 
                 {showChangePassword && (
-                    <form 
-                        onSubmit={handleChangePasswordSubmit} 
-                        style={{ 
-                            width: "100%", 
-                            maxWidth: "420px", 
-                            padding: "20px", 
-                            backgroundColor: "#1c1c24", 
-                            borderRadius: "12px", 
+                    <form
+                        onSubmit={handleChangePasswordSubmit}
+                        style={{
+                            width: "100%",
+                            maxWidth: "420px",
+                            padding: "20px",
+                            backgroundColor: "#1c1c24",
+                            borderRadius: "12px",
                             border: "1px solid #333",
                             marginTop: "10px",
                             boxShadow: "0 8px 24px rgba(0,0,0,0.4)"
@@ -321,8 +329,8 @@ export const UserProfile = () => {
                     >
                         <h5 style={{ color: "#fff", marginBottom: "15px", textAlign: "center" }}>Cambiar Contraseña</h5>
                         <div style={{ marginBottom: "12px" }}>
-                            <input 
-                                type="password" 
+                            <input
+                                type="password"
                                 placeholder="Contraseña actual"
                                 value={currentPassword}
                                 onChange={(e) => setCurrentPassword(e.target.value)}
@@ -331,8 +339,8 @@ export const UserProfile = () => {
                             />
                         </div>
                         <div style={{ marginBottom: "12px" }}>
-                            <input 
-                                type="password" 
+                            <input
+                                type="password"
                                 placeholder="Nueva contraseña (mínimo 8 caracteres)"
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
@@ -341,8 +349,8 @@ export const UserProfile = () => {
                             />
                         </div>
                         <div style={{ marginBottom: "16px" }}>
-                            <input 
-                                type="password" 
+                            <input
+                                type="password"
                                 placeholder="Confirmar nueva contraseña"
                                 value={confirmNewPassword}
                                 onChange={(e) => setConfirmNewPassword(e.target.value)}
@@ -358,27 +366,37 @@ export const UserProfile = () => {
             </div>
 
             <h1 style={{ textAlign: "center", marginBottom: "20px" }}>Tus compras recientes:</h1>
+            <h3 style={{ textAlign: "center", marginBottom: "20px" }}>
+                Si necesitas solicitar ayuda, puedes comunicarte con{" "}
+                <span
+                    onClick={handleCopySupportEmail}
+                    style={{ cursor: "pointer", textDecoration: "underline" }}
+                    title="Copiar email al portapapeles"
+                >
+                    {"administracion@cineverse.com"}
+                </span>
+            </h3>
 
-            {loadingOrders ? 
+            {loadingOrders ?
                 (
                     <div style={{ textAlign: "center" }}>Cargando compras...</div>
-                ) 
-                
-                : orders.length === 0 ? 
+                )
+
+                : orders.length === 0 ?
                     (
                         <div style={{ textAlign: "center" }}>No tenés compras aún.</div>
-                    ) 
-                    
+                    )
+
                     : (
                         <ul style={{ listStyle: "none", padding: 0, margin: "0 auto", maxWidth: "700px" }}>
 
                             {orders.map((order) => (
 
-                                <li key={order.id} style={{ 
-                                    marginBottom: "28px", 
-                                    padding: "20px 24px", 
-                                    backgroundColor: "rgba(255, 255, 255, 0.04)", 
-                                    borderRadius: "14px", 
+                                <li key={order.id} style={{
+                                    marginBottom: "28px",
+                                    padding: "20px 24px",
+                                    backgroundColor: "rgba(255, 255, 255, 0.04)",
+                                    borderRadius: "14px",
                                     border: "1px solid rgba(255, 255, 255, 0.1)",
                                     boxShadow: "0 6px 20px rgba(0,0,0,0.3)",
                                     textAlign: "center"
@@ -409,7 +427,7 @@ export const UserProfile = () => {
 
                                     {(order.status === "paid" || order.status === "refunding") && (
                                         <div style={{ marginTop: 14, display: "flex", justifyContent: "center" }}>
-                                            <button 
+                                            <button
                                                 onClick={() => handleRefund(order.id)}
                                                 disabled={refundingOrderId === order.id}
                                                 style={{
@@ -437,7 +455,7 @@ export const UserProfile = () => {
                                                 ⏱️ Tienes 5 minutos desde la creación para pagar esta orden antes de que sea cancelada automáticamente.
                                             </p>
                                             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px' }}>
-                                                <button 
+                                                <button
                                                     onClick={() => handlePay(order.id)}
                                                     style={{
                                                         padding: "6px 18px",
@@ -454,7 +472,7 @@ export const UserProfile = () => {
                                                 >
                                                     💳 Pagar Pedido
                                                 </button>
-                                                <button 
+                                                <button
                                                     onClick={() => handleCancelUser(order.id)}
                                                     style={{
                                                         padding: "6px 18px",
