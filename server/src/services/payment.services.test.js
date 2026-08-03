@@ -196,10 +196,10 @@ describe('Payment Services', () => {
             expect(res.json).toHaveBeenCalledWith({ message: "Solo se pueden reembolsar órdenes pagadas" });
         });
 
-        it('should return 400 if showtime has already passed for non-admin user', async () => {
+        it('should return 400 if showtime is within 2 hours or has passed for non-admin user', async () => {
             req.params = { orderId: 1 };
             req.user = { id: 1, role: 'client' };
-            const pastDate = new Date(Date.now() - 3600000);
+            const soonDate = new Date(Date.now() + 3600000); // 1 hour in future (within 2h window)
             const mockOrder = { 
                 id: 1, 
                 userId: 1, 
@@ -207,13 +207,13 @@ describe('Payment Services', () => {
                 orderItems: [{ type: 'ticket', refId: 5, seats: ['A1'] }]
             };
             Order.findByPk.mockResolvedValue(mockOrder);
-            MovieShowing.findByPk.mockResolvedValue({ id: 5, showtime: pastDate });
+            MovieShowing.findByPk.mockResolvedValue({ id: 5, showtime: soonDate });
 
             await refundPayment(req, res);
 
             expect(res.status).toHaveBeenCalledWith(400);
             expect(res.json).toHaveBeenCalledWith({ 
-                message: "No se pueden reembolsar entradas para una función que ya ha comenzado o finalizado" 
+                message: "No se pueden reembolsar entradas con menos de 2 horas de anticipación al inicio de la función" 
             });
         });
 

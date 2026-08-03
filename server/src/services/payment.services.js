@@ -556,11 +556,12 @@ export const refundPayment = async (req, res) =>
                         if (show && show.showtime) 
                         {
                             const showDate = new Date(show.showtime);
-                            if (!isNaN(showDate.getTime()) && showDate <= new Date()) 
+                            const twoHoursInMs = 2 * 60 * 60 * 1000;
+                            if (!isNaN(showDate.getTime()) && (showDate.getTime() - Date.now() <= twoHoursInMs)) 
                             {
                                 return { 
                                     errorStatus: 400, 
-                                    message: "No se pueden reembolsar entradas para una función que ya ha comenzado o finalizado" 
+                                    message: "No se pueden reembolsar entradas con menos de 2 horas de anticipación al inicio de la función" 
                                 };
                             }
                         }
