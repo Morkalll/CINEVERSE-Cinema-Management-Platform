@@ -1,4 +1,5 @@
 
+import crypto from 'crypto';
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 import { MP_ACCESS_TOKEN, FRONTEND_URL, MP_WEBHOOK_URL } from '../config.js';
 import Order from '../models/Order.js';
@@ -622,6 +623,13 @@ export const refundPayment = async (req, res) =>
             {
                 try 
                 {
+                    const idempotencyKey = crypto.randomUUID ? crypto.randomUUID() : (`refund-${orderId}-${Date.now()}-${Math.random().toString(36).substring(2)}`);
+                    const refundAmount = Number(orderToRefund.total);
+
+                    const refundPayload = !isNaN(refundAmount) && refundAmount > 0 
+                        ? { amount: refundAmount } 
+                        : {};
+
                     const refundResponse = await fetch(
                         `https://api.mercadopago.com/v1/payments/${mpPaymentIdStr}/refunds`,
                         {
@@ -629,9 +637,9 @@ export const refundPayment = async (req, res) =>
                             headers: {
                                 'Content-Type': 'application/json',
                                 'Authorization': `Bearer ${MP_ACCESS_TOKEN}`,
-                                'X-Idempotency-Key': `refund-order-${orderId}`
+                                'X-Idempotency-Key': idempotencyKey
                             },
-                            body: JSON.stringify({}),
+                            body: JSON.stringify(refundPayload),
                         }
                     );
 
@@ -645,17 +653,49 @@ export const refundPayment = async (req, res) =>
                         console.error('MP refund error payload:', errPayload);
 
                         const errorStr = JSON.stringify(errPayload).toLowerCase();
-                        // Handle idempotency / already refunded cases on MP gracefully
-                        if ([400, 409, 422].includes(refundResponse.status) && (errorStr.includes('already_refunded') || errorStr.includes('already refunded') || errorStr.includes('2061') || errorStr.includes('not_refundable'))) 
+                        // Check if MP reported that the payment was already refunded or in a non-refundable state
+                        if ([400, 404, 409, 422].includes(refundResponse.status) && (
+                            errorStr.includes('already_refunded') || 
+                            errorStr.includes('already refunded') || 
+                            errorStr.includes('2061') || 
+                            errorStr.includes('2063') || 
+                            errorStr.includes('not_refundable') ||
+                            errorStr.includes('current payment state')
+                        )) 
                         {
                             console.warn(`[Refund] MP informó que la orden ${orderId} ya estaba reembolsada o procesada:`, errPayload);
                             mpRefundSuccess = true;
                         } 
                         else 
                         {
-                            const causeMsg = Array.isArray(errPayload.cause) && errPayload.cause[0]?.description;
-                            const rawErr = causeMsg || errPayload.message || errPayload.error;
-                            mpErrorMessage = typeof rawErr === 'string' ? rawErr : (rawErr ? JSON.stringify(rawErr) : "Error en Mercado Pago al procesar el reembolso");
+                            // Secondary verification: check current payment status directly on MP
+                            try 
+                            {
+                                const verifyPaymentRes = await fetch(
+                                    `https://api.mercadopago.com/v1/payments/${mpPaymentIdStr}`,
+                                    { headers: { 'Authorization': `Bearer ${MP_ACCESS_TOKEN}` } }
+                                );
+                                if (verifyPaymentRes.ok) 
+                                {
+                                    const paymentData = await verifyPaymentRes.json().catch(() => ({}));
+                                    if (paymentData.status === 'refunded' || (paymentData.transaction_amount_refunded && Number(paymentData.transaction_amount_refunded) >= Number(orderToRefund.total))) 
+                                    {
+                                        console.log(`[Refund] Pago ${mpPaymentIdStr} verificado directamente en MP como ya reembolsado.`);
+                                        mpRefundSuccess = true;
+                                    }
+                                }
+                            } 
+                            catch (verifyErr) 
+                            {
+                                console.warn('[Refund] No se pudo verificar estado de pago en MP tras error de reembolso:', verifyErr);
+                            }
+
+                            if (!mpRefundSuccess) 
+                            {
+                                const causeMsg = Array.isArray(errPayload.cause) && errPayload.cause[0]?.description;
+                                const rawErr = causeMsg || errPayload.message || errPayload.error;
+                                mpErrorMessage = typeof rawErr === 'string' ? rawErr : (rawErr ? JSON.stringify(rawErr) : "Error en Mercado Pago al procesar el reembolso");
+                            }
                         }
                     }
                 } 

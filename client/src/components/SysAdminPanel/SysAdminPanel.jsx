@@ -157,21 +157,23 @@ export const SysAdminPanel = () => {
                 }
             });
 
+            const data = await response.json().catch(() => ({}));
             if (!response.ok) {
-                throw new Error("Error al cancelar orden");
+                throw new Error(data.message || "Error al cancelar orden");
             }
             
             setOrders(orders.map(o => o.id === order.id ? { ...o, status: "cancelled" } : o));
             
-            successToast("Orden cancelada exitosamente");
+            successToast(data.message || "Orden cancelada exitosamente");
             setCancelConfirm({ show: false, order: null });
         } catch (err) {
-            console.error("Error cancelling order:");
+            console.error("Error cancelling order:", err);
             errorToast(err.message || "Error al cancelar orden");
         }
     };
 
     const handleRefundOrder = async (order) => {
+        if (!checkSysAdminAuth()) return;
         if (refundingOrderId === order.id) return;
         if (!window.confirm(`¿Estás seguro de procesar el reembolso de la Orden #${order.id}?`)) return;
 
@@ -204,7 +206,7 @@ export const SysAdminPanel = () => {
     const handleConfirmDelete = async () => {
         const { item, type } = deleteConfirm;
 
-        if (type === "order" && item.status !== "cancelled" && item.status !== "refunded") {
+        if (type === "order" && item.status !== "cancelled" && item.status !== "refunded" && item.status !== "expired") {
             errorToast("Solo se pueden eliminar órdenes canceladas o reembolsadas");
             setDeleteConfirm({ show: false, item: null, type: "" });
             return;
@@ -1030,7 +1032,7 @@ export const SysAdminPanel = () => {
                                                 <td>{order.orderItems?.length || 0} items</td>
                                                 <td>{new Date(order.createdAt).toLocaleString()}</td>
                                                 <td>
-                                                    {(order.status === 'paid' || order.status === 'refunding') && (
+                                                    {(order.status === 'paid' || order.status === 'refunding') && user?.role === 'sysadmin' && (
                                                         <button
                                                             className="refund-btn"
                                                             onClick={() => handleRefundOrder(order)}
@@ -1044,7 +1046,7 @@ export const SysAdminPanel = () => {
                                                         className="cancel-btn"
                                                         onClick={() => handleCancelClick(order)}
                                                         style={{ marginRight: '8px' }}
-                                                        disabled={order.status === 'cancelled' || order.status === 'paid' || order.status === 'refunding' || order.status === 'refunded'}
+                                                        disabled={order.status === 'cancelled' || order.status === 'expired' || order.status === 'paid' || order.status === 'refunding' || order.status === 'refunded'}
                                                     >
                                                         Cancelar
                                                     </button>

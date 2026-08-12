@@ -257,5 +257,80 @@ describe('Payment Services', () => {
                 message: "Reembolso procesado exitosamente"
             }));
         });
+
+        it('should handle already refunded payment state gracefully (code 2063)', async () => {
+            req.params = { orderId: 1 };
+            req.user = { id: 1, role: 'admin' };
+            const mockOrder = { 
+                id: 1, 
+                userId: 1, 
+                status: 'paid',
+                total: 100,
+                mpPaymentId: 'pay_123',
+                orderItems: [],
+                update: vi.fn().mockResolvedValue(true)
+            };
+            Order.findByPk.mockResolvedValue(mockOrder);
+            User.findByPk.mockResolvedValue({ id: 1, email: 'user@test.com', username: 'testuser' });
+
+            global.fetch.mockResolvedValueOnce({
+                ok: false,
+                status: 400,
+                json: async () => ({
+                    message: "The action requested is not valid for the current payment state",
+                    cause: [{ code: 2063, description: "The action requested is not valid for the current payment state" }]
+                })
+            });
+
+            await refundPayment(req, res);
+
+            expect(mockOrder.update).toHaveBeenCalledWith(
+                { status: 'refunded', mpStatus: 'refunded' },
+                expect.any(Object)
+            );
+            expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                message: "Reembolso procesado exitosamente"
+            }));
+        });
+
+        it('should handle error by checking payment status directly on MP', async () => {
+            req.params = { orderId: 1 };
+            req.user = { id: 1, role: 'admin' };
+            const mockOrder = { 
+                id: 1, 
+                userId: 1, 
+                status: 'paid',
+                total: 100,
+                mpPaymentId: 'pay_123',
+                orderItems: [],
+                update: vi.fn().mockResolvedValue(true)
+            };
+            Order.findByPk.mockResolvedValue(mockOrder);
+            User.findByPk.mockResolvedValue({ id: 1, email: 'user@test.com', username: 'testuser' });
+
+            // 1st fetch: refund endpoint returns 500 error
+            global.fetch.mockResolvedValueOnce({
+                ok: false,
+                status: 500,
+                json: async () => ({ message: "Internal error" })
+            });
+
+            // 2nd fetch: verify payment endpoint returns refunded
+            global.fetch.mockResolvedValueOnce({
+                ok: true,
+                status: 200,
+                json: async () => ({ status: "refunded", transaction_amount_refunded: 100 })
+            });
+
+            await refundPayment(req, res);
+
+            expect(mockOrder.update).toHaveBeenCalledWith(
+                { status: 'refunded', mpStatus: 'refunded' },
+                expect.any(Object)
+            );
+            expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                message: "Reembolso procesado exitosamente"
+            }));
+        });
     });
 });

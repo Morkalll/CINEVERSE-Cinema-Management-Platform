@@ -89,4 +89,74 @@ describe('SysAdminPanel', () => {
         expect(screen.getByText('Películas')).toBeInTheDocument(); // section header
         expect(screen.getByText('Alien')).toBeInTheDocument();
     });
+
+    it('renders refund button for paid orders when user is sysadmin', async () => {
+        useAuth.mockReturnValue({ user: { role: 'sysadmin' } });
+
+        global.fetch.mockImplementation((url) => {
+            if (url.includes('/orders')) {
+                return Promise.resolve({
+                    ok: true,
+                    json: () => Promise.resolve([{
+                        id: 1,
+                        userId: 2,
+                        total: 100,
+                        status: 'paid',
+                        createdAt: '2026-08-12T00:00:00.000Z',
+                        orderItems: []
+                    }])
+                });
+            }
+            return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
+        });
+
+        renderWithRouter(<SysAdminPanel />);
+
+        await waitFor(() => {
+            expect(screen.getByText('Administración')).toBeInTheDocument();
+        });
+
+        // Switch to Orders tab
+        fireEvent.click(screen.getByRole('button', { name: /Órdenes/i }));
+
+        await waitFor(() => {
+            expect(screen.getByText('💰 Reembolsar')).toBeInTheDocument();
+        });
+    });
+
+    it('hides refund button for paid orders when user is admin', async () => {
+        useAuth.mockReturnValue({ user: { role: 'admin' } });
+
+        global.fetch.mockImplementation((url) => {
+            if (url.includes('/orders')) {
+                return Promise.resolve({
+                    ok: true,
+                    json: () => Promise.resolve([{
+                        id: 1,
+                        userId: 2,
+                        total: 100,
+                        status: 'paid',
+                        createdAt: '2026-08-12T00:00:00.000Z',
+                        orderItems: []
+                    }])
+                });
+            }
+            return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
+        });
+
+        renderWithRouter(<SysAdminPanel />);
+
+        await waitFor(() => {
+            expect(screen.getByText('Administración')).toBeInTheDocument();
+        });
+
+        // Switch to Orders tab
+        fireEvent.click(screen.getByRole('button', { name: /Órdenes/i }));
+
+        await waitFor(() => {
+            expect(screen.getByText('Cancelar')).toBeInTheDocument();
+        });
+
+        expect(screen.queryByText('💰 Reembolsar')).not.toBeInTheDocument();
+    });
 });
