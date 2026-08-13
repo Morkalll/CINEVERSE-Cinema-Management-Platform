@@ -226,12 +226,7 @@ export const syncPendingOrderPayment = async (order) =>
                     mpPaymentStatus = 'approved';
                     fetchedPaymentId = String(approvedPayment.id);
                 } 
-                else if (results.length > 0) 
-                {
-                    const latest = results[0];
-                    mpPaymentStatus = latest.status;
-                    fetchedPaymentId = String(latest.id);
-                }
+
             } 
             catch (searchErr) 
             {
@@ -422,7 +417,7 @@ export const verifyPayment = async (req, res) =>
 {
     try 
     {
-        const { orderId, paymentId, status: bodyStatus, collection_status: collectionStatus } = req.body;
+        const { orderId, paymentId } = req.body;
         const userId = req.user?.id;
 
         if (!orderId) 
@@ -453,43 +448,6 @@ export const verifyPayment = async (req, res) =>
         }
 
         await syncPendingOrderPayment(order);
-
-        const statusMap = {
-            approved: 'paid',
-            pending: 'pending',
-            in_process: 'pending',
-            rejected: 'failed',
-            cancelled: 'cancelled',
-        };
-        const fallbackStatus = bodyStatus || collectionStatus;
-        if (order.status !== 'paid' && fallbackStatus && statusMap[fallbackStatus] === 'paid') 
-        {
-            await sequelize.transaction(async (t) => {
-                await order.update({
-                    mpPaymentId: paymentId ? String(paymentId) : order.mpPaymentId,
-                    mpStatus: fallbackStatus,
-                    status: 'paid',
-                }, { transaction: t });
-
-                const orderItems = order.orderItems || order.OrderItems || [];
-                for (const item of orderItems) 
-                {
-                    const seatLabels = parseSeats(item.seats);
-                    if (item.type === 'ticket' && seatLabels.length > 0) 
-                    {
-                        await Seat.update(
-                            { status: 'Vendido' },
-                            { 
-                                where: { showingId: item.refId, label: seatLabels },
-                                transaction: t 
-                            }
-                        );
-                    }
-                }
-            });
-            order.status = 'paid';
-            triggerPaymentSuccessEmail(order);
-        }
 
         const updatedOrder = await Order.findByPk(orderId);
         return res.json({ message: "Verificación completada", order: updatedOrder });
