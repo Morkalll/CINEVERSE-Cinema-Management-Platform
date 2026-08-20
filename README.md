@@ -549,13 +549,3 @@ npm test
 | `POST` | `/api/payments/create-preference` | Creación de preferencia de pago en Mercado Pago | Autenticado |
 | `POST` | `/api/payments/webhook` | Recepción de notificaciones de pago | Público (Pasarela MP) |
 | `GET` | `/api/users/profile` | Perfil del usuario autenticado e historial | Autenticado |
-
----
-
-## 👥 Autores y Colaboradores
-
-Proyecto desarrollado como Trabajo Integrador Final (**TIF**):
-
-- **Darek Smolarz**
-- **Giuliano Di Stasi**
-- **Joaquín Sánchez**
